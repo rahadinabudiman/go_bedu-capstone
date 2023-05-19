@@ -19,5 +19,10 @@ func New() *echo.Echo {
 	// Administrator Routes
 	administrator := e.Group("/administrator")
 	administrator.GET("", controllers.GetAdministratorController)
+	administrator.POST("", controllers.CreateAdministratorController)
+	administrator.GET("/:id", controllers.GetAdministratorByIDController)
+	administrator.PUT("/:id", controllers.UpdateAdministratorByIdController)
+	administrator.DELETE("/:id", controllers.DeleteAdministratorController)
+
 	return e
 }
