@@ -13,6 +13,6 @@ func CreateCookie(c echo.Context, token string) {
 	cookie.Name = "bEDUCookie"
 	cookie.Value = token
 	cookie.Expires = time.Now().Add(1 * time.Hour)
-	cookie.HttpOnly = true
+	cookie.Path = "/"
 	c.SetCookie(cookie)
 }

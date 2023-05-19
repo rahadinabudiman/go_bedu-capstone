@@ -1,0 +1,53 @@
+<!-- login.html -->
+<form id="loginForm">
+    <!-- Email input -->
+    <div class="form-outline mb-4">
+        <input type="email" id="emailInput" class="form-control" />
+        <label class="form-label" for="emailInput">Email address</label>
+    </div>
+
+    <!-- Password input -->
+    <div class="form-outline mb-4">
+        <input type="password" id="passwordInput" class="form-control" />
+        <label class="form-label" for="passwordInput">Password</label>
+    </div>
+
+    <button type="button" id="signInBtn" class="btn btn-primary btn-block mb-4">Sign in</button>
+</form>
+
+<script>
+    document.getElementById('signInBtn').addEventListener('click', function () {
+        var email = document.getElementById('emailInput').value;
+        var password = document.getElementById('passwordInput').value;
+
+        var data = {
+            email: email,
+            password: password
+        };
+
+        fetch('http://localhost:8000/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(function (response) {
+                if (response.ok) {
+                    // Cookie successfully received
+                    return response.json();
+                } else {
+                    throw new Error('Login failed');
+                }
+            })
+            .then(function (data) {
+                // Save the received cookie
+                document.cookie = 'bEDUCookie=' + data.token + '; path=/';
+                console.log('Login successful');
+            })
+            .catch(function (error) {
+                console.error('Error:', error);
+            });
+
+    });
+</script>
