@@ -4,6 +4,7 @@ import (
 	"go_bedu/constants"
 	"go_bedu/models"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -33,91 +34,105 @@ var IsLoggedIn = middleware.JWTWithConfig(middleware.JWTConfig{
 	ErrorHandler: func(err error) error {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized")
 	},
-},
-)
+})
 
-// Check if Role is Super Admin
-func IsSuperAdmin(next echo.HandlerFunc) echo.HandlerFunc {
+// Middleware untuk verifikasi JWT token
+func VerifyToken(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		user, ok := c.Get("user").(*jwt.Token)
-		if !ok {
-			return echo.NewHTTPError(http.StatusUnauthorized, "invalid or missing jwt token")
+		// Mendapatkan token dari header Authorization
+		authHeader := c.Request().Header.Get("Authorization")
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+
+		// Memeriksa apakah token ada
+		if tokenString == "" {
+			return echo.NewHTTPError(http.StatusUnauthorized, "Missing token")
 		}
-		claims, ok := user.Claims.(jwt.MapClaims)
-		if !ok {
-			return echo.NewHTTPError(http.StatusUnauthorized, "invalid jwt claims")
+
+		// Memverifikasi token
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			// Menggunakan secret key yang sama dengan saat membuat token
+			return []byte(constants.SECRET_JWT), nil
+		})
+
+		// Menangani error saat verifikasi token
+		if err != nil {
+			return echo.NewHTTPError(http.StatusUnauthorized, "Invalid token")
 		}
-		if role, ok := claims["role"].(string); !ok || role != "Super Admin" {
-			return echo.NewHTTPError(http.StatusUnauthorized, "user is not an Super Admin")
+
+		// Memeriksa apakah token valid
+		if !token.Valid {
+			return echo.NewHTTPError(http.StatusUnauthorized, "Invalid token")
 		}
+
+		// Menyimpan informasi user dari token di dalam konteks
+		claims := token.Claims.(jwt.MapClaims)
+		userID := int(claims["id"].(float64))
+		email := claims["email"].(string)
+		role := claims["role"].(string)
+
+		// Menyimpan informasi user di dalam konteks
+		c.Set("userID", userID)
+		c.Set("email", email)
+		c.Set("role", role)
+
+		// Melanjutkan ke handler selanjutnya
 		return next(c)
 	}
 }
 
-// JWT Validator if Cookie is Login
-func JWTValidator(next echo.HandlerFunc) echo.HandlerFunc {
+// Verifikasi Super Admin Middleware
+func VerifySuperAdmin(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		cookie, err := c.Cookie("bEDUCookie")
-		if err != nil {
-			return c.JSON(http.StatusUnauthorized, models.ResponseMessage{
-				Message: "Unauthorized",
-			})
-		}
-		token, err := jwt.Parse(cookie.Value, func(token *jwt.Token) (interface{}, error) {
-			return []byte(constants.SECRET_JWT), nil
-		})
-		if err != nil {
-			return c.JSON(http.StatusUnauthorized, models.ResponseMessage{
-				Message: "Unauthorized",
-			})
-		}
-		claims, ok := token.Claims.(jwt.MapClaims)
-		if !ok || !token.Valid {
-			return c.JSON(http.StatusUnauthorized, models.ResponseMessage{
-				Message: "Unauthorized",
-			})
-		}
-		id, ok := claims["id"].(float64)
-		if !ok {
-			return c.JSON(http.StatusUnauthorized, models.ResponseMessage{
-				Message: "Unauthorized",
-			})
-		}
-		c.Set("id", int(id))
-		return next(c)
-	}
-}
+		// Mendapatkan token dari header Authorization
+		authHeader := c.Request().Header.Get("Authorization")
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
-// JWT Validator if Admin is Login
-func JWTValidatorAdmin(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		cookie, err := c.Cookie("bEDUCookie")
-		if err != nil {
+		// Memeriksa apakah token ada
+		if tokenString == "" {
 			return c.JSON(http.StatusUnauthorized, models.ResponseMessage{
-				Message: "Unauthorized",
+				Message: "Missing token",
 			})
 		}
-		token, err := jwt.Parse(cookie.Value, func(token *jwt.Token) (interface{}, error) {
+
+		// Memverifikasi token
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			// Menggunakan secret key yang sama dengan saat membuat token
 			return []byte(constants.SECRET_JWT), nil
 		})
+
+		// Menangani error saat verifikasi token
 		if err != nil {
 			return c.JSON(http.StatusUnauthorized, models.ResponseMessage{
-				Message: "Unauthorized",
+				Message: "Invalid token",
 			})
 		}
-		claims, ok := token.Claims.(jwt.MapClaims)
-		if !ok || !token.Valid {
+
+		// Memeriksa apakah token valid
+		if !token.Valid {
 			return c.JSON(http.StatusUnauthorized, models.ResponseMessage{
-				Message: "Unauthorized",
+				Message: "Invalid token",
 			})
 		}
-		role, ok := claims["role"].(string)
-		if !ok {
-			return c.JSON(http.StatusUnauthorized, models.ResponseMessage{
-				Message: "Unauthorized",
+
+		// Menyimpan informasi user dari token di dalam konteks
+		claims := token.Claims.(jwt.MapClaims)
+		userID := int(claims["id"].(float64))
+		email := claims["email"].(string)
+		role := claims["role"].(string)
+
+		// Memeriksa apakah role adalah super admin
+		if role != "Super Admin" {
+			return c.JSON(http.StatusForbidden, models.ResponseMessage{
+				Message: "Unauthorized access",
 			})
 		}
-		c.Set("role", string(role))
+
+		// Menyimpan informasi user di dalam konteks
+		c.Set("userID", userID)
+		c.Set("email", email)
+		c.Set("role", role)
+
+		// Melanjutkan ke handler selanjutnya
 		return next(c)
 	}
 }

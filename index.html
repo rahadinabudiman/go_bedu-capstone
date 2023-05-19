@@ -13,6 +13,8 @@
     </div>
 
     <button type="button" id="signInBtn" class="btn btn-primary btn-block mb-4">Sign in</button>
+    <button type="button" id="dataAdmin" class="btn btn-primary btn-block mb-4">Data in</button>
+    <button type="button" id="deleteAdmin" class="btn btn-primary btn-block mb-4">Delete in</button>
 </form>
 
 <script>
@@ -42,7 +44,7 @@
             })
             .then(function (data) {
                 // Save the received cookie
-                document.cookie = 'bEDUCookie=' + data.token + '; path=/';
+                document.cookie = 'bEDUCookie=' + data.data.token + '; path=/';
                 console.log('Login successful');
             })
             .catch(function (error) {
@@ -50,4 +52,94 @@
             });
 
     });
+</script>
+
+<script>
+    document.getElementById('dataAdmin').addEventListener('click', function () {
+        const bEDUCookie = getCookieValue('bEDUCookie');
+        console.log(bEDUCookie);
+
+        if (bEDUCookie) {
+            // Make the API request with the token in the request header
+            fetch('http://localhost:8000/administrator', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + bEDUCookie
+                    }
+                })
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error('HTTP status ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(function (data) {
+                    console.log(data);
+                })
+                .catch(function (error) {
+                    console.error('Error:', error);
+                });
+        } else {
+            console.error('Cookie "bEDUCookie" not found');
+        }
+    });
+
+    function getCookieValue(cookieName) {
+        const cookieString = document.cookie;
+        const cookies = cookieString.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.startsWith(cookieName + '=')) {
+                return cookie.substring(cookieName.length + 1);
+            }
+        }
+        return null;
+    }
+</script>
+<script>
+    document.getElementById('deleteAdmin').addEventListener('click', function () {
+        const bEDUCookie = getCookieValue('bEDUCookie');
+        console.log(bEDUCookie);
+
+        if (bEDUCookie) {
+            fetch('http://localhost:8000/administrator/1', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + bEDUCookie
+                    }
+                })
+                .then(function (response) {
+                    if (response.status === 200) {
+                        console.log('Admin deleted successfully');
+                    } else if (response.status === 403) {
+                        response.json().then(function (data) {
+                            console.error('Error:', data.message);
+                        }).catch(function (error) {
+                            console.error('Error:', error);
+                        });
+                    } else {
+                        throw new Error('HTTP status ' + response.status);
+                    }
+                })
+                .catch(function (error) {
+                    console.error('Error:', error);
+                });
+        } else {
+            console.error('Cookie "bEDUCookie" not found');
+        }
+    });
+
+    function getCookieValue(cookieName) {
+        const cookieString = document.cookie;
+        const cookies = cookieString.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.startsWith(cookieName + '=')) {
+                return cookie.substring(cookieName.length + 1);
+            }
+        }
+        return null;
+    }
 </script>
