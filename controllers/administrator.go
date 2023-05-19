@@ -14,13 +14,13 @@ func GetAdministratorController(c echo.Context) error {
 	admins, err := database.GetAdministrators()
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, models.Response{
+		return c.JSON(http.StatusBadRequest, models.ResponseMessage{
 			Message: err.Error(),
 		})
 	}
 
 	if len(admins) == 0 {
-		return c.JSON(http.StatusOK, models.Response{
+		return c.JSON(http.StatusOK, models.ResponseMessage{
 			Message: "No administrator found",
 		})
 	}
@@ -45,7 +45,7 @@ func CreateAdministratorController(c echo.Context) error {
 	c.Bind(&admin)
 
 	if err := c.Validate(&admin); err != nil {
-		return c.JSON(http.StatusBadRequest, models.Response{
+		return c.JSON(http.StatusBadRequest, models.ResponseMessage{
 			Message: err.Error(),
 		})
 	}
@@ -53,7 +53,7 @@ func CreateAdministratorController(c echo.Context) error {
 	admins, err := database.CreateAdministrator(admin)
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, models.Response{
+		return c.JSON(http.StatusBadRequest, models.ResponseMessage{
 			Message: err.Error(),
 		})
 	}
@@ -75,7 +75,7 @@ func GetAdministratorByIDController(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, models.Response{
+		return c.JSON(http.StatusBadRequest, models.ResponseMessage{
 			Message: err.Error(),
 		})
 	}
@@ -83,7 +83,7 @@ func GetAdministratorByIDController(c echo.Context) error {
 	admin, err := database.GetAdministratorByID(id)
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, models.Response{
+		return c.JSON(http.StatusBadRequest, models.ResponseMessage{
 			Message: err.Error(),
 		})
 	}
@@ -104,7 +104,7 @@ func UpdateAdministratorByIdController(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, models.Response{
+		return c.JSON(http.StatusBadRequest, models.ResponseMessage{
 			Message: err.Error(),
 		})
 	}
@@ -113,7 +113,7 @@ func UpdateAdministratorByIdController(c echo.Context) error {
 	c.Bind(&admin)
 
 	if err := c.Validate(&admin); err != nil {
-		return c.JSON(http.StatusBadRequest, models.Response{
+		return c.JSON(http.StatusBadRequest, models.ResponseMessage{
 			Message: err.Error(),
 		})
 	}
@@ -121,7 +121,7 @@ func UpdateAdministratorByIdController(c echo.Context) error {
 	admin, err = database.UpdateAdministrator(admin, id)
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, models.Response{
+		return c.JSON(http.StatusBadRequest, models.ResponseMessage{
 			Message: err.Error(),
 		})
 	}
@@ -137,7 +137,16 @@ func DeleteAdministratorController(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, models.Response{
+		return c.JSON(http.StatusBadRequest, models.ResponseMessage{
+			Message: err.Error(),
+		})
+	}
+
+	// Check Apakah ID ada di DB
+	_, err = database.GetAdministratorByID(id)
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, models.ResponseMessage{
 			Message: err.Error(),
 		})
 	}
@@ -145,12 +154,12 @@ func DeleteAdministratorController(c echo.Context) error {
 	_, err = database.DeleteAdministrator(id)
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, models.Response{
+		return c.JSON(http.StatusBadRequest, models.ResponseMessage{
 			Message: err.Error(),
 		})
 	}
 
-	return c.JSON(http.StatusOK, models.Response{
+	return c.JSON(http.StatusOK, models.ResponseMessage{
 		Message: "success delete administrator",
 	})
 }

@@ -24,5 +24,13 @@ func New() *echo.Echo {
 	administrator.PUT("/:id", controllers.UpdateAdministratorByIdController)
 	administrator.DELETE("/:id", controllers.DeleteAdministratorController)
 
+	// Article Routes
+	article := e.Group("/article")
+	article.GET("", controllers.GetArticlesControllers)
+	article.POST("", controllers.CreateArticleController)
+	article.GET("/:id", controllers.GetArticleByIDController)
+	article.PUT("/:id", controllers.UpdateArticleByIdController)
+	article.DELETE("/:id", controllers.DeleteArticleController)
+
 	return e
 }
