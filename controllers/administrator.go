@@ -5,7 +5,9 @@ import (
 	"go_bedu/models"
 	"net/http"
 	"strconv"
+	"strings"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 )
 
@@ -18,21 +20,7 @@ func GetAdministratorController(c echo.Context) error {
 			Message: err.Error(),
 		})
 	}
-
-	// Ambil NIM dari middleware
-	role, ok := c.Get("role").(string)
-	if !ok {
-		return c.JSON(http.StatusBadRequest, models.ResponseMessage{
-			Message: "Role tidak tersedia",
-		})
-	}
-
-	if role != "Super Admin" {
-		return c.JSON(http.StatusBadRequest, models.ResponseMessage{
-			Message: "Anda bukan Super Admin",
-		})
-	}
-
+	// Check Admin
 	if len(admins) == 0 {
 		return c.JSON(http.StatusOK, models.ResponseMessage{
 			Message: "No administrator found",
@@ -175,5 +163,32 @@ func DeleteAdministratorController(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, models.ResponseMessage{
 		Message: "success delete administrator",
+	})
+}
+
+// Contoh penggunaan middleware dalam route
+func GetUserDataControllers(c echo.Context) error {
+	// Mengakses data pengguna yang terautentikasi
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	// Melakukan sesuatu dengan data pengguna
+
+	return c.JSON(http.StatusOK, claims)
+}
+
+func UserHandler(c echo.Context) error {
+	// Retrieve token from the Authorization header
+	authHeader := c.Request().Header.Get("Authorization")
+	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+
+	// Memeriksa apakah token ada
+	if tokenString == "" {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Missing token")
+	}
+
+	// Process the user request with the token
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"status": "success",
+		"data":   "User data",
 	})
 }
