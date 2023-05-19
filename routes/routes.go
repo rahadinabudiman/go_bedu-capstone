@@ -7,10 +7,17 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 )
 
 func New() *echo.Echo {
 	e := echo.New()
+
+	// Middleware untuk mengatur CORS
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+	}))
 
 	m.Log(e)
 	cv := &utils.CustomValidator{Validators: validator.New()}
