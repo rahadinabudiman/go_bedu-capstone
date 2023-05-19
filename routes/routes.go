@@ -16,13 +16,17 @@ func New() *echo.Echo {
 	cv := &utils.CustomValidator{Validators: validator.New()}
 	e.Validator = cv
 
+	// Login Routes
+	login := e.Group("/login")
+	login.POST("", controllers.LoginAdministratorController)
+
 	// Administrator Routes
 	administrator := e.Group("/administrator")
-	administrator.GET("", controllers.GetAdministratorController)
+	administrator.GET("", controllers.GetAdministratorController, m.IsLoggedIn, m.IsSuperAdmin)
 	administrator.POST("", controllers.CreateAdministratorController)
-	administrator.GET("/:id", controllers.GetAdministratorByIDController)
 	administrator.PUT("/:id", controllers.UpdateAdministratorByIdController)
-	administrator.DELETE("/:id", controllers.DeleteAdministratorController)
+	administrator.GET("/:id", controllers.GetAdministratorByIDController, m.IsLoggedIn, m.IsSuperAdmin)
+	administrator.DELETE("/:id", controllers.DeleteAdministratorController, m.IsLoggedIn, m.IsSuperAdmin)
 
 	// Article Routes
 	article := e.Group("/article")

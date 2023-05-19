@@ -19,6 +19,20 @@ func GetAdministratorController(c echo.Context) error {
 		})
 	}
 
+	// Ambil NIM dari middleware
+	role, ok := c.Get("role").(string)
+	if !ok {
+		return c.JSON(http.StatusBadRequest, models.ResponseMessage{
+			Message: "Role tidak tersedia",
+		})
+	}
+
+	if role != "Super Admin" {
+		return c.JSON(http.StatusBadRequest, models.ResponseMessage{
+			Message: "Anda bukan Super Admin",
+		})
+	}
+
 	if len(admins) == 0 {
 		return c.JSON(http.StatusOK, models.ResponseMessage{
 			Message: "No administrator found",
