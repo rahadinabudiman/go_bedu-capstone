@@ -4,7 +4,7 @@ import (
 	"go_bedu/config"
 	"go_bedu/models"
 
-	"gorm.io/gorm"
+	"github.com/jinzhu/gorm"
 )
 
 type AuthRepository interface {
