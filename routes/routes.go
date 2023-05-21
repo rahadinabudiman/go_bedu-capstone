@@ -55,16 +55,8 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 	admin := e.Group("/admin")
 	admin.GET("", adminController.GetAdminsController)
 	admin.GET("/profile", adminController.GetAdminByIdController)
-	admin.PUT("/:id", adminController.UpdateAdminController)
-	admin.DELETE("/:id", adminController.DeleteAdminController)
-
-	// Administrator Routes
-	administrator := e.Group("/administrator")
-	administrator.GET("", controllers.GetAdministratorController)
-	administrator.POST("", controllers.CreateAdministratorController)
-	administrator.PUT("/:id", controllers.UpdateAdministratorByIdController, m.VerifyToken)
-	administrator.GET("/:id", controllers.GetAdministratorByIDController, m.VerifyToken, m.VerifySuperAdmin)
-	administrator.DELETE("/:id", controllers.DeleteAdministratorController, m.VerifyToken, m.VerifySuperAdmin)
+	admin.PUT("", adminController.UpdateAdminController)
+	admin.DELETE("", adminController.DeleteAdminController)
 
 	// Article Routes
 	article := e.Group("/article")
