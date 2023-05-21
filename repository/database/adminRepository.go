@@ -38,7 +38,7 @@ func (a *adminRepository) ReadToken(id int) (admin *models.Administrator, err er
 
 // Get Admins is a function to get all admins
 func (a *adminRepository) GetAdmins() (admin []models.Administrator, err error) {
-	if err := config.DB.Preload("articles").Find(&admin).Error; err != nil {
+	if err := config.DB.Preload("Articles").Find(&admin).Error; err != nil {
 		return nil, err
 	}
 
@@ -47,7 +47,7 @@ func (a *adminRepository) GetAdmins() (admin []models.Administrator, err error) 
 
 // Get Admin By Id is a function to get admin by id
 func (a *adminRepository) GetAdminById(id int) (admin *models.Administrator, err error) {
-	err = config.DB.Model(&admin).Preload("articles").Where("id = ?", id).First(&admin).Error
+	err = config.DB.Model(&admin).Preload("Articles").Where("id = ?", id).First(&admin).Error
 	if err != nil {
 		return nil, err
 	}

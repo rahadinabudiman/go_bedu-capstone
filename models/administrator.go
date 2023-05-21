@@ -9,7 +9,7 @@ type Administrator struct {
 	Password string    `json:"password" form:"password" validate:"required"`
 	Role     string    `json:"role" form:"role" gorm:"type:enum('Admin', 'Super Admin');default:'Admin'; not-null"`
 	Token    string    `json:"-" gorm:"-"`
-	Article  []Article `json:"article" form:"article" gorm:"foreignKey:IDAdmin"`
+	Articles []Article `json:"articles" form:"articles" gorm:"foreignKey:AdministratorID"`
 }
 
 // For Response Get All Admin

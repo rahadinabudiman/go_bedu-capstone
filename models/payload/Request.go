@@ -1,13 +1,12 @@
 package payload
 
 type LoginRequest struct {
-	Email    string `json:"email" form:"email" validate:"required"`
+	Email    string `json:"email" form:"email" validate:"required,email"`
 	Password string `json:"password" form:"password" validate:"required"`
 }
 
 type RegisterAdminRequest struct {
 	Nama     string `json:"nama" form:"nama" validate:"required"`
-	Username string `json:"username" form:"username" validate:"required"`
 	Email    string `json:"email" form:"email" validate:"required,email"`
 	Password string `json:"password" form:"password" validate:"gte=6"`
 	Role     string `json:"role" form:"role" gorm:"type:enum('Admin', 'Super Admin');default:'Admin'; not-null"`
@@ -15,7 +14,6 @@ type RegisterAdminRequest struct {
 
 type UpdateAdminRequest struct {
 	Nama     string `json:"nama" form:"nama" validate:"required"`
-	Username string `json:"username" form:"username" validate:"required"`
 	Email    string `json:"email" form:"email" validate:"required,email"`
 	Password string `json:"password" form:"password" validate:"gte=6"`
 	Role     string `json:"role" form:"role" gorm:"type:enum('Admin', 'Super Admin');default:'Admin'; not-null"`

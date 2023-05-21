@@ -11,6 +11,7 @@ import (
 )
 
 type AdminUsecase interface {
+	GetAdmin() ([]models.Administrator, error)
 	GetAdminById(id int) (res payload.AdminProfileResponse, err error)
 	UpdateAdmin(id int, req *payload.UpdateAdminRequest) (res payload.UpdateAdminResponse, err error)
 	CreateAdmin(req *payload.RegisterAdminRequest) error
@@ -23,6 +24,17 @@ type adminUsecase struct {
 
 func NewAdminUsecase(adminRepository database.AdminRepository) *adminUsecase {
 	return &adminUsecase{adminRepository}
+}
+
+// Logic for get All Admin
+func (a *adminUsecase) GetAdmin() ([]models.Administrator, error) {
+	admin, err := a.adminRepository.GetAdmins()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return admin, nil
 }
 
 // Logic for get Admin with Cookie
@@ -45,7 +57,7 @@ func (a *adminUsecase) GetAdminById(id int) (res payload.AdminProfileResponse, e
 }
 
 // Logic for Update Admin
-func (a *adminUsecase) UpdateAdmin(id int, req payload.UpdateAdminRequest) (res payload.UpdateAdminResponse, err error) {
+func (a *adminUsecase) UpdateAdmin(id int, req *payload.UpdateAdminRequest) (res payload.UpdateAdminResponse, err error) {
 	adminRequest := &models.Administrator{
 		Nama:     req.Nama,
 		Email:    req.Email,
@@ -71,7 +83,7 @@ func (a *adminUsecase) UpdateAdmin(id int, req payload.UpdateAdminRequest) (res 
 }
 
 // Logic for Create Admin
-func (a *adminUsecase) CreateUser(req *payload.RegisterAdminRequest) error {
+func (a *adminUsecase) CreateAdmin(req *payload.RegisterAdminRequest) error {
 	adminRequest := &models.Administrator{
 		Nama:     req.Nama,
 		Email:    req.Email,
@@ -95,7 +107,7 @@ func (a *adminUsecase) CreateUser(req *payload.RegisterAdminRequest) error {
 }
 
 // Logic for Delete Administrator
-func (a *adminUsecase) DeleteADmin(id int, password string) error {
+func (a *adminUsecase) DeleteAdmin(id int, password string) error {
 	admin, err := a.adminRepository.ReadToken(id)
 
 	if err != nil {
@@ -107,4 +119,11 @@ func (a *adminUsecase) DeleteADmin(id int, password string) error {
 		return echo.NewHTTPError(400, err.Error())
 	}
 
+	err = a.adminRepository.DeleteAdmin(admin)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
