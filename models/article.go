@@ -4,10 +4,10 @@ import "github.com/jinzhu/gorm"
 
 type Article struct {
 	gorm.Model
-	IDAdmin   uint   `json:"id_admin" form:"id_admin"`
-	Title     string `json:"title" form:"title" validate:"required"`
-	Content   string `json:"content" form:"content" validate:"required"`
-	ImageLink string `json:"image_link" form:"image_link" validate:"required"`
+	AdministratorID uint   `json:"administrator_id" form:"administrator_id"`
+	Title           string `json:"title" form:"title" validate:"required"`
+	Content         string `json:"content" form:"content" validate:"required"`
+	ImageLink       string `json:"image_link" form:"image_link" validate:"required"`
 }
 
 // For Response Get Article

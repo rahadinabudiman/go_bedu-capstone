@@ -4,17 +4,30 @@ import (
 	"go_bedu/constants"
 	"go_bedu/controllers"
 	m "go_bedu/middlewares"
+	"go_bedu/repository/database"
+	"go_bedu/usecase"
 	"go_bedu/utils"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
+	mid "github.com/labstack/echo/middleware"
+	"gorm.io/gorm"
 )
 
-func New() *echo.Echo {
-	e := echo.New()
+func NewRoute(e *echo.Echo, db *gorm.DB) {
+	m.Log(e)
+	e.Pre(mid.RemoveTrailingSlash())
+
+	adminRepository := database.NewAdminRepository(db)
+	adminUsecase := usecase.NewAdminUsecase(adminRepository)
+	adminController := controllers.NewAdminController(adminUsecase, adminRepository)
+
+	authRepository := database.NewAuthRepository(db)
+	authUsecase := usecase.NewAuthUsecase(authRepository, adminRepository)
+	authController := controllers.NewAuthController(authUsecase, authRepository, adminUsecase)
+
 	// Middleware untuk mengatur CORS
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+	e.Use(mid.CORSWithConfig(mid.CORSConfig{
 		AllowOrigins: []string{"*"},
 		AllowHeaders: []string{
 			echo.HeaderOrigin,
@@ -26,27 +39,24 @@ func New() *echo.Echo {
 
 	e.Use(m.AllowCORS)
 
-	m.Log(e)
 	cv := &utils.CustomValidator{Validators: validator.New()}
 	e.Validator = cv
 
-	e.GET("/user", controllers.UserHandler, middleware.JWTWithConfig(middleware.JWTConfig{
+	e.GET("/user", controllers.UserHandler, mid.JWTWithConfig(mid.JWTConfig{
 		SigningMethod: "HS256",
 		SigningKey:    []byte(constants.SECRET_JWT),
 		TokenLookup:   "header:Authorization",
 	}))
 
-	// Login Routes
-	login := e.Group("/login")
-	login.POST("", controllers.LoginAdministratorController)
+	e.POST("/register", authController.RegisterAdminController)
+	e.POST("/login", authController.LoginAdminController)
 
-	// Administrator Routes
-	administrator := e.Group("/administrator")
-	administrator.GET("", controllers.GetAdministratorController, m.VerifyToken)
-	administrator.POST("", controllers.CreateAdministratorController)
-	administrator.PUT("/:id", controllers.UpdateAdministratorByIdController, m.VerifyToken)
-	administrator.GET("/:id", controllers.GetAdministratorByIDController, m.VerifyToken, m.VerifySuperAdmin)
-	administrator.DELETE("/:id", controllers.DeleteAdministratorController, m.VerifyToken, m.VerifySuperAdmin)
+	// Routes Baru
+	admin := e.Group("/admin")
+	admin.GET("", adminController.GetAdminsController)
+	admin.GET("/profile", adminController.GetAdminByIdController)
+	admin.PUT("", adminController.UpdateAdminController)
+	admin.DELETE("", adminController.DeleteAdminController)
 
 	// Article Routes
 	article := e.Group("/article")
@@ -55,6 +65,4 @@ func New() *echo.Echo {
 	article.GET("/:id", controllers.GetArticleByIDController)
 	article.PUT("/:id", controllers.UpdateArticleByIdController)
 	article.DELETE("/:id", controllers.DeleteArticleController)
-
-	return e
 }
