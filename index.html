@@ -15,6 +15,7 @@
     <button type="button" id="signInBtn" class="btn btn-primary btn-block mb-4">Sign in</button>
     <button type="button" id="dataAdmin" class="btn btn-primary btn-block mb-4">Data in</button>
     <button type="button" id="deleteAdmin" class="btn btn-primary btn-block mb-4">Delete in</button>
+    <button type="button" id="comparePassword" class="btn btn-primary btn-block mb-4">Com in</button>
 </form>
 
 <script>
@@ -61,7 +62,7 @@
 
         if (bEDUCookie) {
             // Make the API request with the token in the request header
-            fetch('http://localhost:8000/administrator', {
+            fetch('http://localhost:8000/admin', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -98,38 +99,49 @@
     }
 </script>
 <script>
-    document.getElementById('deleteAdmin').addEventListener('click', function () {
+    // Mendapatkan tombol delete admin
+    const deleteAdminBtn = document.getElementById('deleteAdmin');
+    // Menambahkan event listener untuk tombol delete admin
+    deleteAdminBtn.addEventListener('click', () => {
+        // Mengambil nilai password dari input field
+        const password = document.getElementById('passwordInput').value;
+        console.log(password);
         const bEDUCookie = getCookieValue('bEDUCookie');
         console.log(bEDUCookie);
 
+        var data = {
+            password: password
+        };
+
+        console.log(JSON.stringify(data));
         if (bEDUCookie) {
-            fetch('http://localhost:8000/administrator/1', {
+            fetch('http://localhost:8000/admin', {
                     method: 'DELETE',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded',
                         'Authorization': 'Bearer ' + bEDUCookie
-                    }
+                    },
+                    body: JSON.stringify(data)
                 })
                 .then(function (response) {
-                    if (response.status === 200) {
-                        console.log('Admin deleted successfully');
-                    } else if (response.status === 403) {
-                        response.json().then(function (data) {
-                            console.error('Error:', data.message);
-                        }).catch(function (error) {
-                            console.error('Error:', error);
+                    if (!response.ok) {
+                        return response.json().then(function (data) {
+                            throw new Error(data.message);
                         });
-                    } else {
-                        throw new Error('HTTP status ' + response.status);
                     }
+                    return response.json();
+                })
+                .then(function (data) {
+                    console.log(data);
                 })
                 .catch(function (error) {
-                    console.error('Error:', error);
+                    console.error('Error:', error.message);
                 });
         } else {
             console.error('Cookie "bEDUCookie" not found');
         }
     });
+
 
     function getCookieValue(cookieName) {
         const cookieString = document.cookie;

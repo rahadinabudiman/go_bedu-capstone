@@ -62,12 +62,39 @@ func (a *adminUsecase) UpdateAdmin(id int, req *payload.UpdateAdminRequest) (res
 		Nama:     req.Nama,
 		Email:    req.Email,
 		Password: req.Password,
+		Role:     req.Role,
+	}
+
+	// Check Role and save role information from JWT Cookie
+	admin, err := a.adminRepository.ReadToken(id)
+	if err != nil {
+		echo.NewHTTPError(400, "Failed to get Admin")
+		return
+	}
+
+	// Check if admin is not Super Admin and trying to change role
+	if admin.Role != req.Role && admin.Role != "Super Admin" {
+		return res, echo.NewHTTPError(401, "You are not allowed to change role")
+	}
+
+	// Check if Super Admin Change other Role
+	if admin.Role == "Super Admin" {
+		if req.Role != "Super Admin" && req.Role != "Admin" {
+			return res, echo.NewHTTPError(401, "Tidak bisa mengubah role menjadi selain Super Admin atau Admin")
+		}
 	}
 
 	adminRequest.ID = uint(id)
 
-	err = a.adminRepository.UpdateAdmin(adminRequest)
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(adminRequest.Password), bcrypt.DefaultCost)
+	if err != nil {
+		echo.NewHTTPError(400, "Failed to hash password")
+		return
+	}
 
+	adminRequest.Password = string(passwordHash)
+
+	err = a.adminRepository.UpdateAdmin(adminRequest)
 	if err != nil {
 		echo.NewHTTPError(400, "Failed to update Admin")
 		return
@@ -77,6 +104,7 @@ func (a *adminUsecase) UpdateAdmin(id int, req *payload.UpdateAdminRequest) (res
 		Nama:     adminRequest.Nama,
 		Email:    adminRequest.Email,
 		Password: adminRequest.Password,
+		Role:     adminRequest.Role,
 	}
 
 	return
@@ -115,14 +143,17 @@ func (a *adminUsecase) DeleteAdmin(id int, password string) error {
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(admin.Password), []byte(password))
-	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
-		return echo.NewHTTPError(400, err.Error())
+	if err != nil {
+		if err == bcrypt.ErrMismatchedHashAndPassword {
+			return echo.NewHTTPError(400, "Incorrect password")
+		}
+		return err
 	}
 
 	err = a.adminRepository.DeleteAdmin(admin)
 
 	if err != nil {
-		return err
+		return echo.NewHTTPError(500, "Failed to delete admin")
 	}
 
 	return nil

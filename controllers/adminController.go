@@ -47,7 +47,7 @@ func (a *adminController) GetAdminsController(c echo.Context) error {
 func (a *adminController) GetAdminByIdController(c echo.Context) error {
 	id, err := m.IsAdmin(c)
 	if err != nil {
-		return echo.NewHTTPError(400, "This routes for admin only")
+		return echo.NewHTTPError(401, "This routes for admin only")
 	}
 
 	res, err := a.adminUsecase.GetAdminById(id)
@@ -67,7 +67,7 @@ func (a *adminController) UpdateAdminController(c echo.Context) error {
 
 	id, err := m.IsAdmin(c)
 	if err != nil {
-		return echo.NewHTTPError(400, "This routes for admin only")
+		return echo.NewHTTPError(401, "This routes for admin only")
 	}
 
 	c.Bind(&req)
@@ -79,7 +79,7 @@ func (a *adminController) UpdateAdminController(c echo.Context) error {
 	res, err := a.adminUsecase.UpdateAdmin(id, &req)
 
 	if err != nil {
-		return echo.NewHTTPError(400, "failed to update user")
+		return echo.NewHTTPError(400, err.Error())
 	}
 
 	return c.JSON(200, payload.Response{
@@ -92,7 +92,7 @@ func (a *adminController) UpdateAdminController(c echo.Context) error {
 func (a *adminController) DeleteAdminController(c echo.Context) error {
 	id, err := m.IsAdmin(c)
 	if err != nil {
-		return echo.NewHTTPError(400, "this routes for user only")
+		return echo.NewHTTPError(401, "this routes for admin only")
 	}
 
 	password := c.FormValue("Password")

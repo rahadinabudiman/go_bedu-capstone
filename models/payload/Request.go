@@ -19,6 +19,10 @@ type UpdateAdminRequest struct {
 	Role     string `json:"role" form:"role" gorm:"type:enum('Admin', 'Super Admin');default:'Admin'; not-null"`
 }
 
+type DeleteAdminRequest struct {
+	Password string `json:"password" form:"password" validate:"gte=6"`
+}
+
 type CreateArticlesRequest struct {
 	IDAdmin   uint   `json:"id_admin" form:"id_admin"`
 	Title     string `json:"title" form:"title" validate:"required"`
