@@ -4,7 +4,7 @@ import (
 	"fmt"
 	m "go_bedu/middlewares"
 	"go_bedu/models/payload"
-	"go_bedu/repository/database"
+	"go_bedu/repositories"
 	"go_bedu/usecase"
 
 	"github.com/labstack/echo"
@@ -20,10 +20,10 @@ type AdminController interface {
 
 type adminController struct {
 	adminUsecase    usecase.AdminUsecase
-	adminRepository database.AdminRepository
+	adminRepository repositories.AdminRepository
 }
 
-func NewAdminController(adminUsecase usecase.AdminUsecase, adminRepository database.AdminRepository) *adminController {
+func NewAdminController(adminUsecase usecase.AdminUsecase, adminRepository repositories.AdminRepository) *adminController {
 	return &adminController{adminUsecase, adminRepository}
 }
 

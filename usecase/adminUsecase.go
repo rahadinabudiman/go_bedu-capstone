@@ -2,9 +2,10 @@ package usecase
 
 import (
 	"errors"
+	"go_bedu/helpers"
 	"go_bedu/models"
 	"go_bedu/models/payload"
-	"go_bedu/repository/database"
+	"go_bedu/repositories"
 
 	"github.com/labstack/echo"
 	"golang.org/x/crypto/bcrypt"
@@ -19,10 +20,10 @@ type AdminUsecase interface {
 }
 
 type adminUsecase struct {
-	adminRepository database.AdminRepository
+	adminRepository repositories.AdminRepository
 }
 
-func NewAdminUsecase(adminRepository database.AdminRepository) *adminUsecase {
+func NewAdminUsecase(adminRepository repositories.AdminRepository) *adminUsecase {
 	return &adminUsecase{adminRepository}
 }
 
@@ -86,7 +87,7 @@ func (a *adminUsecase) UpdateAdmin(id int, req *payload.UpdateAdminRequest) (res
 
 	adminRequest.ID = uint(id)
 
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(adminRequest.Password), bcrypt.DefaultCost)
+	passwordHash, err := helpers.HashPassword(adminRequest.Password)
 	if err != nil {
 		echo.NewHTTPError(400, "Failed to hash password")
 		return
@@ -118,7 +119,13 @@ func (a *adminUsecase) CreateAdmin(req *payload.RegisterAdminRequest) error {
 		Password: req.Password,
 	}
 
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(adminRequest.Password), bcrypt.DefaultCost)
+	// Check apakah email sudah terdaftar atau belum
+	_, err := a.adminRepository.GetAdminByEmail(adminRequest.Email)
+	if err == nil {
+		return echo.NewHTTPError(400, "Email sudah terdaftar")
+	}
+
+	passwordHash, err := helpers.HashPassword(adminRequest.Password)
 	if err != nil {
 		return echo.NewHTTPError(400, "Failed to hash password")
 	}
@@ -143,12 +150,10 @@ func (a *adminUsecase) DeleteAdmin(id int, req *payload.DeleteAdminRequest) (res
 		return
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(admin.Password), []byte(req.Password))
-	if err != nil {
-		if err == bcrypt.ErrMismatchedHashAndPassword {
-			return res, echo.NewHTTPError(400, "Incorrect password")
-		}
-		return res, err
+	err = helpers.ComparePassword(req.Password, admin.Password)
+	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
+		echo.NewHTTPError(400, err.Error())
+		return
 	}
 
 	err = a.adminRepository.DeleteAdmin(admin)

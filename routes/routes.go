@@ -4,7 +4,7 @@ import (
 	"go_bedu/constants"
 	"go_bedu/controllers"
 	m "go_bedu/middlewares"
-	"go_bedu/repository/database"
+	"go_bedu/repositories"
 	"go_bedu/usecase"
 	"go_bedu/utils"
 
@@ -18,11 +18,11 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 	m.Log(e)
 	e.Pre(mid.RemoveTrailingSlash())
 
-	adminRepository := database.NewAdminRepository(db)
+	adminRepository := repositories.NewAdminRepository(db)
 	adminUsecase := usecase.NewAdminUsecase(adminRepository)
 	adminController := controllers.NewAdminController(adminUsecase, adminRepository)
 
-	authRepository := database.NewAuthRepository(db)
+	authRepository := repositories.NewAuthRepository(db)
 	authUsecase := usecase.NewAuthUsecase(authRepository, adminRepository)
 	authController := controllers.NewAuthController(authUsecase, authRepository, adminUsecase)
 
