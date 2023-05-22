@@ -95,11 +95,21 @@ func (a *adminController) DeleteAdminController(c echo.Context) error {
 		return echo.NewHTTPError(401, "this routes for admin only")
 	}
 
-	password := c.FormValue("Password")
+	req := payload.DeleteAdminRequest{}
 
-	if err := a.adminUsecase.DeleteAdmin(id, password); err != nil {
+	c.Bind(&req)
+	if err := c.Validate(&req); err != nil {
+		return echo.NewHTTPError(400, "Field cannot be empty")
+	}
+
+	fmt.Printf(req.Password)
+
+	_, err = a.adminUsecase.DeleteAdmin(id, &req)
+	if err != nil {
 		return echo.NewHTTPError(400, err.Error())
 	}
 
-	return c.JSON(200, "Succes Delete Admin")
+	return c.JSON(200, payload.ResponseMessage{
+		Message: "Delete Admin Sukses",
+	})
 }

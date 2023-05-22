@@ -15,7 +15,7 @@ type AdminUsecase interface {
 	GetAdminById(id int) (res payload.AdminProfileResponse, err error)
 	UpdateAdmin(id int, req *payload.UpdateAdminRequest) (res payload.UpdateAdminResponse, err error)
 	CreateAdmin(req *payload.RegisterAdminRequest) error
-	DeleteAdmin(id int, password string) error
+	DeleteAdmin(id int, req *payload.DeleteAdminRequest) (res payload.ResponseMessage, err error)
 }
 
 type adminUsecase struct {
@@ -135,26 +135,27 @@ func (a *adminUsecase) CreateAdmin(req *payload.RegisterAdminRequest) error {
 }
 
 // Logic for Delete Administrator
-func (a *adminUsecase) DeleteAdmin(id int, password string) error {
+func (a *adminUsecase) DeleteAdmin(id int, req *payload.DeleteAdminRequest) (res payload.ResponseMessage, err error) {
 	admin, err := a.adminRepository.ReadToken(id)
 
 	if err != nil {
-		return echo.NewHTTPError(400, "Failed to get Admin")
+		echo.NewHTTPError(400, "Failed to get Admin")
+		return
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(admin.Password), []byte(password))
+	err = bcrypt.CompareHashAndPassword([]byte(admin.Password), []byte(req.Password))
 	if err != nil {
 		if err == bcrypt.ErrMismatchedHashAndPassword {
-			return echo.NewHTTPError(400, "Incorrect password")
+			return res, echo.NewHTTPError(400, "Incorrect password")
 		}
-		return err
+		return res, err
 	}
 
 	err = a.adminRepository.DeleteAdmin(admin)
 
 	if err != nil {
-		return echo.NewHTTPError(500, "Failed to delete admin")
+		return res, echo.NewHTTPError(500, "Failed to delete admin")
 	}
 
-	return nil
+	return res, nil
 }
