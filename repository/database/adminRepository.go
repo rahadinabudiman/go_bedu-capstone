@@ -79,6 +79,17 @@ func (a *adminRepository) GetAdminByEmail(email string) (*models.Administrator, 
 	return admin, nil
 }
 
+// Get Admin By Email is a function to get admin by email
+func (a *adminRepository) GetAdminByPassword(password string) (*models.Administrator, error) {
+	admin := &models.Administrator{} // Menggunakan objek struct daripada pointer
+
+	if err := config.DB.Where("password = ?", password).First(admin).Error; err != nil {
+		return nil, err
+	}
+
+	return admin, nil
+}
+
 // Create Admin is a function to create the admin
 func (a *adminRepository) CreateAdmin(admin *models.Administrator) error {
 	if err := config.DB.Create(&admin).Error; err != nil {
