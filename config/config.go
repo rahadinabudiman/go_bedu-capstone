@@ -4,12 +4,18 @@ import (
 	"fmt"
 	"go_bedu/models"
 
+	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
+var (
+	DB *gorm.DB
+)
+
+func init() {
+	InitDB()
+	InitialMigration()
+}
 
 type Config struct {
 	DB_Username string
@@ -21,14 +27,14 @@ type Config struct {
 
 func InitDB() *gorm.DB {
 	config := Config{
-		DB_Username: "r4ha",
-		DB_Password: "kmoonkinan",
+		DB_Username: "root",
+		DB_Password: "",
 		DB_Port:     "3306",
 		DB_Host:     "localhost",
 		DB_Name:     "go_bedu",
 	}
 
-	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True",
+	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
 		config.DB_Username,
 		config.DB_Password,
 		config.DB_Host,
@@ -37,24 +43,15 @@ func InitDB() *gorm.DB {
 	)
 
 	var err error
-	DB, err = gorm.Open(mysql.Open(connectionString), &gorm.Config{
-		TranslateError: true,
-	})
-
+	DB, err = gorm.Open("mysql", connectionString)
 	if err != nil {
 		panic("Failed to connect to database")
 	}
 
-	InitMigrate()
-
 	return DB
 }
 
-func InitMigrate() {
-	// Migrate the schema
-	err := DB.AutoMigrate(&models.Administrator{}, &models.Article{})
-
-	if err != nil {
-		panic("Failed to migrate database")
-	}
+func InitialMigration() {
+	DB.AutoMigrate(&models.Administrator{})
+	DB.AutoMigrate(&models.Article{})
 }

@@ -1,9 +1,10 @@
 package usecase
 
 import (
+	"go_bedu/helpers"
 	"go_bedu/middlewares"
 	"go_bedu/models/payload"
-	"go_bedu/repository/database"
+	"go_bedu/repositories"
 
 	"github.com/labstack/echo"
 	"golang.org/x/crypto/bcrypt"
@@ -14,11 +15,11 @@ type AuthUsecase interface {
 }
 
 type authUsecase struct {
-	authRepository  database.AuthRepository
-	adminRepository database.AdminRepository
+	authRepository  repositories.AuthRepository
+	adminRepository repositories.AdminRepository
 }
 
-func NewAuthUsecase(authRepository database.AuthRepository, adminRepository database.AdminRepository) *authUsecase {
+func NewAuthUsecase(authRepository repositories.AuthRepository, adminRepository repositories.AdminRepository) *authUsecase {
 	return &authUsecase{authRepository, adminRepository}
 }
 
@@ -30,7 +31,7 @@ func (a *authUsecase) LoginUser(c echo.Context, req *payload.LoginRequest) (res 
 		return
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(admin.Password), []byte(req.Password))
+	err = helpers.ComparePassword(req.Password, admin.Password)
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
 		echo.NewHTTPError(400, err.Error())
 		return

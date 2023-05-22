@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"go_bedu/models/payload"
-	"go_bedu/repository/database"
+	"go_bedu/repositories"
 	"go_bedu/usecase"
 
 	"github.com/labstack/echo"
@@ -15,13 +15,13 @@ type AuthController interface {
 
 type authController struct {
 	authUsecase    usecase.AuthUsecase
-	authRepository database.AuthRepository
+	authRepository repositories.AuthRepository
 	adminUsecase   usecase.AdminUsecase
 }
 
 func NewAuthController(
 	authUsecase usecase.AuthUsecase,
-	authRepository database.AuthRepository,
+	authRepository repositories.AuthRepository,
 	adminUsecase usecase.AdminUsecase) *authController {
 	return &authController{authUsecase, authRepository, adminUsecase}
 }

@@ -1,10 +1,10 @@
-package database
+package repositories
 
 import (
 	"go_bedu/config"
 	"go_bedu/models"
 
-	"gorm.io/gorm"
+	"github.com/jinzhu/gorm"
 )
 
 type AdminRepository interface {
@@ -26,8 +26,10 @@ func NewAdminRepository(db *gorm.DB) *adminRepository {
 }
 
 // Read Token is a function to read token
-func (a *adminRepository) ReadToken(id int) (admin *models.Administrator, err error) {
-	err = config.DB.Where("id = ?", id).First(&admin).Error
+func (a *adminRepository) ReadToken(id int) (*models.Administrator, error) {
+	admin := &models.Administrator{} // Menggunakan objek struct daripada pointer
+
+	err := config.DB.Where("id = ?", id).First(admin).Error
 
 	if err != nil {
 		return nil, err
@@ -46,8 +48,10 @@ func (a *adminRepository) GetAdmins() (admin []models.Administrator, err error) 
 }
 
 // Get Admin By Id is a function to get admin by id
-func (a *adminRepository) GetAdminById(id int) (admin *models.Administrator, err error) {
-	err = config.DB.Model(&admin).Preload("Articles").Where("id = ?", id).First(&admin).Error
+func (a *adminRepository) GetAdminById(id int) (*models.Administrator, error) {
+	admin := &models.Administrator{}
+
+	err := config.DB.Model(&admin).Preload("Articles").Where("id = ?", id).First(&admin).Error
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +61,7 @@ func (a *adminRepository) GetAdminById(id int) (admin *models.Administrator, err
 
 // Update Admin is a function to update the admin
 func (a *adminRepository) UpdateAdmin(admin *models.Administrator) error {
-	if err := config.DB.Updates(&admin).Error; err != nil {
+	if err := config.DB.Table("administrators").Save(admin).Error; err != nil {
 		return err
 	}
 
@@ -65,8 +69,21 @@ func (a *adminRepository) UpdateAdmin(admin *models.Administrator) error {
 }
 
 // Get Admin By Email is a function to get admin by email
-func (a *adminRepository) GetAdminByEmail(email string) (admin *models.Administrator, err error) {
-	if err = config.DB.Where("email = ?", email).First(&admin).Error; err != nil {
+func (a *adminRepository) GetAdminByEmail(email string) (*models.Administrator, error) {
+	admin := &models.Administrator{} // Menggunakan objek struct daripada pointer
+
+	if err := config.DB.Where("email = ?", email).First(admin).Error; err != nil {
+		return nil, err
+	}
+
+	return admin, nil
+}
+
+// Get Admin By Email is a function to get admin by email
+func (a *adminRepository) GetAdminByPassword(password string) (*models.Administrator, error) {
+	admin := &models.Administrator{} // Menggunakan objek struct daripada pointer
+
+	if err := config.DB.Where("password = ?", password).First(admin).Error; err != nil {
 		return nil, err
 	}
 
