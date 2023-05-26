@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"errors"
 	"go_bedu/dtos"
 	"go_bedu/helpers"
 	"go_bedu/middlewares"
@@ -13,12 +12,12 @@ import (
 )
 
 type AdminUsecase interface {
-	LoginAdmin(c echo.Context, req *dtos.LoginRequest) (res dtos.LoginResponse, err error)
-	GetAdmin() ([]models.Administrator, error)
-	GetAdminById(id int) (res dtos.AdminProfileResponse, err error)
-	UpdateAdmin(id int, req *dtos.UpdateAdminRequest) (res dtos.UpdateAdminResponse, err error)
-	CreateAdmin(req *dtos.RegisterAdminRequest) error
-	DeleteAdmin(id int, req *dtos.DeleteAdminRequest) (res helpers.ResponseMessage, err error)
+	LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dtos.LoginResponse, err error)
+	GetAdmin() ([]dtos.AdminDetailResponse, error)
+	GetAdminById(id uint) (res dtos.AdminProfileResponse, err error)
+	UpdateAdmin(id uint, req dtos.UpdateAdminRequest) (res dtos.UpdateAdminResponse, err error)
+	CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDetailResponse, error)
+	DeleteAdmin(id uint, req dtos.DeleteAdminRequest) (res helpers.ResponseMessage, err error)
 }
 
 type adminUsecase struct {
@@ -30,18 +29,29 @@ func NewAdminUsecase(adminRepository repositories.AdminRepository) *adminUsecase
 }
 
 // Logic for get All Admin
-func (u *adminUsecase) GetAdmin() ([]models.Administrator, error) {
-	admin, err := u.adminRepository.GetAdmins()
-
+func (u *adminUsecase) GetAdmin() ([]dtos.AdminDetailResponse, error) {
+	admins, err := u.adminRepository.GetAdmins()
 	if err != nil {
 		return nil, err
 	}
 
-	return admin, nil
+	var adminResponse []dtos.AdminDetailResponse
+	for _, admin := range admins {
+		adminResponse = append(adminResponse, dtos.AdminDetailResponse{
+			AdministratorID: admin.ID,
+			Nama:            admin.Nama,
+			Email:           admin.Email,
+			Role:            admin.Role,
+			CreatedAt:       admin.CreatedAt,
+			UpdatedAt:       admin.UpdatedAt,
+		})
+	}
+
+	return adminResponse, nil
 }
 
 // Logic for get Admin with Cookie
-func (u *adminUsecase) GetAdminById(id int) (res dtos.AdminProfileResponse, err error) {
+func (u *adminUsecase) GetAdminById(id uint) (res dtos.AdminProfileResponse, err error) {
 	admin, err := u.adminRepository.GetAdminById(id)
 
 	if err != nil {
@@ -60,19 +70,26 @@ func (u *adminUsecase) GetAdminById(id int) (res dtos.AdminProfileResponse, err 
 }
 
 // Logic for Update Admin
-func (u *adminUsecase) UpdateAdmin(id int, req *dtos.UpdateAdminRequest) (res dtos.UpdateAdminResponse, err error) {
-	adminRequest := &models.Administrator{
-		Nama:     req.Nama,
-		Email:    req.Email,
-		Password: req.Password,
-		Role:     req.Role,
+func (u *adminUsecase) UpdateAdmin(id uint, req dtos.UpdateAdminRequest) (dtos.UpdateAdminResponse, error) {
+	var (
+		admins models.Administrator
+		res    dtos.UpdateAdminResponse
+	)
+
+	admins, err := u.adminRepository.GetAdminById(id)
+	if err != nil {
+		return res, err
 	}
+
+	admins.Nama = req.Nama
+	admins.Email = req.Email
+	admins.Password = req.Password
+	admins.Role = req.Role
 
 	// Check Role and save role information from JWT Cookie
 	admin, err := u.adminRepository.ReadToken(id)
 	if err != nil {
-		echo.NewHTTPError(400, "Failed to get Admin")
-		return
+		return res, echo.NewHTTPError(400, "Failed to get Admin")
 	}
 
 	// Check if admin is not Super Admin and trying to change role
@@ -80,71 +97,78 @@ func (u *adminUsecase) UpdateAdmin(id int, req *dtos.UpdateAdminRequest) (res dt
 		return res, echo.NewHTTPError(401, "You are not allowed to change role")
 	}
 
-	// Check if Super Admin Change other Role
+	// Check if Super Admin changes other Role
 	if admin.Role == "Super Admin" {
 		if req.Role != "Super Admin" && req.Role != "Admin" {
 			return res, echo.NewHTTPError(401, "Tidak bisa mengubah role menjadi selain Super Admin atau Admin")
 		}
 	}
 
-	adminRequest.ID = uint(id)
+	admins.ID = uint(id)
 
-	passwordHash, err := helpers.HashPassword(adminRequest.Password)
+	passwordHash, err := helpers.HashPassword(admins.Password)
 	if err != nil {
-		echo.NewHTTPError(400, "Failed to hash password")
-		return
+		return res, echo.NewHTTPError(400, "Failed to hash password")
 	}
 
-	adminRequest.Password = string(passwordHash)
+	admins.Password = string(passwordHash)
 
-	err = u.adminRepository.UpdateAdmin(adminRequest)
+	admins, err = u.adminRepository.UpdateAdmin(admins)
 	if err != nil {
-		echo.NewHTTPError(400, "Failed to update Admin")
-		return
+		return res, err
 	}
 
-	res = dtos.UpdateAdminResponse{
-		Nama:     adminRequest.Nama,
-		Email:    adminRequest.Email,
-		Password: adminRequest.Password,
-		Role:     adminRequest.Role,
-	}
+	res.Nama = admins.Nama
+	res.Email = admins.Email
+	res.Password = admins.Password
+	res.Role = admins.Role
 
-	return
+	return res, nil
 }
 
 // Logic for Create Admin
-func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) error {
-	adminRequest := &models.Administrator{
+func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDetailResponse, error) {
+	var res dtos.AdminDetailResponse
+
+	CreateAdmin := models.Administrator{
 		Nama:     req.Nama,
 		Email:    req.Email,
 		Password: req.Password,
 	}
 
 	// Check apakah email sudah terdaftar atau belum
-	_, err := u.adminRepository.GetAdminByEmail(adminRequest.Email)
+	_, err := u.adminRepository.GetAdminByEmail(req.Email)
 	if err == nil {
-		return echo.NewHTTPError(400, "Email sudah terdaftar")
+		return res, echo.NewHTTPError(400, "Email sudah terdaftar")
 	}
 
-	passwordHash, err := helpers.HashPassword(adminRequest.Password)
+	passwordHash, err := helpers.HashPassword(req.Password)
 	if err != nil {
-		return echo.NewHTTPError(400, "Failed to hash password")
+		return res, err
 	}
 
-	adminRequest.Password = string(passwordHash)
+	req.Password = string(passwordHash)
 
-	err = u.adminRepository.CreateAdmin(adminRequest)
+	admins, err := u.adminRepository.CreateAdmin(CreateAdmin)
 
 	if err != nil {
-		return errors.New(err.Error())
+		return res, err
 	}
 
-	return nil
+	resp := dtos.AdminDetailResponse{
+		AdministratorID: admins.ID,
+		Nama:            admins.Nama,
+		Email:           admins.Email,
+		Role:            admins.Role,
+		CreatedAt:       admins.CreatedAt,
+		UpdatedAt:       admins.UpdatedAt,
+	}
+
+	return resp, nil
 }
 
 // Logic for Delete Administrator
-func (u *adminUsecase) DeleteAdmin(id int, req *dtos.DeleteAdminRequest) (res helpers.ResponseMessage, err error) {
+func (u *adminUsecase) DeleteAdmin(id uint, req dtos.DeleteAdminRequest) (res helpers.ResponseMessage, err error) {
 	admin, err := u.adminRepository.ReadToken(id)
 
 	if err != nil {
@@ -168,7 +192,7 @@ func (u *adminUsecase) DeleteAdmin(id int, req *dtos.DeleteAdminRequest) (res he
 }
 
 // Logic for Login Administrator
-func (u *adminUsecase) LoginAdmin(c echo.Context, req *dtos.LoginRequest) (res dtos.LoginResponse, err error) {
+func (u *adminUsecase) LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dtos.LoginResponse, err error) {
 	admin, err := u.adminRepository.GetAdminByEmail(req.Email)
 	if err != nil {
 		echo.NewHTTPError(400, "Email not registered")

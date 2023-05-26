@@ -7,6 +7,7 @@ import (
 	m "go_bedu/middlewares"
 	"go_bedu/repositories"
 	"go_bedu/usecase"
+	"net/http"
 
 	"github.com/labstack/echo"
 )
@@ -31,42 +32,61 @@ func NewAdminController(adminUsecase usecase.AdminUsecase, adminRepository repos
 }
 
 // Controller for Login Admin from DB
-func (a *adminController) LoginAdminController(c echo.Context) error {
+func (c *adminController) LoginAdminController(ctx echo.Context) error {
 	req := dtos.LoginRequest{}
 
-	c.Bind(&req)
-	if err := c.Validate(&req); err != nil {
-		return echo.NewHTTPError(400, "Field cannot be empty")
+	ctx.Bind(&req)
+	if err := ctx.Validate(&req); err != nil {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Filed Cannot Be Empty",
+				helpers.GetErrorData(err),
+			),
+		)
 	}
 
-	res, err := a.adminUsecase.LoginAdmin(c, &req)
+	res, err := c.adminUsecase.LoginAdmin(ctx, req)
 	if err != nil {
-		return echo.NewHTTPError(400, "Invalid Email or Password")
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Could not login",
+				helpers.GetErrorData(err),
+			),
+		)
 	}
 
-	return c.JSON(200, helpers.Response{
-		Message: "Success Login",
-		Data:    res,
-	})
+	return ctx.JSON(
+		http.StatusOK,
+		helpers.NewResponse(
+			http.StatusOK,
+			"Success Login",
+			res,
+		),
+	)
 }
 
 // Controller For Register Admin From DB
-func (a *adminController) RegisterAdminController(c echo.Context) error {
+func (c *adminController) RegisterAdminController(ctx echo.Context) error {
 	req := dtos.RegisterAdminRequest{}
 
-	c.Bind(&req)
-	if err := c.Validate(&req); err != nil {
+	ctx.Bind(&req)
+	if err := ctx.Validate(&req); err != nil {
 		return echo.NewHTTPError(400, "Field cannot be empty or Password must be 6 character")
 	}
 
-	err := a.adminUsecase.CreateAdmin(&req)
+	admin, err := c.adminUsecase.CreateAdmin(&req)
 
 	if err != nil {
 		return echo.NewHTTPError(400, err.Error())
 	}
 
-	return c.JSON(200, map[string]interface{}{
+	return ctx.JSON(200, map[string]interface{}{
 		"message": "Success Register",
+		"data":    admin,
 	})
 }
 
@@ -87,72 +107,72 @@ func (a *adminController) GetAdminsController(c echo.Context) error {
 }
 
 // Controller for Get Admin by ID from DB
-func (a *adminController) GetAdminByIdController(c echo.Context) error {
-	id, err := m.IsAdmin(c)
+func (c *adminController) GetAdminByIdController(ctx echo.Context) error {
+	id, err := m.IsAdmin(ctx)
 	if err != nil {
 		return echo.NewHTTPError(401, "This routes for admin only")
 	}
 
-	res, err := a.adminUsecase.GetAdminById(id)
+	res, err := c.adminUsecase.GetAdminById(uint(id))
 	if err != nil {
 		return echo.NewHTTPError(400, err.Error())
 	}
 
-	return c.JSON(200, helpers.Response{
+	return ctx.JSON(200, helpers.Response{
 		Message: fmt.Sprintf("Welcome %s", res.Nama),
 		Data:    res,
 	})
 }
 
 // Controller for Update Admin by ID from DB
-func (a *adminController) UpdateAdminController(c echo.Context) error {
+func (c *adminController) UpdateAdminController(ctx echo.Context) error {
 	req := dtos.UpdateAdminRequest{}
 
-	id, err := m.IsAdmin(c)
+	id, err := m.IsAdmin(ctx)
 	if err != nil {
 		return echo.NewHTTPError(401, "This routes for admin only")
 	}
 
-	c.Bind(&req)
+	ctx.Bind(&req)
 
-	if err := c.Validate(&req); err != nil {
+	if err := ctx.Validate(&req); err != nil {
 		return echo.NewHTTPError(400, "Field cannot be empty")
 	}
 
-	res, err := a.adminUsecase.UpdateAdmin(id, &req)
+	res, err := c.adminUsecase.UpdateAdmin(uint(id), req)
 
 	if err != nil {
 		return echo.NewHTTPError(400, err.Error())
 	}
 
-	return c.JSON(200, helpers.Response{
+	return ctx.JSON(200, helpers.Response{
 		Message: "Success update admin",
 		Data:    res,
 	})
 }
 
 // Controller for Delete Admin by ID from DB
-func (a *adminController) DeleteAdminController(c echo.Context) error {
-	id, err := m.IsAdmin(c)
+func (c *adminController) DeleteAdminController(ctx echo.Context) error {
+	id, err := m.IsAdmin(ctx)
 	if err != nil {
 		return echo.NewHTTPError(401, "this routes for admin only")
 	}
 
 	req := dtos.DeleteAdminRequest{}
 
-	c.Bind(&req)
-	if err := c.Validate(&req); err != nil {
+	ctx.Bind(&req)
+	if err := ctx.Validate(&req); err != nil {
 		return echo.NewHTTPError(400, "Field cannot be empty")
 	}
 
 	fmt.Printf(req.Password)
 
-	_, err = a.adminUsecase.DeleteAdmin(id, &req)
+	_, err = c.adminUsecase.DeleteAdmin(uint(id), req)
 	if err != nil {
 		return echo.NewHTTPError(400, err.Error())
 	}
 
-	return c.JSON(200, helpers.ResponseMessage{
+	return ctx.JSON(200, helpers.ResponseMessage{
 		Message: "Delete Admin Sukses",
 	})
 }

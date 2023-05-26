@@ -11,10 +11,11 @@ type CreateArticlesRequest struct {
 }
 
 type UpdateArticlesRequest struct {
-	Title       string `json:"title" form:"title"`
-	Description string `json:"description" form:"description"`
-	Image       string `json:"image" form:"image"`
-	Label       string `json:"label" form:"label"`
+	AdministratorID uint   `json:"administrator_id" form:"administrator_id"`
+	Title           string `json:"title" form:"title"`
+	Description     string `json:"description" form:"description"`
+	Image           string `json:"image" form:"image"`
+	Label           string `json:"label" form:"label"`
 }
 
 type CreateArticlesResponse struct {

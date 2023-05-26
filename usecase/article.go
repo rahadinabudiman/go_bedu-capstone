@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"fmt"
 	"go_bedu/dtos"
 	"go_bedu/helpers"
 	"go_bedu/models"
@@ -20,7 +19,7 @@ type articleUsecase struct {
 	articleRepository repositories.ArticleRepository
 }
 
-func NewArticleRepository(ArticleRepository repositories.ArticleRepository) ArticleUsecase {
+func NewArticleUsecase(ArticleRepository repositories.ArticleRepository) ArticleUsecase {
 	return &articleUsecase{ArticleRepository}
 }
 
@@ -87,7 +86,6 @@ func (u *articleUsecase) CreateArticle(article *dtos.CreateArticlesRequest) (dto
 	}
 
 	createdArticle, err := u.articleRepository.CreateArticle(CreateArticle)
-	fmt.Println(CreateArticle)
 	if err != nil {
 		return articleResponses, err
 	}
