@@ -2,7 +2,7 @@ package middlewares
 
 import (
 	"go_bedu/constants"
-	"go_bedu/models"
+	"go_bedu/helpers"
 	"net/http"
 	"strings"
 	"time"
@@ -89,7 +89,7 @@ func VerifySuperAdmin(next echo.HandlerFunc) echo.HandlerFunc {
 
 		// Memeriksa apakah token ada
 		if tokenString == "" {
-			return c.JSON(http.StatusUnauthorized, models.ResponseMessage{
+			return c.JSON(http.StatusUnauthorized, helpers.ResponseMessage{
 				Message: "Missing token",
 			})
 		}
@@ -102,14 +102,14 @@ func VerifySuperAdmin(next echo.HandlerFunc) echo.HandlerFunc {
 
 		// Menangani error saat verifikasi token
 		if err != nil {
-			return c.JSON(http.StatusUnauthorized, models.ResponseMessage{
+			return c.JSON(http.StatusUnauthorized, helpers.ResponseMessage{
 				Message: "Invalid token",
 			})
 		}
 
 		// Memeriksa apakah token valid
 		if !token.Valid {
-			return c.JSON(http.StatusUnauthorized, models.ResponseMessage{
+			return c.JSON(http.StatusUnauthorized, helpers.ResponseMessage{
 				Message: "Invalid token",
 			})
 		}
@@ -122,7 +122,7 @@ func VerifySuperAdmin(next echo.HandlerFunc) echo.HandlerFunc {
 
 		// Memeriksa apakah role adalah super admin
 		if role != "Super Admin" {
-			return c.JSON(http.StatusForbidden, models.ResponseMessage{
+			return c.JSON(http.StatusForbidden, helpers.ResponseMessage{
 				Message: "Unauthorized access",
 			})
 		}
