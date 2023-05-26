@@ -2,8 +2,9 @@ package controllers
 
 import (
 	"fmt"
+	"go_bedu/dtos"
+	"go_bedu/helpers"
 	m "go_bedu/middlewares"
-	"go_bedu/models/payload"
 	"go_bedu/repositories"
 	"go_bedu/usecase"
 
@@ -11,6 +12,8 @@ import (
 )
 
 type AdminController interface {
+	LoginAdminController(c echo.Context) error
+	RegisterAdminController(c echo.Context) error
 	GetAdminsController(c echo.Context) error
 	GetAdminByIdController(c echo.Context) error
 	CreateAdminController(c echo.Context) error
@@ -27,6 +30,46 @@ func NewAdminController(adminUsecase usecase.AdminUsecase, adminRepository repos
 	return &adminController{adminUsecase, adminRepository}
 }
 
+// Controller for Login Admin from DB
+func (a *adminController) LoginAdminController(c echo.Context) error {
+	req := dtos.LoginRequest{}
+
+	c.Bind(&req)
+	if err := c.Validate(&req); err != nil {
+		return echo.NewHTTPError(400, "Field cannot be empty")
+	}
+
+	res, err := a.adminUsecase.LoginAdmin(c, &req)
+	if err != nil {
+		return echo.NewHTTPError(400, "Invalid Email or Password")
+	}
+
+	return c.JSON(200, helpers.Response{
+		Message: "Success Login",
+		Data:    res,
+	})
+}
+
+// Controller For Register Admin From DB
+func (a *adminController) RegisterAdminController(c echo.Context) error {
+	req := dtos.RegisterAdminRequest{}
+
+	c.Bind(&req)
+	if err := c.Validate(&req); err != nil {
+		return echo.NewHTTPError(400, "Field cannot be empty or Password must be 6 character")
+	}
+
+	err := a.adminUsecase.CreateAdmin(&req)
+
+	if err != nil {
+		return echo.NewHTTPError(400, err.Error())
+	}
+
+	return c.JSON(200, map[string]interface{}{
+		"message": "Success Register",
+	})
+}
+
 // Controller for Get All Admins from DB
 func (a *adminController) GetAdminsController(c echo.Context) error {
 	admins, err := a.adminUsecase.GetAdmin()
@@ -37,7 +80,7 @@ func (a *adminController) GetAdminsController(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(200, payload.Response{
+	return c.JSON(200, helpers.Response{
 		Message: "Success Get All Admins",
 		Data:    admins,
 	})
@@ -55,7 +98,7 @@ func (a *adminController) GetAdminByIdController(c echo.Context) error {
 		return echo.NewHTTPError(400, err.Error())
 	}
 
-	return c.JSON(200, payload.Response{
+	return c.JSON(200, helpers.Response{
 		Message: fmt.Sprintf("Welcome %s", res.Nama),
 		Data:    res,
 	})
@@ -63,7 +106,7 @@ func (a *adminController) GetAdminByIdController(c echo.Context) error {
 
 // Controller for Update Admin by ID from DB
 func (a *adminController) UpdateAdminController(c echo.Context) error {
-	req := payload.UpdateAdminRequest{}
+	req := dtos.UpdateAdminRequest{}
 
 	id, err := m.IsAdmin(c)
 	if err != nil {
@@ -82,7 +125,7 @@ func (a *adminController) UpdateAdminController(c echo.Context) error {
 		return echo.NewHTTPError(400, err.Error())
 	}
 
-	return c.JSON(200, payload.Response{
+	return c.JSON(200, helpers.Response{
 		Message: "Success update admin",
 		Data:    res,
 	})
@@ -95,7 +138,7 @@ func (a *adminController) DeleteAdminController(c echo.Context) error {
 		return echo.NewHTTPError(401, "this routes for admin only")
 	}
 
-	req := payload.DeleteAdminRequest{}
+	req := dtos.DeleteAdminRequest{}
 
 	c.Bind(&req)
 	if err := c.Validate(&req); err != nil {
@@ -109,7 +152,7 @@ func (a *adminController) DeleteAdminController(c echo.Context) error {
 		return echo.NewHTTPError(400, err.Error())
 	}
 
-	return c.JSON(200, payload.ResponseMessage{
+	return c.JSON(200, helpers.ResponseMessage{
 		Message: "Delete Admin Sukses",
 	})
 }

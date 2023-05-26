@@ -1,13 +1,13 @@
 package repositories
 
 import (
-	"go_bedu/config"
 	"go_bedu/models"
 
 	"github.com/jinzhu/gorm"
 )
 
 type AdminRepository interface {
+	LoginAdmin(admin *models.Administrator) error
 	ReadToken(id int) (admin *models.Administrator, err error)
 	GetAdmins() (admin []models.Administrator, err error)
 	GetAdminById(id int) (admin *models.Administrator, err error)
@@ -25,11 +25,20 @@ func NewAdminRepository(db *gorm.DB) *adminRepository {
 	return &adminRepository{db}
 }
 
+// Login Administrator from Database
+func (r *adminRepository) LoginAdmin(admin *models.Administrator) error {
+	if err := r.db.Where("email = ? AND password = ?", admin.Email, admin.Password).First(&admin).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Read Token is a function to read token
-func (a *adminRepository) ReadToken(id int) (*models.Administrator, error) {
+func (r *adminRepository) ReadToken(id int) (*models.Administrator, error) {
 	admin := &models.Administrator{} // Menggunakan objek struct daripada pointer
 
-	err := config.DB.Where("id = ?", id).First(admin).Error
+	err := r.db.Where("id = ?", id).First(admin).Error
 
 	if err != nil {
 		return nil, err
@@ -39,8 +48,8 @@ func (a *adminRepository) ReadToken(id int) (*models.Administrator, error) {
 }
 
 // Get Admins is a function to get all admins
-func (a *adminRepository) GetAdmins() (admin []models.Administrator, err error) {
-	if err := config.DB.Preload("Articles").Find(&admin).Error; err != nil {
+func (r *adminRepository) GetAdmins() (admin []models.Administrator, err error) {
+	if err := r.db.Preload("Articles").Find(&admin).Error; err != nil {
 		return nil, err
 	}
 
@@ -48,10 +57,10 @@ func (a *adminRepository) GetAdmins() (admin []models.Administrator, err error) 
 }
 
 // Get Admin By Id is a function to get admin by id
-func (a *adminRepository) GetAdminById(id int) (*models.Administrator, error) {
+func (r *adminRepository) GetAdminById(id int) (*models.Administrator, error) {
 	admin := &models.Administrator{}
 
-	err := config.DB.Model(&admin).Preload("Articles").Where("id = ?", id).First(&admin).Error
+	err := r.db.Model(&admin).Preload("Articles").Where("id = ?", id).First(&admin).Error
 	if err != nil {
 		return nil, err
 	}
@@ -60,8 +69,8 @@ func (a *adminRepository) GetAdminById(id int) (*models.Administrator, error) {
 }
 
 // Update Admin is a function to update the admin
-func (a *adminRepository) UpdateAdmin(admin *models.Administrator) error {
-	if err := config.DB.Table("administrators").Save(admin).Error; err != nil {
+func (r *adminRepository) UpdateAdmin(admin *models.Administrator) error {
+	if err := r.db.Table("administrators").Save(admin).Error; err != nil {
 		return err
 	}
 
@@ -69,10 +78,10 @@ func (a *adminRepository) UpdateAdmin(admin *models.Administrator) error {
 }
 
 // Get Admin By Email is a function to get admin by email
-func (a *adminRepository) GetAdminByEmail(email string) (*models.Administrator, error) {
+func (r *adminRepository) GetAdminByEmail(email string) (*models.Administrator, error) {
 	admin := &models.Administrator{} // Menggunakan objek struct daripada pointer
 
-	if err := config.DB.Where("email = ?", email).First(admin).Error; err != nil {
+	if err := r.db.Where("email = ?", email).First(admin).Error; err != nil {
 		return nil, err
 	}
 
@@ -80,10 +89,10 @@ func (a *adminRepository) GetAdminByEmail(email string) (*models.Administrator, 
 }
 
 // Get Admin By Email is a function to get admin by email
-func (a *adminRepository) GetAdminByPassword(password string) (*models.Administrator, error) {
+func (r *adminRepository) GetAdminByPassword(password string) (*models.Administrator, error) {
 	admin := &models.Administrator{} // Menggunakan objek struct daripada pointer
 
-	if err := config.DB.Where("password = ?", password).First(admin).Error; err != nil {
+	if err := r.db.Where("password = ?", password).First(admin).Error; err != nil {
 		return nil, err
 	}
 
@@ -91,8 +100,8 @@ func (a *adminRepository) GetAdminByPassword(password string) (*models.Administr
 }
 
 // Create Admin is a function to create the admin
-func (a *adminRepository) CreateAdmin(admin *models.Administrator) error {
-	if err := config.DB.Create(&admin).Error; err != nil {
+func (r *adminRepository) CreateAdmin(admin *models.Administrator) error {
+	if err := r.db.Create(&admin).Error; err != nil {
 		return err
 	}
 
@@ -100,8 +109,8 @@ func (a *adminRepository) CreateAdmin(admin *models.Administrator) error {
 }
 
 // Delete Admin is a function to delete the admin
-func (a *adminRepository) DeleteAdmin(admin *models.Administrator) error {
-	if err := config.DB.Delete(&admin).Error; err != nil {
+func (r *adminRepository) DeleteAdmin(admin *models.Administrator) error {
+	if err := r.db.Delete(&admin).Error; err != nil {
 		return err
 	}
 

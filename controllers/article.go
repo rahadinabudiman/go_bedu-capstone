@@ -1,173 +1,66 @@
 package controllers
 
 import (
-	"go_bedu/lib/database"
-	"go_bedu/models"
+	"go_bedu/helpers"
+	"go_bedu/usecase"
 	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo"
 )
 
-// Get All Article from DB
-func GetArticlesControllers(c echo.Context) error {
-	articles, err := database.GetArticles()
-
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, models.ResponseMessage{
-			Message: err.Error(),
-		})
-	}
-
-	if len(articles) == 0 {
-		return c.JSON(http.StatusOK, models.ResponseMessage{
-			Message: "No article found",
-		})
-	}
-
-	allarticle := make([]models.ArticlesResponse, len(articles))
-	for i, article := range articles {
-		allarticle[i] = models.ArticlesResponse{
-			Title:     article.Title,
-			Content:   article.Content,
-			ImageLink: article.ImageLink,
-		}
-	}
-
-	return c.JSON(http.StatusOK, models.Response{
-		Message: "success get all article",
-		Data:    allarticle,
-	})
+type ArticleController interface {
+	GetAllArticles(c echo.Context) error
+	GetArticleById(c echo.Context) error
+	CreateArticle(c echo.Context) error
+	UpdateArticle(c echo.Context) error
+	DeleteArticle(c echo.Context) error
 }
 
-// Get Article by ID from DB
-func GetArticleByIDController(c echo.Context) error {
-	articles, err := strconv.Atoi(c.Param("id"))
-
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, models.ResponseMessage{
-			Message: err.Error(),
-		})
-	}
-
-	article, err := database.GetArticleById(articles)
-
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, models.ResponseMessage{
-			Message: err.Error(),
-		})
-	}
-
-	ArticleResponse := models.ArticlesResponse{
-		Title:     article.Title,
-		Content:   article.Content,
-		ImageLink: article.ImageLink,
-	}
-
-	return c.JSON(http.StatusOK, models.Response{
-		Message: "success get article by id",
-		Data:    ArticleResponse,
-	})
+type articleController struct {
+	articleUsecase usecase.ArticleUsecase
 }
 
-// Create Article to DB
-func CreateArticleController(c echo.Context) error {
-	article := models.Article{}
-	c.Bind(&article)
-
-	if err := c.Validate(&article); err != nil {
-		return c.JSON(http.StatusBadRequest, models.ResponseMessage{
-			Message: err.Error(),
-		})
-	}
-
-	article, err := database.CreateArticle(article)
-
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, models.ResponseMessage{
-			Message: err.Error(),
-		})
-	}
-
-	ArticleResponse := models.ArticlesResponse{
-		Title:     article.Title,
-		Content:   article.Content,
-		ImageLink: article.ImageLink,
-	}
-
-	return c.JSON(http.StatusOK, models.Response{
-		Message: "success create article",
-		Data:    ArticleResponse,
-	})
+func NewArticleController(articleUsecase usecase.ArticleUsecase) ArticleController {
+	return &articleController{articleUsecase}
 }
 
-// Update Article by ID to DB
-func UpdateArticleByIdController(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
-
+// Controller for Get All Article from DB with optional pagination
+func (c *articleController) GetAllArticles(ctx echo.Context) error {
+	pageParam := ctx.QueryParam("page")
+	page, err := strconv.Atoi(pageParam)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, models.ResponseMessage{
-			Message: err.Error(),
-		})
+		page = 1
 	}
 
-	article := models.Article{}
-	c.Bind(&article)
-
-	if err := c.Validate(&article); err != nil {
-		return c.JSON(http.StatusBadRequest, models.ResponseMessage{
-			Message: err.Error(),
-		})
-	}
-
-	article, err = database.UpdateArticle(article, id)
-
+	limitParam := ctx.QueryParam("limit")
+	limit, err := strconv.Atoi(limitParam)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, models.ResponseMessage{
-			Message: err.Error(),
-		})
+		limit = 10
 	}
 
-	ArticleResponse := models.ArticlesResponse{
-		Title:     article.Title,
-		Content:   article.Content,
-		ImageLink: article.ImageLink,
-	}
-
-	return c.JSON(http.StatusOK, models.Response{
-		Message: "success update article",
-		Data:    ArticleResponse,
-	})
-}
-
-// Delete Article by ID from DB
-func DeleteArticleController(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
-
+	articles, count, err := c.articleUsecase.GetAllArticles(page, limit)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, models.ResponseMessage{
-			Message: err.Error(),
-		})
+
+		return ctx.JSON(
+			http.StatusInternalServerError,
+			helpers.NewErrorResponse(
+				http.StatusInternalServerError,
+				"Failed fetching articles",
+				helpers.GetErrorData(err),
+			),
+		)
 	}
 
-	// Check Apakah ID ada di DB
-	_, err = database.GetArticleById(id)
-
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, models.ResponseMessage{
-			Message: err.Error(),
-		})
-	}
-
-	_, err = database.DeleteArticle(id)
-
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, models.ResponseMessage{
-			Message: err.Error(),
-		})
-	}
-
-	return c.JSON(http.StatusOK, models.ResponseMessage{
-		Message: "success delete article",
-	})
+	return ctx.JSON(
+		http.StatusOK,
+		helpers.NewPaginationResponse(
+			http.StatusOK,
+			"Successfully get all article",
+			articles,
+			page,
+			limit,
+			count,
+		),
+	)
 }
