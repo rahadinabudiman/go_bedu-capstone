@@ -155,7 +155,7 @@ func (c *articleController) UpdateArticle(ctx echo.Context) error {
 			http.StatusBadRequest,
 			helpers.NewErrorResponse(
 				http.StatusBadRequest,
-				"Failed to bind article",
+				"Failed to binding article",
 				helpers.GetErrorData(err),
 			),
 		)
