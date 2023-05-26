@@ -75,19 +75,34 @@ func (c *adminController) RegisterAdminController(ctx echo.Context) error {
 
 	ctx.Bind(&req)
 	if err := ctx.Validate(&req); err != nil {
-		return echo.NewHTTPError(400, "Field cannot be empty or Password must be 6 character")
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Field cannot be empty or Password must be 6 character",
+				helpers.GetErrorData(err),
+			),
+		)
 	}
 
 	admin, err := c.adminUsecase.CreateAdmin(&req)
-
 	if err != nil {
-		return echo.NewHTTPError(400, err.Error())
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Could not create admin",
+				helpers.GetErrorData(err),
+			),
+		)
 	}
 
-	return ctx.JSON(200, map[string]interface{}{
-		"message": "Success Register",
-		"data":    admin,
-	})
+	return ctx.JSON(http.StatusOK,
+		helpers.NewResponse(
+			http.StatusOK,
+			"Success Create Admin",
+			admin,
+		))
 }
 
 // Controller for Get All Admins from DB
