@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"go_bedu/constants"
 	"go_bedu/controllers"
 	m "go_bedu/middlewares"
 	"go_bedu/repositories"
@@ -22,9 +21,9 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 	adminUsecase := usecase.NewAdminUsecase(adminRepository)
 	adminController := controllers.NewAdminController(adminUsecase, adminRepository)
 
-	authRepository := repositories.NewAuthRepository(db)
-	authUsecase := usecase.NewAuthUsecase(authRepository, adminRepository)
-	authController := controllers.NewAuthController(authUsecase, authRepository, adminUsecase)
+	articleRepository := repositories.NewArticleRepository(db)
+	articleUsecase := usecase.NewArticleUsecase(articleRepository)
+	articleController := controllers.NewArticleController(articleUsecase)
 
 	// Middleware untuk mengatur CORS
 	e.Use(mid.CORSWithConfig(mid.CORSConfig{
@@ -42,16 +41,10 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 	cv := &utils.CustomValidator{Validators: validator.New()}
 	e.Validator = cv
 
-	e.GET("/user", controllers.UserHandler, mid.JWTWithConfig(mid.JWTConfig{
-		SigningMethod: "HS256",
-		SigningKey:    []byte(constants.SECRET_JWT),
-		TokenLookup:   "header:Authorization",
-	}))
+	e.POST("/register", adminController.RegisterAdminController)
+	e.POST("/login", adminController.LoginAdminController)
 
-	e.POST("/register", authController.RegisterAdminController)
-	e.POST("/login", authController.LoginAdminController)
-
-	// Routes Baru
+	// Admin Only
 	admin := e.Group("/admin")
 	admin.GET("", adminController.GetAdminsController, m.VerifyToken)
 	admin.GET("/profile", adminController.GetAdminByIdController, m.VerifyToken)
@@ -59,10 +52,10 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 	admin.DELETE("", adminController.DeleteAdminController, m.VerifyToken)
 
 	// Article Routes
-	article := e.Group("/article")
-	article.GET("", controllers.GetArticlesControllers)
-	article.POST("", controllers.CreateArticleController)
-	article.GET("/:id", controllers.GetArticleByIDController)
-	article.PUT("/:id", controllers.UpdateArticleByIdController)
-	article.DELETE("/:id", controllers.DeleteArticleController)
+
+	admin.GET("/article", articleController.GetAllArticles, m.VerifyToken)
+	admin.GET("/article/:id", articleController.GetArticleById, m.VerifyToken)
+	admin.POST("/article", articleController.CreateArticle, m.VerifyToken)
+	admin.PUT("/article/:id", articleController.UpdateArticle, m.VerifyToken)
+	admin.DELETE("/article/:id", articleController.DeleteArticle, m.VerifyToken)
 }
