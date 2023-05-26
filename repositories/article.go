@@ -44,6 +44,7 @@ func (r *articleRepository) GetAllArticles(page, limit int) ([]models.Article, i
 // Get Article By ID from DB
 func (r *articleRepository) GetArticleByID(id uint) (models.Article, error) {
 	var article models.Article
+
 	err := r.db.Where("id = ?", id).First(&article).Error
 	return article, err
 }
@@ -51,17 +52,20 @@ func (r *articleRepository) GetArticleByID(id uint) (models.Article, error) {
 // Create Article and save to DB
 func (r *articleRepository) CreateArticle(article models.Article) (models.Article, error) {
 	err := r.db.Create(&article).Error
+
 	return article, err
 }
 
 // Update Article and save to DB
 func (r *articleRepository) UpdateArticle(article models.Article) (models.Article, error) {
 	err := r.db.Save(&article).Error
+
 	return article, err
 }
 
 // Delete Article from DB
 func (r *articleRepository) DeleteArticle(article models.Article) error {
 	err := r.db.Delete(&article).Error
+
 	return err
 }

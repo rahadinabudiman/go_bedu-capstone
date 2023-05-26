@@ -1,5 +1,16 @@
 package dtos
 
+import "time"
+
+type AdminDetailResponse struct {
+	AdministratorID uint      `json:"administrator_id" from:"administrator_id"`
+	Nama            string    `json:"nama" from:"nama"`
+	Email           string    `json:"email" from:"email"`
+	Role            string    `json:"role" from:"role"`
+	CreatedAt       time.Time `json:"created_at" example:"2023-05-17T15:07:16.504+07:00"`
+	UpdatedAt       time.Time `json:"updated_at" example:"2023-05-17T15:07:16.504+07:00"`
+}
+
 type RegisterAdminRequest struct {
 	Nama     string `json:"nama" form:"nama" validate:"required" example:"Rahadina Budiman Sundara"`
 	Email    string `json:"email" form:"email" validate:"required,email" example:"me@r4ha.com"`
