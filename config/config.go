@@ -3,10 +3,8 @@ package config
 import (
 	"fmt"
 	"go_bedu/models"
-	"os"
 	"time"
 
-	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -22,22 +20,17 @@ type Config struct {
 }
 
 func ConnectDB() (*gorm.DB, error) {
-	err := godotenv.Load()
-	if err != nil {
-		panic("Error loading .env file")
-	}
-
 	location, err := time.LoadLocation("Asia/Jakarta")
 	if err != nil {
 		panic(err.Error())
 	}
 
 	config := Config{
-		DB_Username: os.Getenv("DB_USERNAME"),
-		DB_Password: os.Getenv("DB_PASSWORD"),
-		DB_Port:     os.Getenv("DB_PORT"),
-		DB_Host:     os.Getenv("DB_HOST"),
-		DB_Name:     os.Getenv("DB_NAME"),
+		DB_Username: "r4ha",
+		DB_Password: "kmoonkinan",
+		DB_Port:     "3306",
+		DB_Host:     "gobedu.cpo5dtq8ffjx.ap-southeast-2.rds.amazonaws.com",
+		DB_Name:     "go_bedu",
 	}
 
 	ConnectionString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
