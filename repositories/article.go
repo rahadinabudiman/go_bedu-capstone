@@ -3,7 +3,7 @@ package repositories
 import (
 	"go_bedu/models"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type ArticleRepository interface {

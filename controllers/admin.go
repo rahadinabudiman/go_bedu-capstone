@@ -239,8 +239,6 @@ func (c *adminController) DeleteAdminController(ctx echo.Context) error {
 		)
 	}
 
-	fmt.Printf(req.Password)
-
 	_, err = c.adminUsecase.DeleteAdmin(uint(id), req)
 	if err != nil {
 		return ctx.JSON(

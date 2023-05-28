@@ -3,19 +3,13 @@ package config
 import (
 	"fmt"
 	"go_bedu/models"
+	"time"
 
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
-var (
-	DB *gorm.DB
-)
-
-func init() {
-	InitDB()
-	InitialMigration()
-}
+var DB *gorm.DB
 
 type Config struct {
 	DB_Username string
@@ -25,16 +19,22 @@ type Config struct {
 	DB_Name     string
 }
 
-func InitDB() *gorm.DB {
+func ConnectDB() (*gorm.DB, error) {
+	// Load the Asia/Jakarta location
+	location, err := time.LoadLocation("Asia/Jakarta")
+	if err != nil {
+		// Handle the error
+	}
+
 	config := Config{
 		DB_Username: "r4ha",
 		DB_Password: "kmoonkinan",
 		DB_Port:     "3306",
-		DB_Host:     "gobedu.cpo5dtq8ffjx.ap-southeast-2.rds.amazonaws.com",
+		DB_Host:     "localhost",
 		DB_Name:     "go_bedu",
 	}
 
-	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
+	ConnectionString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		config.DB_Username,
 		config.DB_Password,
 		config.DB_Host,
@@ -42,16 +42,24 @@ func InitDB() *gorm.DB {
 		config.DB_Name,
 	)
 
-	var err error
-	DB, err = gorm.Open("mysql", connectionString)
+	dbConn, err := gorm.Open(mysql.Open(ConnectionString), &gorm.Config{})
+
 	if err != nil {
-		panic("Failed to connect to database")
+		panic(err)
 	}
 
-	return DB
+	dbConn = dbConn.Session(&gorm.Session{
+		NowFunc: func() time.Time {
+			return time.Now().In(location)
+		},
+	})
+
+	return dbConn, nil
 }
 
-func InitialMigration() {
-	DB.AutoMigrate(&models.Administrator{})
-	DB.AutoMigrate(&models.Article{})
+func MigrateDB(db *gorm.DB) error {
+	return db.AutoMigrate(
+		&models.Administrator{},
+		&models.Article{},
+	)
 }

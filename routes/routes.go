@@ -8,9 +8,9 @@ import (
 	"go_bedu/utils"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo/v4"
 	mid "github.com/labstack/echo/v4/middleware"
+	"gorm.io/gorm"
 )
 
 func NewRoute(e *echo.Echo, db *gorm.DB) {
