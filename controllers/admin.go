@@ -134,10 +134,10 @@ func (c *adminController) GetAdminByIdController(ctx echo.Context) error {
 	id, err := m.IsAdmin(ctx)
 	if err != nil {
 		return ctx.JSON(
-			http.StatusInternalServerError,
+			http.StatusUnauthorized,
 			helpers.NewErrorResponse(
-				http.StatusInternalServerError,
-				"Could not get admin",
+				http.StatusUnauthorized,
+				"Routes for Admin Only",
 				helpers.GetErrorData(err),
 			),
 		)
@@ -167,49 +167,97 @@ func (c *adminController) UpdateAdminController(ctx echo.Context) error {
 
 	id, err := m.IsAdmin(ctx)
 	if err != nil {
-		return echo.NewHTTPError(401, "This routes for admin only")
+		return ctx.JSON(
+			http.StatusUnauthorized,
+			helpers.NewErrorResponse(
+				http.StatusUnauthorized,
+				"Routes for Admin Only",
+				helpers.GetErrorData(err),
+			),
+		)
 	}
 
 	ctx.Bind(&req)
-
 	if err := ctx.Validate(&req); err != nil {
-		return echo.NewHTTPError(400, "Field cannot be empty")
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Field cannot be empty or Password must be 6 character",
+				helpers.GetErrorData(err),
+			),
+		)
 	}
 
 	res, err := c.adminUsecase.UpdateAdmin(uint(id), req)
-
 	if err != nil {
-		return echo.NewHTTPError(400, err.Error())
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Could not update admin",
+				helpers.GetErrorData(err),
+			),
+		)
 	}
 
-	return ctx.JSON(200, helpers.Response{
-		Message: "Success update admin",
-		Data:    res,
-	})
+	return ctx.JSON(
+		http.StatusOK,
+		helpers.NewResponse(
+			http.StatusOK,
+			"Success Update Admin",
+			res,
+		),
+	)
 }
 
 // Controller for Delete Admin by ID from DB
 func (c *adminController) DeleteAdminController(ctx echo.Context) error {
 	id, err := m.IsAdmin(ctx)
 	if err != nil {
-		return echo.NewHTTPError(401, "this routes for admin only")
+		return ctx.JSON(
+			http.StatusUnauthorized,
+			helpers.NewErrorResponse(
+				http.StatusUnauthorized,
+				"Routes for Admin Only",
+				helpers.GetErrorData(err),
+			),
+		)
 	}
 
 	req := dtos.DeleteAdminRequest{}
 
 	ctx.Bind(&req)
 	if err := ctx.Validate(&req); err != nil {
-		return echo.NewHTTPError(400, "Field cannot be empty")
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Field cannot be empty or Password must be 6 character",
+				helpers.GetErrorData(err),
+			),
+		)
 	}
 
 	fmt.Printf(req.Password)
 
 	_, err = c.adminUsecase.DeleteAdmin(uint(id), req)
 	if err != nil {
-		return echo.NewHTTPError(400, err.Error())
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Could not Delete admin",
+				helpers.GetErrorData(err),
+			),
+		)
 	}
 
-	return ctx.JSON(200, helpers.ResponseMessage{
-		Message: "Delete Admin Sukses",
-	})
+	return ctx.JSON(
+		http.StatusOK,
+		helpers.NewResponseMessage(
+			http.StatusOK,
+			"Success Delete Admin",
+		),
+	)
 }
