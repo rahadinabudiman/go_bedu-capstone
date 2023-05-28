@@ -27,7 +27,6 @@ func ConnectDB() (*gorm.DB, error) {
 		panic("Error loading .env file")
 	}
 
-	// Load the Asia/Jakarta location
 	location, err := time.LoadLocation("Asia/Jakarta")
 	if err != nil {
 		panic(err.Error())
