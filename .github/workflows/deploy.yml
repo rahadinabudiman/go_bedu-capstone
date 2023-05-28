@@ -1,0 +1,21 @@
+name: Deploy to AWS EC2 Instance
+on:
+  push:
+    branches:
+      - prod
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: pull-production-deploy
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd go_bedu-capstone
+            git pull origin prod
+            docker-compose down && docker-compose up --build --force-recreate --no-deps -d
