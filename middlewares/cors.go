@@ -1,6 +1,6 @@
 package middlewares
 
-import "github.com/labstack/echo"
+import "github.com/labstack/echo/v4"
 
 // Middleware untuk mengizinkan CORS
 func AllowCORS(next echo.HandlerFunc) echo.HandlerFunc {
