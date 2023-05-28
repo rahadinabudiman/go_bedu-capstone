@@ -27,10 +27,10 @@ type Config struct {
 
 func InitDB() *gorm.DB {
 	config := Config{
-		DB_Username: "r4ha",
-		DB_Password: "kmoonkinan",
+		DB_Username: "root",
+		DB_Password: "",
 		DB_Port:     "3306",
-		DB_Host:     "gobedu.cpo5dtq8ffjx.ap-southeast-2.rds.amazonaws.com",
+		DB_Host:     "localhost",
 		DB_Name:     "go_bedu",
 	}
 
