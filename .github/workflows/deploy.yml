@@ -18,4 +18,14 @@ jobs:
           script: |
             cd go_bedu-capstone
             git pull origin prod
+
+            # Hentikan proses yang menggunakan port 8080
+            pid=$(lsof -ti :8080)
+            if [[ -n $pid ]]; then
+              echo "Terminating process with PID $pid"
+              kill $pid
+            else
+              echo "No process found running on port 8080"
+            fi
+
             docker-compose down && docker-compose up --build --force-recreate --no-deps -d
