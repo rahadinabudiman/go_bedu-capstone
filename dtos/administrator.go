@@ -3,12 +3,12 @@ package dtos
 import "time"
 
 type AdminDetailResponse struct {
-	AdministratorID uint      `json:"administrator_id" from:"administrator_id"`
-	Nama            string    `json:"nama" from:"nama"`
-	Email           string    `json:"email" from:"email"`
-	Role            string    `json:"role" from:"role"`
-	CreatedAt       time.Time `json:"created_at" example:"2023-05-17T15:07:16.504+07:00"`
-	UpdatedAt       time.Time `json:"updated_at" example:"2023-05-17T15:07:16.504+07:00"`
+	ID        uint      `json:"id" from:"id"`
+	Nama      string    `json:"nama" from:"nama"`
+	Email     string    `json:"email" from:"email"`
+	Role      string    `json:"role" from:"role"`
+	CreatedAt time.Time `json:"created_at" example:"2023-05-17T15:07:16.504+07:00"`
+	UpdatedAt time.Time `json:"updated_at" example:"2023-05-17T15:07:16.504+07:00"`
 }
 
 type RegisterAdminRequest struct {
