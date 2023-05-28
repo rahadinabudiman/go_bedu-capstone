@@ -834,27 +834,41 @@ const docTemplate = `{
         "dtos.ArticleDetailResponse": {
             "type": "object",
             "properties": {
+                "abstract": {
+                    "type": "string",
+                    "example": "abstract/pengantar"
+                },
+                "administrator_id": {
+                    "type": "integer",
+                    "example": 1
+                },
                 "article_id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 },
                 "created_at": {
                     "type": "string",
                     "example": "2023-05-17T15:07:16.504+07:00"
                 },
                 "description": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "isi artikel"
                 },
                 "image": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "link image"
                 },
                 "label": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "kebugaran"
                 },
                 "slug": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "judularticle"
                 },
                 "title": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "judulArticle"
                 },
                 "updated_at": {
                     "type": "string",
@@ -895,6 +909,10 @@ const docTemplate = `{
         "dtos.CreateArticlesRequest": {
             "type": "object",
             "properties": {
+                "abstract": {
+                    "type": "string",
+                    "example": "abstract/pengantar"
+                },
                 "administrator_id": {
                     "type": "integer",
                     "example": 1
