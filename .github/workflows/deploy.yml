@@ -45,6 +45,6 @@ jobs:
             whoami
             docker stop kmoonkinan || true
             docker rm kmoonkinan || true
-            docker rmi kmoonkinan || true
+            docker rmi kmoonkinan/go_bedu || true
             docker pull ${{ secrets.DOCKER_USERNAME }}/go_bedu:latest
             docker run -p 8080:8080 -d --name kmoonkinan ${{ secrets.DOCKER_USERNAME }}/go_bedu:latest
