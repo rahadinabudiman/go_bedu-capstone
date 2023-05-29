@@ -41,6 +41,9 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 	cv := &utils.CustomValidator{Validators: validator.New()}
 	e.Validator = cv
 
+	// Mengatur folder untuk file gambar
+	e.Static("/public", "public")
+
 	api := e.Group("/api/v1")
 
 	api.POST("/register", adminController.RegisterAdminController)
