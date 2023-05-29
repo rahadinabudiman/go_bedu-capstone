@@ -5,7 +5,10 @@ import (
 	"go_bedu/helpers"
 	m "go_bedu/middlewares"
 	"go_bedu/usecase"
+	"io"
 	"net/http"
+	"os"
+	"regexp"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
@@ -103,7 +106,6 @@ func (c *articleController) GetArticleById(ctx echo.Context) error {
 	)
 }
 
-// Controller for Create Article and save to DB
 func (c *articleController) CreateArticle(ctx echo.Context) error {
 	var articleInput dtos.CreateArticlesRequest
 	// Get Admin id from JWT Cookie
@@ -120,6 +122,72 @@ func (c *articleController) CreateArticle(ctx echo.Context) error {
 			),
 		)
 	}
+
+	// Upload File and validate file extension (jpg, png, and jpeg).
+	file, err := ctx.FormFile("image")
+	if err != nil {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Failed to upload file",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+	src, err := file.Open()
+	if err != nil {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Failed to open file",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+
+	re := regexp.MustCompile(`.png|.jpeg|.jpg`)
+
+	if !re.MatchString(file.Filename) {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewResponseMessage(
+				http.StatusBadRequest,
+				"The provided file format is not allowed. Please upload a JPEG or PNG image",
+			),
+		)
+	}
+
+	defer src.Close()
+
+	// Destination
+	dst, err := os.Create("public/images/" + file.Filename)
+	if err != nil {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Failed to upload file",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+	defer dst.Close()
+
+	// Copy
+	if _, err = io.Copy(dst, src); err != nil {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Failed to copy file",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+
+	articleInput.Image = file.Filename
 
 	article, err := c.articleUsecase.CreateArticle(&articleInput)
 	if err != nil {
