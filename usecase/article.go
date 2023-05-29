@@ -23,7 +23,22 @@ func NewArticleUsecase(ArticleRepository repositories.ArticleRepository) Article
 	return &articleUsecase{ArticleRepository}
 }
 
-// Logic for Get All Article from DB with optional pagination
+// GetAllArticles godoc
+// @Summary      Get all articles
+// @Description  Get all articles
+// @Tags         Admin - Article
+// @Accept       json
+// @Produce      json
+// @Param page query int false "Page number"
+// @Param limit query int false "Number of items per page"
+// @Success      200 {object} dtos.GetAllArticleStatusOKResponse
+// @Failure      400 {object} dtos.BadRequestResponse
+// @Failure      401 {object} dtos.UnauthorizedResponse
+// @Failure      403 {object} dtos.ForbiddenResponse
+// @Failure      404 {object} dtos.NotFoundResponse
+// @Failure      500 {object} dtos.InternalServerErrorResponse
+// @Router       /admin/article [get]
+// @Security BearerAuth
 func (u *articleUsecase) GetAllArticles(page, limit int) ([]dtos.ArticleDetailResponse, int, error) {
 	articles, count, err := u.articleRepository.GetAllArticles(page, limit)
 	if err != nil {
@@ -47,7 +62,21 @@ func (u *articleUsecase) GetAllArticles(page, limit int) ([]dtos.ArticleDetailRe
 	return articleResponses, count, nil
 }
 
-// Logic for get Article by ID
+// GetArticleByID godoc
+// @Summary      Get article by ID
+// @Description  Get article by ID
+// @Tags         Admin - Article
+// @Accept       json
+// @Produce      json
+// @Param id path integer true "ID article"
+// @Success      200 {object} dtos.ArticleStatusOKResponse
+// @Failure      400 {object} dtos.BadRequestResponse
+// @Failure      401 {object} dtos.UnauthorizedResponse
+// @Failure      403 {object} dtos.ForbiddenResponse
+// @Failure      404 {object} dtos.NotFoundResponse
+// @Failure      500 {object} dtos.InternalServerErrorResponse
+// @Router       /admin/article/{id} [get]
+// @Security BearerAuth
 func (u *articleUsecase) GetArticleByID(id uint) (dtos.ArticleDetailResponse, error) {
 	var articleResponses dtos.ArticleDetailResponse
 
@@ -70,7 +99,21 @@ func (u *articleUsecase) GetArticleByID(id uint) (dtos.ArticleDetailResponse, er
 	return articleResponse, nil
 }
 
-// Logic for Create Article
+// CreateArticle godoc
+// @Summary      Create a new article
+// @Description  Create a new article
+// @Tags         Admin - Article
+// @Accept       json
+// @Produce      json
+// @Param        request body dtos.CreateArticlesRequest true "Payload Body [RAW]"
+// @Success      201 {object} dtos.ArticleCreeatedResponse
+// @Failure      400 {object} dtos.BadRequestResponse
+// @Failure      401 {object} dtos.UnauthorizedResponse
+// @Failure      403 {object} dtos.ForbiddenResponse
+// @Failure      404 {object} dtos.NotFoundResponse
+// @Failure      500 {object} dtos.InternalServerErrorResponse
+// @Router       /admin/article [post]
+// @Security BearerAuth
 func (u *articleUsecase) CreateArticle(article *dtos.CreateArticlesRequest) (dtos.ArticleDetailResponse, error) {
 	var articleResponses dtos.ArticleDetailResponse
 
@@ -83,6 +126,7 @@ func (u *articleUsecase) CreateArticle(article *dtos.CreateArticlesRequest) (dto
 		Image:           article.Image,
 		Label:           article.Label,
 		Slug:            slug,
+		Abstract:        article.Abstract,
 	}
 
 	createdArticle, err := u.articleRepository.CreateArticle(CreateArticle)
@@ -91,20 +135,37 @@ func (u *articleUsecase) CreateArticle(article *dtos.CreateArticlesRequest) (dto
 	}
 
 	articleResponse := dtos.ArticleDetailResponse{
-		ArticleID:   createdArticle.ID,
-		Title:       createdArticle.Title,
-		Image:       createdArticle.Image,
-		Description: createdArticle.Description,
-		Label:       createdArticle.Label,
-		Slug:        createdArticle.Slug,
-		CreatedAt:   createdArticle.CreatedAt,
-		UpdatedAt:   createdArticle.UpdatedAt,
+		ArticleID:       createdArticle.ID,
+		AdministratorID: createdArticle.AdministratorID,
+		Title:           createdArticle.Title,
+		Abstract:        createdArticle.Abstract,
+		Image:           createdArticle.Image,
+		Description:     createdArticle.Description,
+		Label:           createdArticle.Label,
+		Slug:            createdArticle.Slug,
+		CreatedAt:       createdArticle.CreatedAt,
+		UpdatedAt:       createdArticle.UpdatedAt,
 	}
 
 	return articleResponse, nil
 }
 
-// Logic for Udpate Article
+// UpdateArticle godoc
+// @Summary      Update article
+// @Description  Update article
+// @Tags         Admin - Article
+// @Accept       json
+// @Produce      json
+// @Param id path integer true "ID article"
+// @Param        request body dtos.CreateArticlesRequest true "Payload Body [RAW]"
+// @Success      200 {object} dtos.ArticleStatusOKResponse
+// @Failure      400 {object} dtos.BadRequestResponse
+// @Failure      401 {object} dtos.UnauthorizedResponse
+// @Failure      403 {object} dtos.ForbiddenResponse
+// @Failure      404 {object} dtos.NotFoundResponse
+// @Failure      500 {object} dtos.InternalServerErrorResponse
+// @Router       /admin/article [put]
+// @Security BearerAuth
 func (u *articleUsecase) UpdateArticle(id uint, article dtos.UpdateArticlesRequest) (dtos.ArticleDetailResponse, error) {
 	var (
 		articles        models.Article
@@ -142,7 +203,21 @@ func (u *articleUsecase) UpdateArticle(id uint, article dtos.UpdateArticlesReque
 
 }
 
-// Logic For Delete Article from DB
+// DeleteArticle godoc
+// @Summary      Delete a article
+// @Description  Delete a article
+// @Tags         Admin - Article
+// @Accept       json
+// @Produce      json
+// @Param id path integer true "ID article"
+// @Success      200 {object} dtos.StatusOKDeletedResponse
+// @Failure      400 {object} dtos.BadRequestResponse
+// @Failure      401 {object} dtos.UnauthorizedResponse
+// @Failure      403 {object} dtos.ForbiddenResponse
+// @Failure      404 {object} dtos.NotFoundResponse
+// @Failure      500 {object} dtos.InternalServerErrorResponse
+// @Router       /admin/article/{id} [delete]
+// @Security BearerAuth
 func (u *articleUsecase) DeleteArticle(id uint) error {
 	article, err := u.articleRepository.GetArticleByID(id)
 	if err != nil {
