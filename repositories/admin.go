@@ -3,7 +3,7 @@ package repositories
 import (
 	"go_bedu/models"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type AdminRepository interface {
@@ -71,10 +71,9 @@ func (r *adminRepository) UpdateAdmin(admin models.Administrator) (models.Admini
 
 // Get Admin By Email is a function to get admin by email
 func (r *adminRepository) GetAdminByEmail(email string) (models.Administrator, error) {
-	// admin := &models.Administrator{} // Menggunakan objek struct daripada pointer
 	var admin models.Administrator
 
-	err := r.db.Where("email = ?", email).First(&admin).Error
+	err := r.db.Where("email = ? AND deleted_at IS NULL", email).First(&admin).Error
 	return admin, err
 }
 
