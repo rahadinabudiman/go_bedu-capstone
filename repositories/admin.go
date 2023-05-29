@@ -74,7 +74,11 @@ func (r *adminRepository) GetAdminByEmail(email string) (models.Administrator, e
 	var admin models.Administrator
 
 	err := r.db.Where("email = ? AND deleted_at IS NULL", email).First(&admin).Error
-	return admin, err
+	if err != nil {
+		return admin, err
+	}
+
+	return admin, nil
 }
 
 // Get Admin By Email is a function to get admin by email

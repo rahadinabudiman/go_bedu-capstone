@@ -70,7 +70,7 @@ func (u *adminUsecase) GetAdmin() ([]dtos.AdminDetailResponse, error) {
 // @Accept       json
 // @Produce      json
 // @Param        request body dtos.LoginRequest true "Payload Body [RAW]"
-// @Success      200 {object} dtos.AdminStatusOKResponse
+// @Success      200 {object} dtos.LoginStatusOKResponse
 // @Failure      400 {object} dtos.BadRequestResponse
 // @Failure      401 {object} dtos.UnauthorizedResponse
 // @Failure      403 {object} dtos.ForbiddenResponse
