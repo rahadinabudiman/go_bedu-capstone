@@ -656,7 +656,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dtos.AdminStatusOKResponse"
+                            "$ref": "#/definitions/dtos.LoginStatusOKResponse"
                         }
                     },
                     "400": {
@@ -838,10 +838,6 @@ const docTemplate = `{
                     "type": "string",
                     "example": "abstract/pengantar"
                 },
-                "administrator_id": {
-                    "type": "integer",
-                    "example": 1
-                },
                 "article_id": {
                     "type": "integer",
                     "example": 1
@@ -1022,6 +1018,27 @@ const docTemplate = `{
                 "password": {
                     "type": "string",
                     "example": "rahadinabudimansundara"
+                }
+            }
+        },
+        "dtos.LoginStatusOKResponse": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "me@r4ha.com"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "rahadinabudimansundara"
+                },
+                "status_code": {
+                    "type": "integer",
+                    "example": 200
                 }
             }
         },
