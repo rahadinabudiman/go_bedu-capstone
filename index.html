@@ -33,7 +33,7 @@
             password: password
         };
 
-        fetch('http://localhost:8000/login', {
+        fetch('http://localhost:8080/api/v1/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -66,7 +66,7 @@
 
         if (bEDUCookie) {
             // Make the API request with the token in the request header
-            fetch('http://localhost:8000/admin', {
+            fetch('http://localhost:8080/api/v1/admin/article', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -119,7 +119,7 @@
 
         console.log(JSON.stringify(data));
         if (bEDUCookie) {
-            fetch('http://localhost:8000/admin', {
+            fetch('http://localhost:8080/api/v1/admin', {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
@@ -171,7 +171,7 @@
             password: password
         };
 
-        fetch('http://ec2-54-66-56-235.ap-southeast-2.compute.amazonaws.com:8080/register', {
+        fetch('http://localhost:8080/api/v1/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
