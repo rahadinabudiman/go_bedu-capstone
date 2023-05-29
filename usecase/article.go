@@ -126,6 +126,7 @@ func (u *articleUsecase) CreateArticle(article *dtos.CreateArticlesRequest) (dto
 		Image:           article.Image,
 		Label:           article.Label,
 		Slug:            slug,
+		Abstract:        article.Abstract,
 	}
 
 	createdArticle, err := u.articleRepository.CreateArticle(CreateArticle)
@@ -134,14 +135,16 @@ func (u *articleUsecase) CreateArticle(article *dtos.CreateArticlesRequest) (dto
 	}
 
 	articleResponse := dtos.ArticleDetailResponse{
-		ArticleID:   createdArticle.ID,
-		Title:       createdArticle.Title,
-		Image:       createdArticle.Image,
-		Description: createdArticle.Description,
-		Label:       createdArticle.Label,
-		Slug:        createdArticle.Slug,
-		CreatedAt:   createdArticle.CreatedAt,
-		UpdatedAt:   createdArticle.UpdatedAt,
+		ArticleID:       createdArticle.ID,
+		AdministratorID: createdArticle.AdministratorID,
+		Title:           createdArticle.Title,
+		Abstract:        createdArticle.Abstract,
+		Image:           createdArticle.Image,
+		Description:     createdArticle.Description,
+		Label:           createdArticle.Label,
+		Slug:            createdArticle.Slug,
+		CreatedAt:       createdArticle.CreatedAt,
+		UpdatedAt:       createdArticle.UpdatedAt,
 	}
 
 	return articleResponse, nil
