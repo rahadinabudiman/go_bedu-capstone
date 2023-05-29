@@ -52,20 +52,32 @@ definitions:
     type: object
   dtos.ArticleDetailResponse:
     properties:
+      abstract:
+        example: abstract/pengantar
+        type: string
+      administrator_id:
+        example: 1
+        type: integer
       article_id:
+        example: 1
         type: integer
       created_at:
         example: "2023-05-17T15:07:16.504+07:00"
         type: string
       description:
+        example: isi artikel
         type: string
       image:
+        example: link image
         type: string
       label:
+        example: kebugaran
         type: string
       slug:
+        example: judularticle
         type: string
       title:
+        example: judulArticle
         type: string
       updated_at:
         example: "2023-05-17T15:07:16.504+07:00"
@@ -94,6 +106,9 @@ definitions:
     type: object
   dtos.CreateArticlesRequest:
     properties:
+      abstract:
+        example: abstract/pengantar
+        type: string
       administrator_id:
         example: 1
         type: integer

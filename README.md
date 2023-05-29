@@ -8,7 +8,7 @@ Backend for Capstone Project SIB X Dicoding Cycle 4
   - [Daftar Isi](#daftar-isi)
   - [Daftar API](#daftar-api)
     - [Registration](#registration)
-    - [Users](#users)
+    - [Admin](#admin)
 
 ## Daftar API
 
