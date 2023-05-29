@@ -75,50 +75,87 @@ func (c *adminController) RegisterAdminController(ctx echo.Context) error {
 
 	ctx.Bind(&req)
 	if err := ctx.Validate(&req); err != nil {
-		return echo.NewHTTPError(400, "Field cannot be empty or Password must be 6 character")
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Field cannot be empty or Password must be 6 character",
+				helpers.GetErrorData(err),
+			),
+		)
 	}
 
 	admin, err := c.adminUsecase.CreateAdmin(&req)
-
 	if err != nil {
-		return echo.NewHTTPError(400, err.Error())
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Could not create admin",
+				helpers.GetErrorData(err),
+			),
+		)
 	}
 
-	return ctx.JSON(200, map[string]interface{}{
-		"message": "Success Register",
-		"data":    admin,
-	})
+	return ctx.JSON(http.StatusOK,
+		helpers.NewResponse(
+			http.StatusOK,
+			"Success Create Admin",
+			admin,
+		))
 }
 
 // Controller for Get All Admins from DB
-func (a *adminController) GetAdminsController(c echo.Context) error {
-	admins, err := a.adminUsecase.GetAdmin()
-
+func (c *adminController) GetAdminsController(ctx echo.Context) error {
+	admins, err := c.adminUsecase.GetAdmin()
 	if err != nil {
-		return c.JSON(500, map[string]interface{}{
-			"message": "Internal Server Error",
-		})
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Could not get admin",
+				helpers.GetErrorData(err),
+			),
+		)
 	}
 
-	return c.JSON(200, helpers.Response{
-		Message: "Success Get All Admins",
-		Data:    admins,
-	})
+	return ctx.JSON(
+		http.StatusOK,
+		helpers.NewResponse(
+			http.StatusOK,
+			"Success Get Admin",
+			admins,
+		),
+	)
 }
 
 // Controller for Get Admin by ID from DB
 func (c *adminController) GetAdminByIdController(ctx echo.Context) error {
 	id, err := m.IsAdmin(ctx)
 	if err != nil {
-		return echo.NewHTTPError(401, "This routes for admin only")
+		return ctx.JSON(
+			http.StatusUnauthorized,
+			helpers.NewErrorResponse(
+				http.StatusUnauthorized,
+				"Routes for Admin Only",
+				helpers.GetErrorData(err),
+			),
+		)
 	}
 
 	res, err := c.adminUsecase.GetAdminById(uint(id))
 	if err != nil {
-		return echo.NewHTTPError(400, err.Error())
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Could not get admin",
+				helpers.GetErrorData(err),
+			),
+		)
 	}
 
-	return ctx.JSON(200, helpers.Response{
+	return ctx.JSON(http.StatusOK, helpers.Response{
 		Message: fmt.Sprintf("Welcome %s", res.Nama),
 		Data:    res,
 	})
@@ -130,49 +167,95 @@ func (c *adminController) UpdateAdminController(ctx echo.Context) error {
 
 	id, err := m.IsAdmin(ctx)
 	if err != nil {
-		return echo.NewHTTPError(401, "This routes for admin only")
+		return ctx.JSON(
+			http.StatusUnauthorized,
+			helpers.NewErrorResponse(
+				http.StatusUnauthorized,
+				"Routes for Admin Only",
+				helpers.GetErrorData(err),
+			),
+		)
 	}
 
 	ctx.Bind(&req)
-
 	if err := ctx.Validate(&req); err != nil {
-		return echo.NewHTTPError(400, "Field cannot be empty")
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Field cannot be empty or Password must be 6 character",
+				helpers.GetErrorData(err),
+			),
+		)
 	}
 
 	res, err := c.adminUsecase.UpdateAdmin(uint(id), req)
-
 	if err != nil {
-		return echo.NewHTTPError(400, err.Error())
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Could not update admin",
+				helpers.GetErrorData(err),
+			),
+		)
 	}
 
-	return ctx.JSON(200, helpers.Response{
-		Message: "Success update admin",
-		Data:    res,
-	})
+	return ctx.JSON(
+		http.StatusOK,
+		helpers.NewResponse(
+			http.StatusOK,
+			"Success Update Admin",
+			res,
+		),
+	)
 }
 
 // Controller for Delete Admin by ID from DB
 func (c *adminController) DeleteAdminController(ctx echo.Context) error {
 	id, err := m.IsAdmin(ctx)
 	if err != nil {
-		return echo.NewHTTPError(401, "this routes for admin only")
+		return ctx.JSON(
+			http.StatusUnauthorized,
+			helpers.NewErrorResponse(
+				http.StatusUnauthorized,
+				"Routes for Admin Only",
+				helpers.GetErrorData(err),
+			),
+		)
 	}
 
 	req := dtos.DeleteAdminRequest{}
 
 	ctx.Bind(&req)
 	if err := ctx.Validate(&req); err != nil {
-		return echo.NewHTTPError(400, "Field cannot be empty")
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Field cannot be empty or Password must be 6 character",
+				helpers.GetErrorData(err),
+			),
+		)
 	}
-
-	fmt.Printf(req.Password)
 
 	_, err = c.adminUsecase.DeleteAdmin(uint(id), req)
 	if err != nil {
-		return echo.NewHTTPError(400, err.Error())
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Could not Delete admin",
+				helpers.GetErrorData(err),
+			),
+		)
 	}
 
-	return ctx.JSON(200, helpers.ResponseMessage{
-		Message: "Delete Admin Sukses",
-	})
+	return ctx.JSON(
+		http.StatusOK,
+		helpers.NewResponseMessage(
+			http.StatusOK,
+			"Success Delete Admin",
+		),
+	)
 }
