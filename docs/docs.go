@@ -640,7 +640,7 @@ const docTemplate = `{
                 "tags": [
                     "Admin - Account"
                 ],
-                "summary": "Login",
+                "summary": "Login Admin with Email and Password",
                 "parameters": [
                     {
                         "description": "Payload Body [RAW]",
@@ -704,7 +704,7 @@ const docTemplate = `{
                 "tags": [
                     "Admin - Account"
                 ],
-                "summary": "Register",
+                "summary": "Register Admin",
                 "parameters": [
                     {
                         "description": "Payload Body [RAW]",
@@ -721,6 +721,70 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/dtos.AdminCreeatedResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.BadRequestResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.UnauthorizedResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ForbiddenResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.NotFoundResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/verifyemail/{verificationCode}": {
+            "get": {
+                "description": "Verif an account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin - Verify"
+                ],
+                "summary": "Verify Email by Verification Code",
+                "parameters": [
+                    {
+                        "description": "Payload Body [RAW]",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.VerifyEmailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.VerifyEmailResponse"
                         }
                     },
                     "400": {
@@ -1076,9 +1140,18 @@ const docTemplate = `{
                     "minLength": 6,
                     "example": "rahadinabudimansundara"
                 },
+                "passwordConfirm": {
+                    "type": "string",
+                    "minLength": 6,
+                    "example": "rahadinabudimansundara"
+                },
                 "role": {
                     "type": "string",
                     "example": "Admin"
+                },
+                "verified": {
+                    "type": "boolean",
+                    "example": false
                 }
             }
         },
@@ -1133,6 +1206,31 @@ const docTemplate = `{
                 "role": {
                     "type": "string",
                     "example": "Admin"
+                }
+            }
+        },
+        "dtos.VerifyEmailRequest": {
+            "type": "object",
+            "required": [
+                "verification_code"
+            ],
+            "properties": {
+                "verification_code": {
+                    "type": "string",
+                    "example": "1234567890"
+                }
+            }
+        },
+        "dtos.VerifyEmailResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "me@r4ha.com"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Email has been verified"
                 }
             }
         },

@@ -51,6 +51,7 @@ func SendEmail(user *models.Administrator, data *EmailData) {
 
 	// Sender data.
 	from := config.EmailFrom
+	fromName := config.FromName
 	smtpPass := config.SMTPPass
 	smtpUser := config.SMTPUser
 	to := user.Email
@@ -68,7 +69,7 @@ func SendEmail(user *models.Administrator, data *EmailData) {
 
 	m := gomail.NewMessage()
 
-	m.SetHeader("From", from)
+	m.SetAddressHeader("From", from, fromName)
 	m.SetHeader("To", to)
 	m.SetHeader("Subject", data.Subject)
 	m.SetBody("text/html", body.String())

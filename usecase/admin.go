@@ -9,6 +9,7 @@ import (
 	"go_bedu/repositories"
 	"go_bedu/utils"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -19,6 +20,8 @@ import (
 type AdminUsecase interface {
 	LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dtos.LoginResponse, err error)
 	VerifyEmail(verificationCode any) (res dtos.VerifyEmailResponse, err error)
+	UpdateAdminByOTP(otp int, req dtos.ChangePasswordRequest) (res dtos.ForgotPasswordResponse, err error)
+	ForgotPassword(req dtos.ForgotPasswordRequest) (res dtos.ForgotPasswordResponse, err error)
 	GetAdmin() ([]dtos.AdminDetailResponse, error)
 	GetAdminById(id uint) (res dtos.AdminProfileResponse, err error)
 	UpdateAdmin(id uint, req dtos.UpdateAdminRequest) (res dtos.UpdateAdminResponse, err error)
@@ -63,6 +66,7 @@ func (u *adminUsecase) GetAdmin() ([]dtos.AdminDetailResponse, error) {
 			Role:      admin.Role,
 			CreatedAt: admin.CreatedAt,
 			UpdatedAt: admin.UpdatedAt,
+			// Article:   admin.Articles,
 		})
 	}
 
@@ -70,7 +74,7 @@ func (u *adminUsecase) GetAdmin() ([]dtos.AdminDetailResponse, error) {
 }
 
 // AdminLogin godoc
-// @Summary      Login
+// @Summary      Login Admin with Email and Password
 // @Description  Login an account
 // @Tags         Admin - Account
 // @Accept       json
@@ -118,6 +122,20 @@ func (u *adminUsecase) LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dt
 	return
 }
 
+// AdminVerif godoc
+// @Summary      Verify Email by Verification Code
+// @Description  Verif an account
+// @Tags         Admin - Verify
+// @Accept       json
+// @Produce      json
+// @Param        request body dtos.VerifyEmailRequest true "Payload Body [RAW]"
+// @Success      201 {object} dtos.VerifyEmailResponse
+// @Failure      400 {object} dtos.BadRequestResponse
+// @Failure      401 {object} dtos.UnauthorizedResponse
+// @Failure      403 {object} dtos.ForbiddenResponse
+// @Failure      404 {object} dtos.NotFoundResponse
+// @Failure      500 {object} dtos.InternalServerErrorResponse
+// @Router       /verifyemail/{verificationCode} [get]
 func (u *adminUsecase) VerifyEmail(verificationCode any) (res dtos.VerifyEmailResponse, err error) {
 	admin, err := u.adminRepository.GetAdminByVerificationCode(verificationCode)
 	if err != nil {
@@ -141,8 +159,74 @@ func (u *adminUsecase) VerifyEmail(verificationCode any) (res dtos.VerifyEmailRe
 	return res, nil
 }
 
+func (u *adminUsecase) UpdateAdminByOTP(otp int, req dtos.ChangePasswordRequest) (res dtos.ForgotPasswordResponse, err error) {
+	admin, err := u.adminRepository.GetAdminOTP(otp)
+	if err != nil {
+		return res, echo.NewHTTPError(400, "Failed to get admin")
+	}
+
+	// Reset OTP and OTPReq
+	admin.OTP = 0
+	admin.OTPReq = false
+
+	// Update Password
+	passwordHash, err := helpers.HashPassword(req.Password)
+	if err != nil {
+		return res, echo.NewHTTPError(400, "Failed to hash password")
+	}
+	admin.Password = string(passwordHash)
+
+	_, err = u.adminRepository.UpdateAdmin(admin)
+	if err != nil {
+		return res, echo.NewHTTPError(400, "Failed to update admin")
+	}
+
+	res = dtos.ForgotPasswordResponse{
+		Email:   admin.Email,
+		Message: "Password has been reset successfully",
+	}
+
+	return res, nil
+}
+
+func (u *adminUsecase) ForgotPassword(req dtos.ForgotPasswordRequest) (res dtos.ForgotPasswordResponse, err error) {
+	admin, err := u.adminRepository.GetAdminByEmail(req.Email)
+	if err != nil {
+		return res, echo.NewHTTPError(400, "Email not registered")
+	}
+
+	config, _ := initializers.LoadConfig(".")
+
+	// Generate OTP
+	otp := helpers.GenerateRandomOTP(6)
+	NewOTP, err := strconv.Atoi(otp)
+	if err != nil {
+		return res, echo.NewHTTPError(400, "Failed to generate OTP")
+	}
+	admin.OTP = NewOTP
+	admin.OTPReq = true
+
+	u.adminRepository.UpdateAdmin(admin)
+
+	// 👇 Send Email
+	emailData := utils.EmailData{
+		URL:       "http://" + config.ClientOrigin + "/forgot-password/" + url.PathEscape(otp),
+		FirstName: admin.Nama,
+		Subject:   "Your OTP to reset password",
+	}
+
+	utils.SendEmail(&admin, &emailData)
+
+	res = dtos.ForgotPasswordResponse{
+		Email:   admin.Email,
+		Message: "OTP has been sent to your email",
+	}
+
+	return res, nil
+}
+
 // AdminRegister godoc
-// @Summary      Register
+// @Summary      Register Admin
 // @Description  Register an account
 // @Tags         Admin - Account
 // @Accept       json
