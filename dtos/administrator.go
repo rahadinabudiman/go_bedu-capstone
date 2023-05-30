@@ -1,6 +1,8 @@
 package dtos
 
-import "time"
+import (
+	"time"
+)
 
 type AdminDetailResponse struct {
 	ID        uint      `json:"id" from:"id"`
@@ -9,6 +11,7 @@ type AdminDetailResponse struct {
 	Role      string    `json:"role" from:"role"`
 	CreatedAt time.Time `json:"created_at" example:"2023-05-17T15:07:16.504+07:00"`
 	UpdatedAt time.Time `json:"updated_at" example:"2023-05-17T15:07:16.504+07:00"`
+	// Article   []models.Article `json:"article" from:"article"`
 }
 
 type RegisterAdminRequest struct {
@@ -69,4 +72,17 @@ type VerifyEmailResponse struct {
 
 type VerifyEmailRequest struct {
 	VerificationCode string `json:"verification_code" form:"verification_code" validate:"required" example:"1234567890"`
+}
+
+type ForgotPasswordRequest struct {
+	Email string `json:"email" form:"email" validate:"required,email" example:"me@r4ha.com"`
+}
+
+type ForgotPasswordResponse struct {
+	Email   string `json:"email" form:"email" example:"me@r4ha.com"`
+	Message string `json:"message" form:"message" example:"Email has been sent"`
+}
+
+type ChangePasswordRequest struct {
+	Password string `json:"password" form:"password" validate:"gte=6" example:"rahadinabudimansundara"`
 }
