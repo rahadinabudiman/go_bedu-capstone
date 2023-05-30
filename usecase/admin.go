@@ -118,6 +118,20 @@ func (u *adminUsecase) LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dt
 	return
 }
 
+// AdminVerif godoc
+// @Summary      Verify
+// @Description  Verif an account
+// @Tags         Admin - Verify
+// @Accept       json
+// @Produce      json
+// @Param        request body dtos.VerifyEmailRequest true "Payload Body [RAW]"
+// @Success      201 {object} dtos.VerifyEmailResponse
+// @Failure      400 {object} dtos.BadRequestResponse
+// @Failure      401 {object} dtos.UnauthorizedResponse
+// @Failure      403 {object} dtos.ForbiddenResponse
+// @Failure      404 {object} dtos.NotFoundResponse
+// @Failure      500 {object} dtos.InternalServerErrorResponse
+// @Router       /verifyemail/{verificationCode} [get]
 func (u *adminUsecase) VerifyEmail(verificationCode any) (res dtos.VerifyEmailResponse, err error) {
 	admin, err := u.adminRepository.GetAdminByVerificationCode(verificationCode)
 	if err != nil {
