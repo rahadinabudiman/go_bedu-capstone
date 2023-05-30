@@ -3,16 +3,22 @@ package usecase
 import (
 	"go_bedu/dtos"
 	"go_bedu/helpers"
+	"go_bedu/initializers"
 	"go_bedu/middlewares"
 	"go_bedu/models"
 	"go_bedu/repositories"
+	"go_bedu/utils"
+	"net/url"
+	"strings"
 
 	"github.com/labstack/echo/v4"
+	"github.com/thanhpk/randstr"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AdminUsecase interface {
 	LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dtos.LoginResponse, err error)
+	VerifyEmail(verificationCode any) (res dtos.VerifyEmailResponse, err error)
 	GetAdmin() ([]dtos.AdminDetailResponse, error)
 	GetAdminById(id uint) (res dtos.AdminProfileResponse, err error)
 	UpdateAdmin(id uint, req dtos.UpdateAdminRequest) (res dtos.UpdateAdminResponse, err error)
@@ -84,6 +90,10 @@ func (u *adminUsecase) LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dt
 		return
 	}
 
+	if !admin.Verified {
+		return res, echo.NewHTTPError(400, "Email not verified")
+	}
+
 	err = helpers.ComparePassword(req.Password, admin.Password)
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
 		echo.NewHTTPError(400, err.Error())
@@ -108,6 +118,29 @@ func (u *adminUsecase) LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dt
 	return
 }
 
+func (u *adminUsecase) VerifyEmail(verificationCode any) (res dtos.VerifyEmailResponse, err error) {
+	admin, err := u.adminRepository.GetAdminByVerificationCode(verificationCode)
+	if err != nil {
+		return res, echo.NewHTTPError(400, "Failed to get admin")
+	}
+
+	if admin.Verified {
+		return res, echo.NewHTTPError(400, "Email already verified")
+	}
+
+	admin.VerificationCode = ""
+	admin.Verified = true
+
+	u.adminRepository.UpdateAdmin(admin)
+
+	res = dtos.VerifyEmailResponse{
+		Email:   admin.Email,
+		Message: "Email has been verified",
+	}
+
+	return res, nil
+}
+
 // AdminRegister godoc
 // @Summary      Register
 // @Description  Register an account
@@ -125,16 +158,16 @@ func (u *adminUsecase) LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dt
 func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDetailResponse, error) {
 	var res dtos.AdminDetailResponse
 
-	CreateAdmin := models.Administrator{
-		Nama:     req.Nama,
-		Email:    req.Email,
-		Password: req.Password,
-	}
+	req.Email = strings.ToLower(req.Email)
 
 	// Check apakah email sudah terdaftar atau belum
-	_, err := u.adminRepository.GetAdminByEmail(req.Email)
-	if err == nil {
+	admin, _ := u.adminRepository.GetAdminByEmail(req.Email)
+	if admin.ID > 0 {
 		return res, echo.NewHTTPError(400, "Email sudah terdaftar")
+	}
+
+	if req.Password != req.PasswordConfirm {
+		return res, echo.NewHTTPError(400, "Password tidak sama")
 	}
 
 	passwordHash, err := helpers.HashPassword(req.Password)
@@ -142,13 +175,38 @@ func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDe
 		return res, err
 	}
 
-	req.Password = string(passwordHash)
+	config, _ := initializers.LoadConfig(".")
 
+	// Generate Verification Code
+	code := randstr.String(20)
+	verification_code := utils.Encode(code)
+
+	CreateAdmin := models.Administrator{
+		Nama:             req.Nama,
+		Email:            req.Email,
+		Password:         passwordHash,
+		VerificationCode: verification_code,
+	}
 	admins, err := u.adminRepository.CreateAdmin(CreateAdmin)
 
 	if err != nil {
 		return res, err
 	}
+
+	var firstName = CreateAdmin.Nama
+
+	if strings.Contains(firstName, " ") {
+		firstName = strings.Split(firstName, " ")[1]
+	}
+
+	// 👇 Send Email
+	emailData := utils.EmailData{
+		URL:       "http://" + config.ClientOrigin + "/verifyemail/" + url.PathEscape(verification_code),
+		FirstName: firstName,
+		Subject:   "Your account verification code",
+	}
+
+	utils.SendEmail(&CreateAdmin, &emailData)
 
 	resp := dtos.AdminDetailResponse{
 		ID:        admins.ID,

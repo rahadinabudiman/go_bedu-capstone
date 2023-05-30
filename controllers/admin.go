@@ -15,6 +15,7 @@ import (
 type AdminController interface {
 	LoginAdminController(c echo.Context) error
 	RegisterAdminController(c echo.Context) error
+	VerifyEmailAdminController(c echo.Context) error
 	GetAdminsController(c echo.Context) error
 	GetAdminByIdController(c echo.Context) error
 	CreateAdminController(c echo.Context) error
@@ -97,12 +98,39 @@ func (c *adminController) RegisterAdminController(ctx echo.Context) error {
 		)
 	}
 
+	message := "We sent an email with a verification code to " + admin.Email
 	return ctx.JSON(http.StatusOK,
 		helpers.NewResponse(
 			http.StatusOK,
-			"Success Create Admin",
-			admin,
+			"Success Create Account",
+			message,
 		))
+}
+
+func (c *adminController) VerifyEmailAdminController(ctx echo.Context) error {
+	code := ctx.Param("verificationCode")
+	// verification_code := utils.Encode(code)
+
+	res, err := c.adminUsecase.VerifyEmail(code)
+	if err != nil {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Could not verify email",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+
+	return ctx.JSON(
+		http.StatusOK,
+		helpers.NewResponse(
+			http.StatusOK,
+			"Success Verify Email",
+			res,
+		),
+	)
 }
 
 // Controller for Get All Admins from DB
