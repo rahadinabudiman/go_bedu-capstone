@@ -9,6 +9,8 @@ type Administrator struct {
 	Password         string `json:"password" form:"password" validate:"required"`
 	Role             string `json:"role" form:"role" gorm:"type:enum('Admin', 'Super Admin');default:'Admin'; not-null"`
 	VerificationCode string
+	OTP              int
+	OTPReq           bool      `gorm:"not null"`
 	Verified         bool      `gorm:"not null"`
 	Token            string    `json:"-" gorm:"-"`
 	Articles         []Article `json:"articles" form:"articles" gorm:"foreignKey:AdministratorID"`
