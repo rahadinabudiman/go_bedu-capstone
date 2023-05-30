@@ -48,6 +48,7 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 
 	api.POST("/register", adminController.RegisterAdminController)
 	api.POST("/login", adminController.LoginAdminController)
+	api.GET("/verifyemail/:verificationCode", adminController.VerifyEmailAdminController)
 
 	// Admin Only
 	admin := api.Group("/admin")

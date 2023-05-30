@@ -12,10 +12,12 @@ type AdminDetailResponse struct {
 }
 
 type RegisterAdminRequest struct {
-	Nama     string `json:"nama" form:"nama" validate:"required" example:"Rahadina Budiman Sundara"`
-	Email    string `json:"email" form:"email" validate:"required,email" example:"me@r4ha.com"`
-	Password string `json:"password" form:"password" validate:"gte=6" example:"rahadinabudimansundara"`
-	Role     string `json:"role" form:"role" gorm:"type:enum('Admin', 'Super Admin');default:'Admin'; not-null" example:"Admin"`
+	Nama            string `json:"nama" form:"nama" validate:"required" example:"Rahadina Budiman Sundara"`
+	Email           string `json:"email" form:"email" validate:"required,email" example:"me@r4ha.com"`
+	Password        string `json:"password" form:"password" validate:"gte=6" example:"rahadinabudimansundara"`
+	PasswordConfirm string `json:"passwordConfirm" form:"password" validate:"gte=6" example:"rahadinabudimansundara"`
+	Verified        bool   `gorm:"type:enum('False', 'True');default:'False'; not-null" example:"False"`
+	Role            string `json:"role" form:"role" gorm:"type:enum('Admin', 'Super Admin');default:'Admin'; not-null" example:"Admin"`
 }
 
 type UpdateAdminRequest struct {
@@ -58,4 +60,13 @@ type LoginRequest struct {
 type LoginResponse struct {
 	Email string `json:"email" form:"email" example:"me@r4ha.com"`
 	Token string `json:"token" form:"token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"`
+}
+
+type VerifyEmailResponse struct {
+	Email   string `json:"email" form:"email" example:"me@r4ha.com"`
+	Message string `json:"message" form:"message" example:"Email has been verified"`
+}
+
+type VerifyEmailRequest struct {
+	VerificationCode string `json:"verification_code" form:"verification_code" validate:"required" example:"1234567890"`
 }
