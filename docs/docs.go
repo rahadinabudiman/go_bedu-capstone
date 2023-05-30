@@ -640,7 +640,7 @@ const docTemplate = `{
                 "tags": [
                     "Admin - Account"
                 ],
-                "summary": "Login",
+                "summary": "Login Admin with Email and Password",
                 "parameters": [
                     {
                         "description": "Payload Body [RAW]",
@@ -704,7 +704,7 @@ const docTemplate = `{
                 "tags": [
                     "Admin - Account"
                 ],
-                "summary": "Register",
+                "summary": "Register Admin",
                 "parameters": [
                     {
                         "description": "Payload Body [RAW]",
@@ -768,7 +768,7 @@ const docTemplate = `{
                 "tags": [
                     "Admin - Verify"
                 ],
-                "summary": "Verify",
+                "summary": "Verify Email by Verification Code",
                 "parameters": [
                     {
                         "description": "Payload Body [RAW]",
