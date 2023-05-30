@@ -1,18 +1,18 @@
 package middlewares
 
 import (
-	"go_bedu/constants"
 	"go_bedu/helpers"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
-// Create Token JWT from constants
+// Create Token JWT from env
 func CreateToken(id int, email, role string) (string, error) {
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true
@@ -23,13 +23,13 @@ func CreateToken(id int, email, role string) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	return token.SignedString([]byte(constants.SECRET_JWT))
+	return token.SignedString([]byte(os.Getenv("SECRET_JWT")))
 }
 
 // Check Login
 var IsLoggedIn = middleware.JWTWithConfig(middleware.JWTConfig{
 	SigningMethod: "HS256",
-	SigningKey:    []byte(constants.SECRET_JWT),
+	SigningKey:    []byte(os.Getenv("SECRET_JWT")),
 	TokenLookup:   "cookie:bEDUCookie",
 	ErrorHandler: func(err error) error {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized")
@@ -51,7 +51,7 @@ func VerifyToken(next echo.HandlerFunc) echo.HandlerFunc {
 		// Memverifikasi token
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			// Menggunakan secret key yang sama dengan saat membuat token
-			return []byte(constants.SECRET_JWT), nil
+			return []byte(os.Getenv("SECRET_JWT")), nil
 		})
 
 		// Menangani error saat verifikasi token
@@ -97,7 +97,7 @@ func VerifySuperAdmin(next echo.HandlerFunc) echo.HandlerFunc {
 		// Memverifikasi token
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			// Menggunakan secret key yang sama dengan saat membuat token
-			return []byte(constants.SECRET_JWT), nil
+			return []byte(os.Getenv("SECRET_JWT")), nil
 		})
 
 		// Menangani error saat verifikasi token
@@ -153,7 +153,7 @@ func IsAdmin(c echo.Context) (int, error) {
 	jwtToken, err := jwt.Parse(tokenParts[1], func(token *jwt.Token) (interface{}, error) {
 		// Replace "your-secret-key" with the actual secret key used to sign the tokens
 		// You may need to retrieve the secret key from your configuration or environment variables
-		return []byte(constants.SECRET_JWT), nil
+		return []byte(os.Getenv("SECRET_JWT")), nil
 	})
 	if err != nil {
 		return 0, echo.NewHTTPError(400, "Invalid Token")

@@ -1,0 +1,776 @@
+basePath: /api/v1
+definitions:
+  dtos.AdminCreeatedResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dtos.AdminDetailResponse'
+      message:
+        example: Successfully registered
+        type: string
+      status_code:
+        example: 201
+        type: integer
+    type: object
+  dtos.AdminDetailResponse:
+    properties:
+      created_at:
+        example: "2023-05-17T15:07:16.504+07:00"
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      nama:
+        type: string
+      role:
+        type: string
+      updated_at:
+        example: "2023-05-17T15:07:16.504+07:00"
+        type: string
+    type: object
+  dtos.AdminStatusOKResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dtos.AdminDetailResponse'
+      message:
+        example: Successfully get user credentials
+        type: string
+      status_code:
+        example: 200
+        type: integer
+    type: object
+  dtos.ArticleCreeatedResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dtos.ArticleDetailResponse'
+      message:
+        example: Successfully created article
+        type: string
+      status_code:
+        example: 201
+        type: integer
+    type: object
+  dtos.ArticleDetailResponse:
+    properties:
+      abstract:
+        example: abstract/pengantar
+        type: string
+      article_id:
+        example: 1
+        type: integer
+      created_at:
+        example: "2023-05-17T15:07:16.504+07:00"
+        type: string
+      description:
+        example: isi artikel
+        type: string
+      image:
+        example: link image
+        type: string
+      label:
+        example: kebugaran
+        type: string
+      slug:
+        example: judularticle
+        type: string
+      title:
+        example: judulArticle
+        type: string
+      updated_at:
+        example: "2023-05-17T15:07:16.504+07:00"
+        type: string
+    type: object
+  dtos.ArticleStatusOKResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dtos.ArticleDetailResponse'
+      message:
+        example: Successfully get article
+        type: string
+      status_code:
+        example: 200
+        type: integer
+    type: object
+  dtos.BadRequestResponse:
+    properties:
+      errors: {}
+      message:
+        example: Bad Request
+        type: string
+      status_code:
+        example: 400
+        type: integer
+    type: object
+  dtos.CreateArticlesRequest:
+    properties:
+      abstract:
+        example: abstract/pengantar
+        type: string
+      administrator_id:
+        example: 1
+        type: integer
+      description:
+        example: isi artikel
+        type: string
+      image:
+        example: link image
+        type: string
+      label:
+        example: kebugaran
+        type: string
+      title:
+        example: judulArticle
+        type: string
+    type: object
+  dtos.DeleteAdminRequest:
+    properties:
+      password:
+        example: rahadinabudimansundara
+        minLength: 6
+        type: string
+    type: object
+  dtos.ForbiddenResponse:
+    properties:
+      errors: {}
+      message:
+        example: Forbidden
+        type: string
+      status_code:
+        example: 403
+        type: integer
+    type: object
+  dtos.GetAllAdminsResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dtos.AdminDetailResponse'
+      message:
+        example: Successfully registered
+        type: string
+      status_code:
+        example: 201
+        type: integer
+    type: object
+  dtos.GetAllArticleStatusOKResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dtos.ArticleDetailResponse'
+      message:
+        example: Successfully get article
+        type: string
+      meta:
+        $ref: '#/definitions/helpers.Meta'
+      status_code:
+        example: 200
+        type: integer
+    type: object
+  dtos.InternalServerErrorResponse:
+    properties:
+      errors: {}
+      message:
+        example: Internal Server Error
+        type: string
+      status_code:
+        example: 500
+        type: integer
+    type: object
+  dtos.LoginRequest:
+    properties:
+      email:
+        example: me@r4ha.com
+        type: string
+      password:
+        example: rahadinabudimansundara
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dtos.LoginStatusOKResponse:
+    properties:
+      email:
+        example: me@r4ha.com
+        type: string
+      password:
+        example: rahadinabudimansundara
+        type: string
+      status_code:
+        example: 200
+        type: integer
+    required:
+    - email
+    - password
+    type: object
+  dtos.NotFoundResponse:
+    properties:
+      errors: {}
+      message:
+        example: Not Found
+        type: string
+      status_code:
+        example: 404
+        type: integer
+    type: object
+  dtos.RegisterAdminRequest:
+    properties:
+      email:
+        example: me@r4ha.com
+        type: string
+      nama:
+        example: Rahadina Budiman Sundara
+        type: string
+      password:
+        example: rahadinabudimansundara
+        minLength: 6
+        type: string
+      role:
+        example: Admin
+        type: string
+    required:
+    - email
+    - nama
+    type: object
+  dtos.StatusOKDeletedResponse:
+    properties:
+      errors: {}
+      message:
+        example: Successfully deleted
+        type: string
+      status_code:
+        example: 200
+        type: integer
+    type: object
+  dtos.UnauthorizedResponse:
+    properties:
+      errors: {}
+      message:
+        example: Unauthorized
+        type: string
+      status_code:
+        example: 401
+        type: integer
+    type: object
+  dtos.UpdateAdminRequest:
+    properties:
+      email:
+        example: me@r4ha.com
+        type: string
+      nama:
+        example: Rahadina Budiman Sundara
+        type: string
+      password:
+        example: rahadinabudimansundara
+        minLength: 6
+        type: string
+      role:
+        example: Admin
+        type: string
+    required:
+    - email
+    - nama
+    type: object
+  helpers.Meta:
+    properties:
+      current_page:
+        example: 1
+        type: integer
+      next_page: {}
+      prev_page:
+        example: 1
+        type: integer
+      total:
+        example: 1
+        type: integer
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: ec2-54-66-56-235.ap-southeast-2.compute.amazonaws.com:8080
+info:
+  contact:
+    name: Dicoding Cycle 4 TEAM C23-M4058
+    url: https://github.com/Capstone-Dicoding-Cycle-4-C23-M4058
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: bEDU Documentation API
+  version: "1.0"
+paths:
+  /admin:
+    get:
+      consumes:
+      - application/json
+      description: Get all admins
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.GetAllAdminsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all admins
+      tags:
+      - Admin - Account
+  /admin/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an Admin
+      parameters:
+      - description: Payload Body [RAW]
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.DeleteAdminRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.StatusOKDeletedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete an Admin
+      tags:
+      - Admin - Account
+    get:
+      consumes:
+      - application/json
+      description: Get admin by ID
+      parameters:
+      - description: ID admin
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.AdminStatusOKResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      security:
+      - BearerAut: []
+      summary: Get admin by ID
+      tags:
+      - Admin - Account
+    put:
+      consumes:
+      - application/json
+      description: Admin update an information
+      parameters:
+      - description: Payload Body [RAW]
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.UpdateAdminRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.AdminStatusOKResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update Information
+      tags:
+      - Admin - Account
+  /admin/article:
+    get:
+      consumes:
+      - application/json
+      description: Get all articles
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.GetAllArticleStatusOKResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all articles
+      tags:
+      - Admin - Article
+    post:
+      consumes:
+      - application/json
+      description: Create a new article
+      parameters:
+      - description: Payload Body [RAW]
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.CreateArticlesRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dtos.ArticleCreeatedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new article
+      tags:
+      - Admin - Article
+    put:
+      consumes:
+      - application/json
+      description: Update article
+      parameters:
+      - description: ID article
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Payload Body [RAW]
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.CreateArticlesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.ArticleStatusOKResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update article
+      tags:
+      - Admin - Article
+  /admin/article/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a article
+      parameters:
+      - description: ID article
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.StatusOKDeletedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a article
+      tags:
+      - Admin - Article
+    get:
+      consumes:
+      - application/json
+      description: Get article by ID
+      parameters:
+      - description: ID article
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.ArticleStatusOKResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get article by ID
+      tags:
+      - Admin - Article
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Login an account
+      parameters:
+      - description: Payload Body [RAW]
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.LoginStatusOKResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      summary: Login
+      tags:
+      - Admin - Account
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Register an account
+      parameters:
+      - description: Payload Body [RAW]
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.RegisterAdminRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dtos.AdminCreeatedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      summary: Register
+      tags:
+      - Admin - Account
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

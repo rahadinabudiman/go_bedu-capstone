@@ -8,9 +8,9 @@ import (
 	"go_bedu/utils"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/jinzhu/gorm"
-	"github.com/labstack/echo"
-	mid "github.com/labstack/echo/middleware"
+	"github.com/labstack/echo/v4"
+	mid "github.com/labstack/echo/v4/middleware"
+	"gorm.io/gorm"
 )
 
 func NewRoute(e *echo.Echo, db *gorm.DB) {
@@ -41,21 +41,28 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 	cv := &utils.CustomValidator{Validators: validator.New()}
 	e.Validator = cv
 
-	e.POST("/register", adminController.RegisterAdminController)
-	e.POST("/login", adminController.LoginAdminController)
+	// Mengatur folder untuk file gambar
+	e.Static("/public", "public")
+
+	api := e.Group("/api/v1")
+
+	api.POST("/register", adminController.RegisterAdminController)
+	api.POST("/login", adminController.LoginAdminController)
+	api.GET("/verifyemail/:verificationCode", adminController.VerifyEmailAdminController)
 
 	// Admin Only
-	admin := e.Group("/admin")
-	admin.GET("", adminController.GetAdminsController, m.VerifyToken)
-	admin.GET("/profile", adminController.GetAdminByIdController, m.VerifyToken)
-	admin.PUT("", adminController.UpdateAdminController, m.VerifyToken)
-	admin.DELETE("", adminController.DeleteAdminController, m.VerifyToken)
+	admin := api.Group("/admin")
+	admin.Use(m.VerifyToken)
+	admin.GET("", adminController.GetAdminsController)
+	admin.GET("/profile", adminController.GetAdminByIdController)
+	admin.PUT("", adminController.UpdateAdminController)
+	admin.DELETE("", adminController.DeleteAdminController)
 
 	// Article Routes
 
-	admin.GET("/article", articleController.GetAllArticles, m.VerifyToken)
-	admin.GET("/article/:id", articleController.GetArticleById, m.VerifyToken)
-	admin.POST("/article", articleController.CreateArticle, m.VerifyToken)
-	admin.PUT("/article/:id", articleController.UpdateArticle, m.VerifyToken)
-	admin.DELETE("/article/:id", articleController.DeleteArticle, m.VerifyToken)
+	admin.GET("/article", articleController.GetAllArticles)
+	admin.GET("/article/:id", articleController.GetArticleById)
+	admin.POST("/article", articleController.CreateArticle)
+	admin.PUT("/article/:id", articleController.UpdateArticle)
+	admin.DELETE("/article/:id", articleController.DeleteArticle)
 }
