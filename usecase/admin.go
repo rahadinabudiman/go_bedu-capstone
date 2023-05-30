@@ -70,7 +70,7 @@ func (u *adminUsecase) GetAdmin() ([]dtos.AdminDetailResponse, error) {
 }
 
 // AdminLogin godoc
-// @Summary      Login
+// @Summary      Login Admin with Email and Password
 // @Description  Login an account
 // @Tags         Admin - Account
 // @Accept       json
@@ -119,7 +119,7 @@ func (u *adminUsecase) LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dt
 }
 
 // AdminVerif godoc
-// @Summary      Verify
+// @Summary      Verify Email by Verification Code
 // @Description  Verif an account
 // @Tags         Admin - Verify
 // @Accept       json
@@ -156,7 +156,7 @@ func (u *adminUsecase) VerifyEmail(verificationCode any) (res dtos.VerifyEmailRe
 }
 
 // AdminRegister godoc
-// @Summary      Register
+// @Summary      Register Admin
 // @Description  Register an account
 // @Tags         Admin - Account
 // @Accept       json

@@ -747,7 +747,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/dtos.InternalServerErrorResponse'
-      summary: Login
+      summary: Login Admin with Email and Password
       tags:
       - Admin - Account
   /register:
@@ -789,7 +789,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/dtos.InternalServerErrorResponse'
-      summary: Register
+      summary: Register Admin
       tags:
       - Admin - Account
   /verifyemail/{verificationCode}:
@@ -831,7 +831,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/dtos.InternalServerErrorResponse'
-      summary: Verify
+      summary: Verify Email by Verification Code
       tags:
       - Admin - Verify
 securityDefinitions:
