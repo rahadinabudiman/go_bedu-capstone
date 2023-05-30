@@ -122,6 +122,7 @@ func (u *articleUsecase) CreateArticle(article *dtos.CreateArticlesRequest) (dto
 
 	CreateArticle := models.Article{
 		AdministratorID: article.AdministratorID,
+		Thumbnail:       article.Thumbnail,
 		Title:           article.Title,
 		Description:     article.Description,
 		Image:           article.Image,
@@ -137,6 +138,7 @@ func (u *articleUsecase) CreateArticle(article *dtos.CreateArticlesRequest) (dto
 
 	articleResponse := dtos.ArticleDetailResponse{
 		ArticleID:   createdArticle.ID,
+		Thumbnail:   createdArticle.Thumbnail,
 		Title:       createdArticle.Title,
 		Abstract:    createdArticle.Abstract,
 		Image:       createdArticle.Image,

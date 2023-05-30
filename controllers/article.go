@@ -10,6 +10,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -124,17 +125,30 @@ func (c *articleController) CreateArticle(ctx echo.Context) error {
 	}
 
 	// Upload File and validate file extension (jpg, png, and jpeg).
+	thumbnail, err := ctx.FormFile("thumbnail")
+	if err != nil {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Failed to upload thumbnail",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+
 	file, err := ctx.FormFile("image")
 	if err != nil {
 		return ctx.JSON(
 			http.StatusBadRequest,
 			helpers.NewErrorResponse(
 				http.StatusBadRequest,
-				"Failed to upload file",
+				"Failed to upload image",
 				helpers.GetErrorData(err),
 			),
 		)
 	}
+
 	src, err := file.Open()
 	if err != nil {
 		return ctx.JSON(
@@ -161,33 +175,85 @@ func (c *articleController) CreateArticle(ctx echo.Context) error {
 
 	defer src.Close()
 
-	// Destination
-	dst, err := os.Create("public/images/" + file.Filename)
+	imageExtension := helpers.GetFileExtension(file.Filename)
+	thumbnailExtension := helpers.GetFileExtension(thumbnail.Filename)
+
+	// Generate new filenames
+	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+	newImageFilename := timestamp + imageExtension
+	newThumbnailFilename := timestamp + thumbnailExtension
+
+	// Destination paths
+	imageDst := "public/images/" + newImageFilename
+	thumbnailDst := "public/images/" + newThumbnailFilename
+
+	// Create and save image file
+	imageDstFile, err := os.Create(imageDst)
 	if err != nil {
 		return ctx.JSON(
 			http.StatusBadRequest,
 			helpers.NewErrorResponse(
 				http.StatusBadRequest,
-				"Failed to upload file",
+				"Failed to upload image",
 				helpers.GetErrorData(err),
 			),
 		)
 	}
-	defer dst.Close()
+	defer imageDstFile.Close()
 
-	// Copy
-	if _, err = io.Copy(dst, src); err != nil {
+	// Copy image file
+	if _, err = io.Copy(imageDstFile, src); err != nil {
 		return ctx.JSON(
 			http.StatusBadRequest,
 			helpers.NewErrorResponse(
 				http.StatusBadRequest,
-				"Failed to copy file",
+				"Failed to copy image",
 				helpers.GetErrorData(err),
 			),
 		)
 	}
 
-	articleInput.Image = file.Filename
+	// Create and save thumbnail file
+	thumbnailSrc, err := thumbnail.Open()
+	if err != nil {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Failed to open thumbnail file",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+	defer thumbnailSrc.Close()
+
+	thumbnailDstFile, err := os.Create(thumbnailDst)
+	if err != nil {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Failed to upload thumbnail",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+	defer thumbnailDstFile.Close()
+
+	// Copy thumbnail file
+	if _, err = io.Copy(thumbnailDstFile, thumbnailSrc); err != nil {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Failed to copy thumbnail",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+
+	articleInput.Image = newImageFilename
+	articleInput.Thumbnail = newThumbnailFilename
 
 	article, err := c.articleUsecase.CreateArticle(&articleInput)
 	if err != nil {
