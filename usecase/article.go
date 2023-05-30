@@ -50,6 +50,7 @@ func (u *articleUsecase) GetAllArticles(page, limit int) ([]dtos.ArticleDetailRe
 		articleResponses = append(articleResponses, dtos.ArticleDetailResponse{
 			ArticleID:   article.ID,
 			Title:       article.Title,
+			Abstract:    article.Abstract,
 			Image:       article.Image,
 			Description: article.Description,
 			Label:       article.Label,
@@ -135,16 +136,15 @@ func (u *articleUsecase) CreateArticle(article *dtos.CreateArticlesRequest) (dto
 	}
 
 	articleResponse := dtos.ArticleDetailResponse{
-		ArticleID:       createdArticle.ID,
-		AdministratorID: createdArticle.AdministratorID,
-		Title:           createdArticle.Title,
-		Abstract:        createdArticle.Abstract,
-		Image:           createdArticle.Image,
-		Description:     createdArticle.Description,
-		Label:           createdArticle.Label,
-		Slug:            createdArticle.Slug,
-		CreatedAt:       createdArticle.CreatedAt,
-		UpdatedAt:       createdArticle.UpdatedAt,
+		ArticleID:   createdArticle.ID,
+		Title:       createdArticle.Title,
+		Abstract:    createdArticle.Abstract,
+		Image:       createdArticle.Image,
+		Description: createdArticle.Description,
+		Label:       createdArticle.Label,
+		Slug:        createdArticle.Slug,
+		CreatedAt:   createdArticle.CreatedAt,
+		UpdatedAt:   createdArticle.UpdatedAt,
 	}
 
 	return articleResponse, nil

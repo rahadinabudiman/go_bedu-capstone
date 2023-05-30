@@ -9,6 +9,7 @@ import (
 type AdminRepository interface {
 	LoginAdmin(admin models.Administrator) error
 	ReadToken(id uint) (admin models.Administrator, err error)
+	GetAdminByVerificationCode(verificationCode any) (admin models.Administrator, err error)
 	GetAdmins() ([]models.Administrator, error)
 	GetAdminById(id uint) (models.Administrator, error)
 	GetAdminByEmail(email string) (admin models.Administrator, err error)
@@ -23,6 +24,15 @@ type adminRepository struct {
 
 func NewAdminRepository(db *gorm.DB) *adminRepository {
 	return &adminRepository{db}
+}
+
+// Get Admin by Verification Code
+func (r *adminRepository) GetAdminByVerificationCode(verificationCode any) (models.Administrator, error) {
+	var admin models.Administrator
+
+	err := r.db.Where("verification_code = ?", verificationCode).First(&admin).Error
+
+	return admin, err
 }
 
 // Login Administrator from Database
@@ -74,6 +84,7 @@ func (r *adminRepository) GetAdminByEmail(email string) (models.Administrator, e
 	var admin models.Administrator
 
 	err := r.db.Where("email = ? AND deleted_at IS NULL", email).First(&admin).Error
+
 	return admin, err
 }
 
