@@ -7,12 +7,12 @@ import (
 )
 
 type Config struct {
-	EmailFrom string `mapstructure:"EMAIL_FROM"`
-	SMTPHost  string `mapstructure:"SMTP_HOST"`
-	SMTPPass  string `mapstructure:"SMTP_PASS"`
-	SMTPPort  int    `mapstructure:"SMTP_PORT"`
-	SMTPUser  string `mapstructure:"SMTP_USER"`
-
+	EmailFrom    string `mapstructure:"EMAIL_FROM"`
+	SMTPHost     string `mapstructure:"SMTP_HOST"`
+	SMTPPass     string `mapstructure:"SMTP_PASS"`
+	SMTPPort     int    `mapstructure:"SMTP_PORT"`
+	SMTPUser     string `mapstructure:"SMTP_USER"`
+	FromName     string `mapstructure:"FROM_NAME"`
 	ClientOrigin string `mapstructure:"CLIENT_ORIGIN"`
 }
 
