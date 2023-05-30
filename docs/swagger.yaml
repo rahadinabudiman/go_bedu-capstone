@@ -55,9 +55,6 @@ definitions:
       abstract:
         example: abstract/pengantar
         type: string
-      administrator_id:
-        example: 1
-        type: integer
       article_id:
         example: 1
         type: integer
@@ -188,6 +185,21 @@ definitions:
     - email
     - password
     type: object
+  dtos.LoginStatusOKResponse:
+    properties:
+      email:
+        example: me@r4ha.com
+        type: string
+      password:
+        example: rahadinabudimansundara
+        type: string
+      status_code:
+        example: 200
+        type: integer
+    required:
+    - email
+    - password
+    type: object
   dtos.NotFoundResponse:
     properties:
       errors: {}
@@ -210,9 +222,16 @@ definitions:
         example: rahadinabudimansundara
         minLength: 6
         type: string
+      passwordConfirm:
+        example: rahadinabudimansundara
+        minLength: 6
+        type: string
       role:
         example: Admin
         type: string
+      verified:
+        example: false
+        type: boolean
     required:
     - email
     - nama
@@ -255,6 +274,23 @@ definitions:
     required:
     - email
     - nama
+    type: object
+  dtos.VerifyEmailRequest:
+    properties:
+      verification_code:
+        example: "1234567890"
+        type: string
+    required:
+    - verification_code
+    type: object
+  dtos.VerifyEmailResponse:
+    properties:
+      email:
+        example: me@r4ha.com
+        type: string
+      message:
+        example: Email has been verified
+        type: string
     type: object
   helpers.Meta:
     properties:
@@ -690,7 +726,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dtos.AdminStatusOKResponse'
+            $ref: '#/definitions/dtos.LoginStatusOKResponse'
         "400":
           description: Bad Request
           schema:
@@ -711,7 +747,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/dtos.InternalServerErrorResponse'
-      summary: Login
+      summary: Login Admin with Email and Password
       tags:
       - Admin - Account
   /register:
@@ -753,9 +789,51 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/dtos.InternalServerErrorResponse'
-      summary: Register
+      summary: Register Admin
       tags:
       - Admin - Account
+  /verifyemail/{verificationCode}:
+    get:
+      consumes:
+      - application/json
+      description: Verif an account
+      parameters:
+      - description: Payload Body [RAW]
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.VerifyEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dtos.VerifyEmailResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      summary: Verify Email by Verification Code
+      tags:
+      - Admin - Verify
 securityDefinitions:
   BearerAuth:
     in: header
