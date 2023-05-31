@@ -49,8 +49,12 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 	api.POST("/register", adminController.RegisterAdminController)
 	api.POST("/login", adminController.LoginAdminController)
 	api.GET("/verifyemail/:verificationCode", adminController.VerifyEmailAdminController)
-	api.POST("/forgot-password/:otp", adminController.VerifyOTPAdminController)
+	api.POST("/change-password/:otp", adminController.VerifyOTPAdminController)
 	api.POST("/forgot-password", adminController.ForgotPasswordAdminController)
+
+	article := api.Group("/article")
+	article.GET("", articleController.GetAllArticles)
+	article.GET("/:id", articleController.GetArticleById)
 
 	// Admin Only
 	admin := api.Group("/admin")
@@ -59,11 +63,9 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 	admin.GET("/profile", adminController.GetAdminByIdController)
 	admin.PUT("", adminController.UpdateAdminController)
 	admin.DELETE("", adminController.DeleteAdminController)
+	admin.POST("/change-password", adminController.ChangePasswordController)
 
-	// Article Routes
-
-	admin.GET("/article", articleController.GetAllArticles)
-	admin.GET("/article/:id", articleController.GetArticleById)
+	// Article Admin Routes
 	admin.POST("/article", articleController.CreateArticle)
 	admin.PUT("/article/:id", articleController.UpdateArticle)
 	admin.DELETE("/article/:id", articleController.DeleteArticle)
