@@ -93,3 +93,8 @@ type ChangePasswordRequest struct {
 	Password        string `json:"password" form:"password" validate:"gte=6" example:"rahadinabudimansundara"`
 	PasswordConfirm string `json:"passwordconfirm" form:"password" validate:"gte=6" example:"rahadinabudimansundara"`
 }
+
+type ChangePasswordByOTPResponse struct {
+	Email   string `json:"email" form:"email" example:"me@r4ha.com"`
+	Message string `json:"message" form:"message" example:"Password has been reset successfully"`
+}
