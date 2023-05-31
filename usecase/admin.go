@@ -8,6 +8,7 @@ import (
 	"go_bedu/models"
 	"go_bedu/repositories"
 	"go_bedu/utils"
+	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
@@ -22,6 +23,7 @@ type AdminUsecase interface {
 	VerifyEmail(verificationCode any) (res dtos.VerifyEmailResponse, err error)
 	UpdateAdminByOTP(otp int, req dtos.ChangePasswordRequest) (res dtos.ForgotPasswordResponse, err error)
 	ForgotPassword(req dtos.ForgotPasswordRequest) (res dtos.ForgotPasswordResponse, err error)
+	ChangePassword(id uint, req dtos.ChangePasswordAdminRequest) (res helpers.ResponseMessage, err error)
 	GetAdmin() ([]dtos.AdminDetailResponse, error)
 	GetAdminById(id uint) (res dtos.AdminProfileResponse, err error)
 	UpdateAdmin(id uint, req dtos.UpdateAdminRequest) (res dtos.UpdateAdminResponse, err error)
@@ -76,7 +78,7 @@ func (u *adminUsecase) GetAdmin() ([]dtos.AdminDetailResponse, error) {
 // AdminLogin godoc
 // @Summary      Login Admin with Email and Password
 // @Description  Login an account
-// @Tags         Admin - Account
+// @Tags         Admin - Auth
 // @Accept       json
 // @Produce      json
 // @Param        request body dtos.LoginRequest true "Payload Body [RAW]"
@@ -125,7 +127,7 @@ func (u *adminUsecase) LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dt
 // AdminVerif godoc
 // @Summary      Verify Email by Verification Code
 // @Description  Verif an account
-// @Tags         Admin - Verify
+// @Tags         Admin - Auth
 // @Accept       json
 // @Produce      json
 // @Param        request body dtos.VerifyEmailRequest true "Payload Body [RAW]"
@@ -159,10 +161,28 @@ func (u *adminUsecase) VerifyEmail(verificationCode any) (res dtos.VerifyEmailRe
 	return res, nil
 }
 
+// UpdateAdminByOTP godoc
+// @Summary      Change Password by OTP
+// @Description  Change Password an Account
+// @Tags         Admin - Auth
+// @Accept       json
+// @Produce      json
+// @Param        request body dtos.ChangePasswordRequest true "Payload Body [RAW]"
+// @Success      201 {object} dtos.VerifyEmailResponse
+// @Failure      400 {object} dtos.BadRequestResponse
+// @Failure      401 {object} dtos.UnauthorizedResponse
+// @Failure      403 {object} dtos.ForbiddenResponse
+// @Failure      404 {object} dtos.NotFoundResponse
+// @Failure      500 {object} dtos.InternalServerErrorResponse
+// @Router       /change-password/{otp} [post]
 func (u *adminUsecase) UpdateAdminByOTP(otp int, req dtos.ChangePasswordRequest) (res dtos.ForgotPasswordResponse, err error) {
 	admin, err := u.adminRepository.GetAdminOTP(otp)
 	if err != nil {
 		return res, echo.NewHTTPError(400, "Failed to get admin")
+	}
+
+	if req.Password != req.PasswordConfirm {
+		return res, echo.NewHTTPError(400, "Password not matches")
 	}
 
 	// Reset OTP and OTPReq
@@ -189,6 +209,20 @@ func (u *adminUsecase) UpdateAdminByOTP(otp int, req dtos.ChangePasswordRequest)
 	return res, nil
 }
 
+// ForgotPassword godoc
+// @Summary      Forgot Password Request OTP
+// @Description  Forgot Password an Account
+// @Tags         Admin - Auth
+// @Accept       json
+// @Produce      json
+// @Param        request body dtos.ForgotPasswordRequest true "Payload Body [RAW]"
+// @Success      201 {object} dtos.VerifyEmailResponse
+// @Failure      400 {object} dtos.BadRequestResponse
+// @Failure      401 {object} dtos.UnauthorizedResponse
+// @Failure      403 {object} dtos.ForbiddenResponse
+// @Failure      404 {object} dtos.NotFoundResponse
+// @Failure      500 {object} dtos.InternalServerErrorResponse
+// @Router       /forgot-password [post]
 func (u *adminUsecase) ForgotPassword(req dtos.ForgotPasswordRequest) (res dtos.ForgotPasswordResponse, err error) {
 	admin, err := u.adminRepository.GetAdminByEmail(req.Email)
 	if err != nil {
@@ -210,7 +244,7 @@ func (u *adminUsecase) ForgotPassword(req dtos.ForgotPasswordRequest) (res dtos.
 
 	// 👇 Send Email
 	emailData := utils.EmailData{
-		URL:       "http://" + config.ClientOrigin + "/forgot-password/" + url.PathEscape(otp),
+		URL:       "http://" + config.ClientOrigin + "/change-password/" + url.PathEscape(otp),
 		FirstName: admin.Nama,
 		Subject:   "Your OTP to reset password",
 	}
@@ -225,10 +259,60 @@ func (u *adminUsecase) ForgotPassword(req dtos.ForgotPasswordRequest) (res dtos.
 	return res, nil
 }
 
+// ChangePassword godoc
+// @Summary      Change Password Admin
+// @Description  Change Password Admin
+// @Tags         Admin - Account
+// @Accept       json
+// @Produce      json
+// @Param        request body dtos.ChangePasswordAdminRequest true "Payload Body [RAW]"
+// @Success      201 {object} dtos.VerifyEmailResponse
+// @Failure      400 {object} dtos.BadRequestResponse
+// @Failure      401 {object} dtos.UnauthorizedResponse
+// @Failure      403 {object} dtos.ForbiddenResponse
+// @Failure      404 {object} dtos.NotFoundResponse
+// @Failure      500 {object} dtos.InternalServerErrorResponse
+// @Router       /admin/change-password [post]
+// @Security BearerAuth
+func (u *adminUsecase) ChangePassword(id uint, req dtos.ChangePasswordAdminRequest) (res helpers.ResponseMessage, err error) {
+	admin, err := u.adminRepository.GetAdminById(id)
+	if err != nil {
+		return res, echo.NewHTTPError(400, "Failed to get admin")
+	}
+
+	err = helpers.ComparePassword(req.OldPassword, admin.Password)
+	if err != nil {
+		return res, echo.NewHTTPError(400, "Wrong password")
+	}
+
+	if req.Password != req.PasswordConfirm {
+		return res, echo.NewHTTPError(400, "Password not matches")
+	}
+
+	passwordHash, err := helpers.HashPassword(req.Password)
+	if err != nil {
+		return res, echo.NewHTTPError(400, "Failed to hash password")
+	}
+
+	admin.Password = string(passwordHash)
+
+	admin, err = u.adminRepository.UpdateAdmin(admin)
+	if err != nil {
+		return res, echo.NewHTTPError(400, "Failed to update admin")
+	}
+
+	res = helpers.NewResponseMessage(
+		http.StatusOK,
+		"Password has been changed successfully",
+	)
+
+	return res, nil
+}
+
 // AdminRegister godoc
 // @Summary      Register Admin
 // @Description  Register an account
-// @Tags         Admin - Account
+// @Tags         Admin - Auth
 // @Accept       json
 // @Produce      json
 // @Param        request body dtos.RegisterAdminRequest true "Payload Body [RAW]"

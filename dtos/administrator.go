@@ -18,7 +18,7 @@ type RegisterAdminRequest struct {
 	Nama            string `json:"nama" form:"nama" validate:"required" example:"Rahadina Budiman Sundara"`
 	Email           string `json:"email" form:"email" validate:"required,email" example:"me@r4ha.com"`
 	Password        string `json:"password" form:"password" validate:"gte=6" example:"rahadinabudimansundara"`
-	PasswordConfirm string `json:"passwordConfirm" form:"password" validate:"gte=6" example:"rahadinabudimansundara"`
+	PasswordConfirm string `json:"passwordconfirm" form:"password" validate:"gte=6" example:"rahadinabudimansundara"`
 	Verified        bool   `gorm:"type:enum('False', 'True');default:'False'; not-null" example:"False"`
 	Role            string `json:"role" form:"role" gorm:"type:enum('Admin', 'Super Admin');default:'Admin'; not-null" example:"Admin"`
 }
@@ -83,6 +83,13 @@ type ForgotPasswordResponse struct {
 	Message string `json:"message" form:"message" example:"Email has been sent"`
 }
 
+type ChangePasswordAdminRequest struct {
+	OldPassword     string `json:"old_password" form:"old_password" validate:"gte=6" example:"rahadinabudimansundara"`
+	Password        string `json:"password" form:"password" validate:"gte=6" example:"rahadinabudimansundara"`
+	PasswordConfirm string `json:"passwordconfirm" form:"password" validate:"gte=6" example:"rahadinabudimansundara"`
+}
+
 type ChangePasswordRequest struct {
-	Password string `json:"password" form:"password" validate:"gte=6" example:"rahadinabudimansundara"`
+	Password        string `json:"password" form:"password" validate:"gte=6" example:"rahadinabudimansundara"`
+	PasswordConfirm string `json:"passwordconfirm" form:"password" validate:"gte=6" example:"rahadinabudimansundara"`
 }
