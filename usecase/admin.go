@@ -131,7 +131,7 @@ func (u *adminUsecase) LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dt
 // @Accept       json
 // @Produce      json
 // @Param        request body dtos.VerifyEmailRequest true "Payload Body [RAW]"
-// @Success      201 {object} dtos.VerifyEmailResponse
+// @Success      200 {object} dtos.VerifyEmailOKResponse
 // @Failure      400 {object} dtos.BadRequestResponse
 // @Failure      401 {object} dtos.UnauthorizedResponse
 // @Failure      403 {object} dtos.ForbiddenResponse
@@ -168,7 +168,7 @@ func (u *adminUsecase) VerifyEmail(verificationCode any) (res dtos.VerifyEmailRe
 // @Accept       json
 // @Produce      json
 // @Param        request body dtos.ChangePasswordRequest true "Payload Body [RAW]"
-// @Success      201 {object} dtos.VerifyEmailResponse
+// @Success      200 {object} dtos.ChangePasswordOKResponse
 // @Failure      400 {object} dtos.BadRequestResponse
 // @Failure      401 {object} dtos.UnauthorizedResponse
 // @Failure      403 {object} dtos.ForbiddenResponse
@@ -216,7 +216,7 @@ func (u *adminUsecase) UpdateAdminByOTP(otp int, req dtos.ChangePasswordRequest)
 // @Accept       json
 // @Produce      json
 // @Param        request body dtos.ForgotPasswordRequest true "Payload Body [RAW]"
-// @Success      201 {object} dtos.VerifyEmailResponse
+// @Success      200 {object} dtos.ForgotPasswordOKResponse
 // @Failure      400 {object} dtos.BadRequestResponse
 // @Failure      401 {object} dtos.UnauthorizedResponse
 // @Failure      403 {object} dtos.ForbiddenResponse
@@ -266,7 +266,7 @@ func (u *adminUsecase) ForgotPassword(req dtos.ForgotPasswordRequest) (res dtos.
 // @Accept       json
 // @Produce      json
 // @Param        request body dtos.ChangePasswordAdminRequest true "Payload Body [RAW]"
-// @Success      201 {object} dtos.VerifyEmailResponse
+// @Success      200 {object} dtos.ChangePasswordOKResponse
 // @Failure      400 {object} dtos.BadRequestResponse
 // @Failure      401 {object} dtos.UnauthorizedResponse
 // @Failure      403 {object} dtos.ForbiddenResponse

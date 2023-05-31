@@ -322,10 +322,10 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created",
+                    "200": {
+                        "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dtos.VerifyEmailResponse"
+                            "$ref": "#/definitions/dtos.ChangePasswordOKResponse"
                         }
                     },
                     "400": {
@@ -716,10 +716,10 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created",
+                    "200": {
+                        "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dtos.VerifyEmailResponse"
+                            "$ref": "#/definitions/dtos.ChangePasswordOKResponse"
                         }
                     },
                     "400": {
@@ -780,10 +780,10 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created",
+                    "200": {
+                        "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dtos.VerifyEmailResponse"
+                            "$ref": "#/definitions/dtos.ForgotPasswordOKResponse"
                         }
                     },
                     "400": {
@@ -972,10 +972,10 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created",
+                    "200": {
+                        "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dtos.VerifyEmailResponse"
+                            "$ref": "#/definitions/dtos.VerifyEmailOKResponse"
                         }
                     },
                     "400": {
@@ -1181,6 +1181,23 @@ const docTemplate = `{
                 }
             }
         },
+        "dtos.ChangePasswordOKResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "me@r4ha.com"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Password has been reset successfully"
+                },
+                "status_code": {
+                    "type": "integer",
+                    "example": 200
+                }
+            }
+        },
         "dtos.ChangePasswordRequest": {
             "type": "object",
             "properties": {
@@ -1250,6 +1267,23 @@ const docTemplate = `{
                 "status_code": {
                     "type": "integer",
                     "example": 403
+                }
+            }
+        },
+        "dtos.ForgotPasswordOKResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "me@r4ha.com"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "OTP has been sent to your email"
+                },
+                "status_code": {
+                    "type": "integer",
+                    "example": 200
                 }
             }
         },
@@ -1335,20 +1369,20 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "email",
-                "password"
+                "token"
             ],
             "properties": {
                 "email": {
                     "type": "string",
                     "example": "me@r4ha.com"
                 },
-                "password": {
-                    "type": "string",
-                    "example": "rahadinabudimansundara"
-                },
                 "status_code": {
                     "type": "integer",
                     "example": 200
+                },
+                "token": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
                 }
             }
         },
@@ -1455,19 +1489,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dtos.VerifyEmailRequest": {
-            "type": "object",
-            "required": [
-                "verification_code"
-            ],
-            "properties": {
-                "verification_code": {
-                    "type": "string",
-                    "example": "1234567890"
-                }
-            }
-        },
-        "dtos.VerifyEmailResponse": {
+        "dtos.VerifyEmailOKResponse": {
             "type": "object",
             "properties": {
                 "email": {
@@ -1477,6 +1499,22 @@ const docTemplate = `{
                 "message": {
                     "type": "string",
                     "example": "Email has been verified"
+                },
+                "status_code": {
+                    "type": "integer",
+                    "example": 200
+                }
+            }
+        },
+        "dtos.VerifyEmailRequest": {
+            "type": "object",
+            "required": [
+                "verification_code"
+            ],
+            "properties": {
+                "verification_code": {
+                    "type": "string",
+                    "example": "1234567890"
                 }
             }
         },
