@@ -19,6 +19,7 @@ type AdminController interface {
 	ForgotPasswordAdminController(c echo.Context) error
 	VerifyEmailAdminController(c echo.Context) error
 	VerifyOTPAdminController(c echo.Context) error
+	ChangePasswordController(c echo.Context) error
 	GetAdminsController(c echo.Context) error
 	GetAdminByIdController(c echo.Context) error
 	CreateAdminController(c echo.Context) error
@@ -219,6 +220,56 @@ func (c *adminController) VerifyOTPAdminController(ctx echo.Context) error {
 		helpers.NewResponse(
 			http.StatusOK,
 			"Success Forgot Password",
+			res,
+		),
+	)
+}
+
+// Controller for Change Password Admin
+func (c *adminController) ChangePasswordController(ctx echo.Context) error {
+	req := dtos.ChangePasswordRequest{}
+
+	id, err := m.IsAdmin(ctx)
+	if err != nil {
+		return ctx.JSON(
+			http.StatusUnauthorized,
+			helpers.NewErrorResponse(
+				http.StatusUnauthorized,
+				"Routes for Admin Only",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+
+	ctx.Bind(&req)
+	if err := ctx.Validate(&req); err != nil {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Field cannot be empty or Password must be 6 character",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+
+	res, err := c.adminUsecase.ChangePassword(uint(id), req)
+	if err != nil {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Could not change password",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+
+	return ctx.JSON(
+		http.StatusOK,
+		helpers.NewResponse(
+			http.StatusOK,
+			"Success Change Password",
 			res,
 		),
 	)

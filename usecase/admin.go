@@ -8,6 +8,7 @@ import (
 	"go_bedu/models"
 	"go_bedu/repositories"
 	"go_bedu/utils"
+	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
@@ -22,6 +23,7 @@ type AdminUsecase interface {
 	VerifyEmail(verificationCode any) (res dtos.VerifyEmailResponse, err error)
 	UpdateAdminByOTP(otp int, req dtos.ChangePasswordRequest) (res dtos.ForgotPasswordResponse, err error)
 	ForgotPassword(req dtos.ForgotPasswordRequest) (res dtos.ForgotPasswordResponse, err error)
+	ChangePassword(id uint, req dtos.ChangePasswordRequest) (res helpers.ResponseMessage, err error)
 	GetAdmin() ([]dtos.AdminDetailResponse, error)
 	GetAdminById(id uint) (res dtos.AdminProfileResponse, err error)
 	UpdateAdmin(id uint, req dtos.UpdateAdminRequest) (res dtos.UpdateAdminResponse, err error)
@@ -221,6 +223,32 @@ func (u *adminUsecase) ForgotPassword(req dtos.ForgotPasswordRequest) (res dtos.
 		Email:   admin.Email,
 		Message: "OTP has been sent to your email",
 	}
+
+	return res, nil
+}
+
+func (u *adminUsecase) ChangePassword(id uint, req dtos.ChangePasswordRequest) (res helpers.ResponseMessage, err error) {
+	admin, err := u.adminRepository.GetAdminById(id)
+	if err != nil {
+		return res, echo.NewHTTPError(400, "Failed to get admin")
+	}
+
+	passwordHash, err := helpers.HashPassword(req.Password)
+	if err != nil {
+		return res, echo.NewHTTPError(400, "Failed to hash password")
+	}
+
+	admin.Password = string(passwordHash)
+
+	admin, err = u.adminRepository.UpdateAdmin(admin)
+	if err != nil {
+		return res, echo.NewHTTPError(400, "Failed to update admin")
+	}
+
+	res = helpers.NewResponseMessage(
+		http.StatusOK,
+		"Password has been changed successfully",
+	)
 
 	return res, nil
 }
