@@ -119,6 +119,18 @@ definitions:
         minLength: 6
         type: string
     type: object
+  dtos.ChangePasswordOKResponse:
+    properties:
+      email:
+        example: me@r4ha.com
+        type: string
+      message:
+        example: Password has been reset successfully
+        type: string
+      status_code:
+        example: 200
+        type: integer
+    type: object
   dtos.ChangePasswordRequest:
     properties:
       password:
@@ -169,6 +181,18 @@ definitions:
         type: string
       status_code:
         example: 403
+        type: integer
+    type: object
+  dtos.ForgotPasswordOKResponse:
+    properties:
+      email:
+        example: me@r4ha.com
+        type: string
+      message:
+        example: OTP has been sent to your email
+        type: string
+      status_code:
+        example: 200
         type: integer
     type: object
   dtos.ForgotPasswordRequest:
@@ -230,15 +254,15 @@ definitions:
       email:
         example: me@r4ha.com
         type: string
-      password:
-        example: rahadinabudimansundara
-        type: string
       status_code:
         example: 200
         type: integer
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+        type: string
     required:
     - email
-    - password
+    - token
     type: object
   dtos.NotFoundResponse:
     properties:
@@ -315,15 +339,7 @@ definitions:
     - email
     - nama
     type: object
-  dtos.VerifyEmailRequest:
-    properties:
-      verification_code:
-        example: "1234567890"
-        type: string
-    required:
-    - verification_code
-    type: object
-  dtos.VerifyEmailResponse:
+  dtos.VerifyEmailOKResponse:
     properties:
       email:
         example: me@r4ha.com
@@ -331,6 +347,17 @@ definitions:
       message:
         example: Email has been verified
         type: string
+      status_code:
+        example: 200
+        type: integer
+    type: object
+  dtos.VerifyEmailRequest:
+    properties:
+      verification_code:
+        example: "1234567890"
+        type: string
+    required:
+    - verification_code
     type: object
   helpers.Meta:
     properties:
@@ -676,10 +703,10 @@ paths:
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
+        "200":
+          description: OK
           schema:
-            $ref: '#/definitions/dtos.VerifyEmailResponse'
+            $ref: '#/definitions/dtos.ChangePasswordOKResponse'
         "400":
           description: Bad Request
           schema:
@@ -805,10 +832,10 @@ paths:
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
+        "200":
+          description: OK
           schema:
-            $ref: '#/definitions/dtos.VerifyEmailResponse'
+            $ref: '#/definitions/dtos.ChangePasswordOKResponse'
         "400":
           description: Bad Request
           schema:
@@ -847,10 +874,10 @@ paths:
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
+        "200":
+          description: OK
           schema:
-            $ref: '#/definitions/dtos.VerifyEmailResponse'
+            $ref: '#/definitions/dtos.ForgotPasswordOKResponse'
         "400":
           description: Bad Request
           schema:
@@ -973,10 +1000,10 @@ paths:
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
+        "200":
+          description: OK
           schema:
-            $ref: '#/definitions/dtos.VerifyEmailResponse'
+            $ref: '#/definitions/dtos.VerifyEmailOKResponse'
         "400":
           description: Bad Request
           schema:
