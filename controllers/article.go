@@ -343,6 +343,18 @@ func (c *articleController) UpdateArticle(ctx echo.Context) error {
 
 // Controller for delete article by id from params
 func (c *articleController) DeleteArticle(ctx echo.Context) error {
+	_, err := m.IsAdmin(ctx)
+	if err != nil {
+		return ctx.JSON(
+			http.StatusUnauthorized,
+			helpers.NewErrorResponse(
+				http.StatusUnauthorized,
+				"Routes for Admin Only",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		return ctx.JSON(

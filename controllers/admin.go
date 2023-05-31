@@ -227,7 +227,7 @@ func (c *adminController) VerifyOTPAdminController(ctx echo.Context) error {
 
 // Controller for Change Password Admin
 func (c *adminController) ChangePasswordController(ctx echo.Context) error {
-	req := dtos.ChangePasswordRequest{}
+	req := dtos.ChangePasswordAdminRequest{}
 
 	id, err := m.IsAdmin(ctx)
 	if err != nil {
