@@ -83,76 +83,6 @@ const docTemplate = `{
             }
         },
         "/admin/article": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get all articles",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Admin - Article"
-                ],
-                "summary": "Get all articles",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Page number",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Number of items per page",
-                        "name": "limit",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dtos.GetAllArticleStatusOKResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/dtos.BadRequestResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/dtos.UnauthorizedResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/dtos.ForbiddenResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/dtos.NotFoundResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/dtos.InternalServerErrorResponse"
-                        }
-                    }
-                }
-            },
             "put": {
                 "security": [
                     {
@@ -296,13 +226,13 @@ const docTemplate = `{
             }
         },
         "/admin/article/{id}": {
-            "get": {
+            "delete": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get article by ID",
+                "description": "Delete a article",
                 "consumes": [
                     "application/json"
                 ],
@@ -312,7 +242,7 @@ const docTemplate = `{
                 "tags": [
                     "Admin - Article"
                 ],
-                "summary": "Get article by ID",
+                "summary": "Delete a article",
                 "parameters": [
                     {
                         "type": "integer",
@@ -326,7 +256,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dtos.ArticleStatusOKResponse"
+                            "$ref": "#/definitions/dtos.StatusOKDeletedResponse"
                         }
                     },
                     "400": {
@@ -360,14 +290,16 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
-            "delete": {
+            }
+        },
+        "/admin/change-password": {
+            "post": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Delete a article",
+                "description": "Change Password Admin",
                 "consumes": [
                     "application/json"
                 ],
@@ -375,23 +307,25 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin - Article"
+                    "Admin - Account"
                 ],
-                "summary": "Delete a article",
+                "summary": "Change Password Admin",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "ID article",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
+                        "description": "Payload Body [RAW]",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ChangePasswordAdminRequest"
+                        }
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/dtos.StatusOKDeletedResponse"
+                            "$ref": "#/definitions/dtos.VerifyEmailResponse"
                         }
                     },
                     "400": {
@@ -628,6 +562,263 @@ const docTemplate = `{
                 }
             }
         },
+        "/article": {
+            "get": {
+                "description": "Get all articles",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Article"
+                ],
+                "summary": "Get all articles",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of items per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.GetAllArticleStatusOKResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.BadRequestResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.UnauthorizedResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ForbiddenResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.NotFoundResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/article/{id}": {
+            "get": {
+                "description": "Get article by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Article"
+                ],
+                "summary": "Get article by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID article",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ArticleStatusOKResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.BadRequestResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.UnauthorizedResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ForbiddenResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.NotFoundResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/change-password/{otp}": {
+            "post": {
+                "description": "Change Password an Account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin - Auth"
+                ],
+                "summary": "Change Password by OTP",
+                "parameters": [
+                    {
+                        "description": "Payload Body [RAW]",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ChangePasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.VerifyEmailResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.BadRequestResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.UnauthorizedResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ForbiddenResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.NotFoundResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/forgot-password": {
+            "post": {
+                "description": "Forgot Password an Account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin - Auth"
+                ],
+                "summary": "Forgot Password Request OTP",
+                "parameters": [
+                    {
+                        "description": "Payload Body [RAW]",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ForgotPasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.VerifyEmailResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.BadRequestResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.UnauthorizedResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ForbiddenResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.NotFoundResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/login": {
             "post": {
                 "description": "Login an account",
@@ -638,7 +829,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin - Account"
+                    "Admin - Auth"
                 ],
                 "summary": "Login Admin with Email and Password",
                 "parameters": [
@@ -702,7 +893,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin - Account"
+                    "Admin - Auth"
                 ],
                 "summary": "Register Admin",
                 "parameters": [
@@ -766,7 +957,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin - Verify"
+                    "Admin - Auth"
                 ],
                 "summary": "Verify Email by Verification Code",
                 "parameters": [
@@ -916,7 +1107,7 @@ const docTemplate = `{
                 },
                 "image": {
                     "type": "string",
-                    "example": "link image"
+                    "example": "gambar2.jpg"
                 },
                 "label": {
                     "type": "string",
@@ -925,6 +1116,10 @@ const docTemplate = `{
                 "slug": {
                     "type": "string",
                     "example": "judularticle"
+                },
+                "thumbnail": {
+                    "type": "string",
+                    "example": "gambar1.jpg"
                 },
                 "title": {
                     "type": "string",
@@ -966,6 +1161,41 @@ const docTemplate = `{
                 }
             }
         },
+        "dtos.ChangePasswordAdminRequest": {
+            "type": "object",
+            "properties": {
+                "old_password": {
+                    "type": "string",
+                    "minLength": 6,
+                    "example": "rahadinabudimansundara"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6,
+                    "example": "rahadinabudimansundara"
+                },
+                "passwordconfirm": {
+                    "type": "string",
+                    "minLength": 6,
+                    "example": "rahadinabudimansundara"
+                }
+            }
+        },
+        "dtos.ChangePasswordRequest": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string",
+                    "minLength": 6,
+                    "example": "rahadinabudimansundara"
+                },
+                "passwordconfirm": {
+                    "type": "string",
+                    "minLength": 6,
+                    "example": "rahadinabudimansundara"
+                }
+            }
+        },
         "dtos.CreateArticlesRequest": {
             "type": "object",
             "properties": {
@@ -988,6 +1218,10 @@ const docTemplate = `{
                 "label": {
                     "type": "string",
                     "example": "kebugaran"
+                },
+                "thumbnail": {
+                    "type": "string",
+                    "example": "gambar1.jpg"
                 },
                 "title": {
                     "type": "string",
@@ -1016,6 +1250,18 @@ const docTemplate = `{
                 "status_code": {
                     "type": "integer",
                     "example": 403
+                }
+            }
+        },
+        "dtos.ForgotPasswordRequest": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "me@r4ha.com"
                 }
             }
         },
@@ -1140,7 +1386,7 @@ const docTemplate = `{
                     "minLength": 6,
                     "example": "rahadinabudimansundara"
                 },
-                "passwordConfirm": {
+                "passwordconfirm": {
                     "type": "string",
                     "minLength": 6,
                     "example": "rahadinabudimansundara"

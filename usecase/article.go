@@ -5,6 +5,7 @@ import (
 	"go_bedu/helpers"
 	"go_bedu/models"
 	"go_bedu/repositories"
+	"os"
 )
 
 type ArticleUsecase interface {
@@ -26,7 +27,7 @@ func NewArticleUsecase(ArticleRepository repositories.ArticleRepository) Article
 // GetAllArticles godoc
 // @Summary      Get all articles
 // @Description  Get all articles
-// @Tags         Admin - Article
+// @Tags         Article
 // @Accept       json
 // @Produce      json
 // @Param page query int false "Page number"
@@ -37,8 +38,7 @@ func NewArticleUsecase(ArticleRepository repositories.ArticleRepository) Article
 // @Failure      403 {object} dtos.ForbiddenResponse
 // @Failure      404 {object} dtos.NotFoundResponse
 // @Failure      500 {object} dtos.InternalServerErrorResponse
-// @Router       /admin/article [get]
-// @Security BearerAuth
+// @Router       /article [get]
 func (u *articleUsecase) GetAllArticles(page, limit int) ([]dtos.ArticleDetailResponse, int, error) {
 	articles, count, err := u.articleRepository.GetAllArticles(page, limit)
 	if err != nil {
@@ -66,7 +66,7 @@ func (u *articleUsecase) GetAllArticles(page, limit int) ([]dtos.ArticleDetailRe
 // GetArticleByID godoc
 // @Summary      Get article by ID
 // @Description  Get article by ID
-// @Tags         Admin - Article
+// @Tags         Article
 // @Accept       json
 // @Produce      json
 // @Param id path integer true "ID article"
@@ -76,8 +76,7 @@ func (u *articleUsecase) GetAllArticles(page, limit int) ([]dtos.ArticleDetailRe
 // @Failure      403 {object} dtos.ForbiddenResponse
 // @Failure      404 {object} dtos.NotFoundResponse
 // @Failure      500 {object} dtos.InternalServerErrorResponse
-// @Router       /admin/article/{id} [get]
-// @Security BearerAuth
+// @Router       /article/{id} [get]
 func (u *articleUsecase) GetArticleByID(id uint) (dtos.ArticleDetailResponse, error) {
 	var articleResponses dtos.ArticleDetailResponse
 
@@ -222,6 +221,22 @@ func (u *articleUsecase) UpdateArticle(id uint, article dtos.UpdateArticlesReque
 // @Security BearerAuth
 func (u *articleUsecase) DeleteArticle(id uint) error {
 	article, err := u.articleRepository.GetArticleByID(id)
+	if err != nil {
+		return err
+	}
+
+	// Destination paths
+	imageDst := "public/images/" + article.Image
+	thumbnailDst := "public/images/" + article.Thumbnail
+
+	// Remove the Images
+	err = os.Remove(imageDst)
+	if err != nil {
+		return err
+	}
+
+	// Remove the Thumbnail
+	err = os.Remove(thumbnailDst)
 	if err != nil {
 		return err
 	}
