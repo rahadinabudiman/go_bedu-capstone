@@ -64,6 +64,7 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 	admin.PUT("", adminController.UpdateAdminController)
 	admin.DELETE("", adminController.DeleteAdminController)
 	admin.POST("/change-password", adminController.ChangePasswordController)
+	admin.GET("/logout", adminController.LogoutAdminController)
 
 	// Article Admin Routes
 	admin.POST("/article", articleController.CreateArticle)
