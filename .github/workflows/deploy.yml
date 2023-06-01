@@ -18,4 +18,6 @@ jobs:
           script: |
             cd go_bedu
             git pull origin prod
+            docker image prune --force
+            docker system prune --all --volumes --force > /dev/null
             docker-compose down && docker-compose up --build --force-recreate --no-deps -d
