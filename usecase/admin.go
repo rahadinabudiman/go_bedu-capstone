@@ -144,6 +144,20 @@ func (u *adminUsecase) LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dt
 	return
 }
 
+// LogoutAdmin godoc
+// @Summary      Logout Administrator
+// @Description  Logout Administrator
+// @Tags         Admin - Account
+// @Accept       json
+// @Produce      json
+// @Success      200 {object} dtos.LogoutAdminOKResponse
+// @Failure      400 {object} dtos.BadRequestResponse
+// @Failure      401 {object} dtos.UnauthorizedResponse
+// @Failure      403 {object} dtos.ForbiddenResponse
+// @Failure      404 {object} dtos.NotFoundResponse
+// @Failure      500 {object} dtos.InternalServerErrorResponse
+// @Router       /admin/logout [get]
+// @Security BearerAuth
 func (u *adminUsecase) LogoutAdmin(c echo.Context) (res dtos.LogoutAdminResponse, err error) {
 	err = middlewares.DeleteCookie(c)
 	if err != nil {
