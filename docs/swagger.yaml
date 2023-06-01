@@ -27,6 +27,11 @@ definitions:
       updated_at:
         example: "2023-05-17T15:07:16.504+07:00"
         type: string
+      username:
+        example: r4ha
+        type: string
+    required:
+    - username
     type: object
   dtos.AdminStatusOKResponse:
     properties:
@@ -102,6 +107,15 @@ definitions:
         type: string
       status_code:
         example: 400
+        type: integer
+    type: object
+  dtos.ChangePasswordAdminOKResponse:
+    properties:
+      message:
+        example: Password has been reset successfully
+        type: string
+      status_code:
+        example: 200
         type: integer
     type: object
   dtos.ChangePasswordAdminRequest:
@@ -239,30 +253,30 @@ definitions:
     type: object
   dtos.LoginRequest:
     properties:
-      email:
-        example: me@r4ha.com
-        type: string
       password:
         example: rahadinabudimansundara
         type: string
+      username:
+        example: r4ha
+        type: string
     required:
-    - email
     - password
+    - username
     type: object
   dtos.LoginStatusOKResponse:
     properties:
-      email:
-        example: me@r4ha.com
-        type: string
       status_code:
         example: 200
         type: integer
       token:
         example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
         type: string
+      username:
+        example: r4ha
+        type: string
     required:
-    - email
     - token
+    - username
     type: object
   dtos.NotFoundResponse:
     properties:
@@ -293,12 +307,16 @@ definitions:
       role:
         example: Admin
         type: string
+      username:
+        example: r4ha
+        type: string
       verified:
         example: false
         type: boolean
     required:
     - email
     - nama
+    - username
     type: object
   dtos.StatusOKDeletedResponse:
     properties:
@@ -335,21 +353,27 @@ definitions:
       role:
         example: Admin
         type: string
+      username:
+        example: r4ha
+        type: string
     required:
     - email
     - nama
+    - username
     type: object
   dtos.VerifyEmailOKResponse:
     properties:
-      email:
-        example: me@r4ha.com
-        type: string
       message:
         example: Email has been verified
         type: string
       status_code:
         example: 200
         type: integer
+      username:
+        example: r4ha
+        type: string
+    required:
+    - username
     type: object
   helpers.Meta:
     properties:
@@ -698,7 +722,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dtos.ChangePasswordOKResponse'
+            $ref: '#/definitions/dtos.ChangePasswordAdminOKResponse'
         "400":
           description: Bad Request
           schema:
