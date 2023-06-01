@@ -2,6 +2,11 @@ package dtos
 
 import "go_bedu/helpers"
 
+type LogoutAdminOKResponse struct {
+	StatusCode int    `json:"status_code" example:"200"`
+	Message    string `json:"message" form:"message" example:"Logout Success"`
+}
+
 type VerifyEmailOKResponse struct {
 	StatusCode int    `json:"status_code" example:"200"`
 	Username   string `json:"username" form:"username" validate:"required" example:"r4ha"`

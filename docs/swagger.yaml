@@ -278,6 +278,15 @@ definitions:
     - token
     - username
     type: object
+  dtos.LogoutAdminOKResponse:
+    properties:
+      message:
+        example: Logout Success
+        type: string
+      status_code:
+        example: 200
+        type: integer
+    type: object
   dtos.NotFoundResponse:
     properties:
       errors: {}
@@ -746,6 +755,43 @@ paths:
       security:
       - BearerAuth: []
       summary: Change Password Admin
+      tags:
+      - Admin - Account
+  /admin/logout:
+    get:
+      consumes:
+      - application/json
+      description: Logout Administrator
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.LogoutAdminOKResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Logout Administrator
       tags:
       - Admin - Account
   /article:
