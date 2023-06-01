@@ -351,14 +351,6 @@ definitions:
         example: 200
         type: integer
     type: object
-  dtos.VerifyEmailRequest:
-    properties:
-      verification_code:
-        example: "1234567890"
-        type: string
-    required:
-    - verification_code
-    type: object
   helpers.Meta:
     properties:
       current_page:
@@ -991,12 +983,11 @@ paths:
       - application/json
       description: Verif an account
       parameters:
-      - description: Payload Body [RAW]
-        in: body
-        name: request
+      - description: Verification Code
+        in: path
+        name: verification_code
         required: true
-        schema:
-          $ref: '#/definitions/dtos.VerifyEmailRequest'
+        type: string
       produces:
       - application/json
       responses:

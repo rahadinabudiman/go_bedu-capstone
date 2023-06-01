@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"bufio"
+	"fmt"
 	"go_bedu/dtos"
 	"go_bedu/helpers"
 	"go_bedu/initializers"
@@ -10,9 +12,11 @@ import (
 	"go_bedu/utils"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 
+	emailverifier "github.com/AfterShip/email-verifier"
 	"github.com/labstack/echo/v4"
 	"github.com/thanhpk/randstr"
 	"golang.org/x/crypto/bcrypt"
@@ -24,6 +28,7 @@ type AdminUsecase interface {
 	UpdateAdminByOTP(otp int, req dtos.ChangePasswordRequest) (res dtos.ForgotPasswordResponse, err error)
 	ForgotPassword(req dtos.ForgotPasswordRequest) (res dtos.ForgotPasswordResponse, err error)
 	ChangePassword(id uint, req dtos.ChangePasswordAdminRequest) (res helpers.ResponseMessage, err error)
+	MustDispEmailDom() (dispEmailDomains []string, err error)
 	GetAdmin() ([]dtos.AdminDetailResponse, error)
 	GetAdminById(id uint) (res dtos.AdminProfileResponse, err error)
 	UpdateAdmin(id uint, req dtos.UpdateAdminRequest) (res dtos.UpdateAdminResponse, err error)
@@ -37,6 +42,20 @@ type adminUsecase struct {
 
 func NewAdminUsecase(adminRepository repositories.AdminRepository) *adminUsecase {
 	return &adminUsecase{adminRepository}
+}
+
+func (u *adminUsecase) MustDispEmailDom() (dispEmailDomains []string, err error) {
+	file, err := os.Open("utils/disposable_email_blocklist.txt")
+	if err != nil {
+		return nil, err
+	}
+
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		dispEmailDomains = append(dispEmailDomains, scanner.Text())
+	}
+	return dispEmailDomains, nil
 }
 
 // GetAllAdmins godoc
@@ -97,7 +116,7 @@ func (u *adminUsecase) LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dt
 	}
 
 	if !admin.Verified {
-		return res, echo.NewHTTPError(400, "Email not verified")
+		return res, echo.NewHTTPError(400, "Please verify your email first")
 	}
 
 	err = helpers.ComparePassword(req.Password, admin.Password)
@@ -130,7 +149,7 @@ func (u *adminUsecase) LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dt
 // @Tags         Admin - Auth
 // @Accept       json
 // @Produce      json
-// @Param        request body dtos.VerifyEmailRequest true "Payload Body [RAW]"
+// @Param verification_code path string true "Verification Code"
 // @Success      200 {object} dtos.VerifyEmailOKResponse
 // @Failure      400 {object} dtos.BadRequestResponse
 // @Failure      401 {object} dtos.UnauthorizedResponse
@@ -324,9 +343,37 @@ func (u *adminUsecase) ChangePassword(id uint, req dtos.ChangePasswordAdminReque
 // @Failure      500 {object} dtos.InternalServerErrorResponse
 // @Router       /register [post]
 func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDetailResponse, error) {
-	var res dtos.AdminDetailResponse
+	var (
+		verifier = emailverifier.
+				NewVerifier().
+				EnableAutoUpdateDisposable().
+				EnableSMTPCheck().
+				DisableCatchAllCheck()
+
+		res dtos.AdminDetailResponse
+	)
 
 	req.Email = strings.ToLower(req.Email)
+	emailDomain := utils.GetEmailDomain(req.Email)
+	usernameDomain := utils.GetEmailUsername(req.Email)
+
+	// Check apakah domain email typo atau tidak
+	suggestion := verifier.SuggestDomain(emailDomain)
+	if suggestion != "" {
+		return res, echo.NewHTTPError(400, "Did you mean "+suggestion+"?")
+	}
+
+	// Check SMTP apakah domain email valid atau tidak
+	ret, err := verifier.CheckSMTP(emailDomain, usernameDomain)
+	if err != nil {
+		return res, echo.NewHTTPError(400, err)
+	}
+	fmt.Println("smtp validation result: ", ret)
+
+	// Check apakah email disposable atau tidak
+	if verifier.IsDisposable(emailDomain) {
+		return res, echo.NewHTTPError(400, "Sorry, we do not accept disposable email addresses")
+	}
 
 	// Check apakah email sudah terdaftar atau belum
 	admin, _ := u.adminRepository.GetAdminByEmail(req.Email)

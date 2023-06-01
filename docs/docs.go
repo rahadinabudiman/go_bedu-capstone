@@ -962,13 +962,11 @@ const docTemplate = `{
                 "summary": "Verify Email by Verification Code",
                 "parameters": [
                     {
-                        "description": "Payload Body [RAW]",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dtos.VerifyEmailRequest"
-                        }
+                        "type": "string",
+                        "description": "Verification Code",
+                        "name": "verification_code",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1503,18 +1501,6 @@ const docTemplate = `{
                 "status_code": {
                     "type": "integer",
                     "example": 200
-                }
-            }
-        },
-        "dtos.VerifyEmailRequest": {
-            "type": "object",
-            "required": [
-                "verification_code"
-            ],
-            "properties": {
-                "verification_code": {
-                    "type": "string",
-                    "example": "1234567890"
                 }
             }
         },
