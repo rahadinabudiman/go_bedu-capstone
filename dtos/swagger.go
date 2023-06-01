@@ -4,7 +4,7 @@ import "go_bedu/helpers"
 
 type VerifyEmailOKResponse struct {
 	StatusCode int    `json:"status_code" example:"200"`
-	Email      string `json:"email" form:"email" example:"me@r4ha.com"`
+	Username   string `json:"username" form:"username" validate:"required" example:"r4ha"`
 	Message    string `json:"message" form:"message" example:"Email has been verified"`
 }
 
@@ -19,9 +19,14 @@ type ChangePasswordOKResponse struct {
 	Message    string `json:"message" form:"message" example:"Password has been reset successfully"`
 }
 
+type ChangePasswordAdminOKResponse struct {
+	StatusCode int    `json:"status_code" example:"200"`
+	Message    string `json:"message" form:"message" example:"Password has been reset successfully"`
+}
+
 type LoginStatusOKResponse struct {
 	StatusCode int    `json:"status_code" example:"200"`
-	Email      string `json:"email" form:"email" validate:"required,email" example:"me@r4ha.com"`
+	Username   string `json:"username" form:"username" validate:"required" example:"r4ha"`
 	Token      string `json:"token" form:"token" validate:"required" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"`
 }
 

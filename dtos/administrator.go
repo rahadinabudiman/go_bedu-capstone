@@ -6,6 +6,7 @@ import (
 
 type AdminDetailResponse struct {
 	ID        uint      `json:"id" from:"id"`
+	Username  string    `json:"username" form:"username" validate:"required" example:"r4ha"`
 	Nama      string    `json:"nama" from:"nama"`
 	Email     string    `json:"email" from:"email"`
 	Role      string    `json:"role" from:"role"`
@@ -16,6 +17,7 @@ type AdminDetailResponse struct {
 
 type RegisterAdminRequest struct {
 	Nama            string `json:"nama" form:"nama" validate:"required" example:"Rahadina Budiman Sundara"`
+	Username        string `json:"username" form:"username" validate:"required" example:"r4ha"`
 	Email           string `json:"email" form:"email" validate:"required,email" example:"me@r4ha.com"`
 	Password        string `json:"password" form:"password" validate:"gte=6" example:"rahadinabudimansundara"`
 	PasswordConfirm string `json:"passwordconfirm" form:"password" validate:"gte=6" example:"rahadinabudimansundara"`
@@ -25,6 +27,7 @@ type RegisterAdminRequest struct {
 
 type UpdateAdminRequest struct {
 	Nama     string `json:"nama" form:"nama" validate:"required" example:"Rahadina Budiman Sundara"`
+	Username string `json:"username" form:"username" validate:"required" example:"r4ha"`
 	Email    string `json:"email" form:"email" validate:"required,email" example:"me@r4ha.com"`
 	Password string `json:"password" form:"password" validate:"gte=6" example:"rahadinabudimansundara"`
 	Role     string `json:"role" form:"role" gorm:"type:enum('Admin', 'Super Admin');default:'Admin'; not-null" example:"Admin"`
@@ -36,6 +39,7 @@ type DeleteAdminRequest struct {
 
 type RegisterAdminResponse struct {
 	Nama     string `json:"nama" form:"nama" example:"Rahadina Budiman Sundara"`
+	Username string `json:"username" form:"username" validate:"required" example:"r4ha"`
 	Email    string `json:"email" form:"email" example:"me@r4ha.com"`
 	Password string `json:"password" form:"password" example:"rahadinabudimansundara"`
 	Role     string `json:"role" form:"role" example:"Admin"`
@@ -43,31 +47,33 @@ type RegisterAdminResponse struct {
 
 type UpdateAdminResponse struct {
 	Nama     string `json:"nama" form:"nama" example:"Rahadina Budiman Sundara"`
+	Username string `json:"username" form:"username" validate:"required" example:"r4ha"`
 	Email    string `json:"email" form:"email" example:"me@r4ha.com"`
 	Password string `json:"password" form:"password" example:"rahadinabudimansundara"`
 	Role     string `json:"role" form:"role" example:"Admin"`
 }
 
 type AdminProfileResponse struct {
-	ID    uint   `json:"id" form:"id" example:"1"`
-	Nama  string `json:"nama" form:"nama" example:"Rahadina Budiman Sundara"`
-	Email string `json:"email" form:"email" example:"me@r4ha.com"`
-	Role  string `json:"role" form:"role" example:"Admin"`
+	ID       uint   `json:"id" form:"id" example:"1"`
+	Username string `json:"username" form:"username" validate:"required" example:"r4ha"`
+	Nama     string `json:"nama" form:"nama" example:"Rahadina Budiman Sundara"`
+	Email    string `json:"email" form:"email" example:"me@r4ha.com"`
+	Role     string `json:"role" form:"role" example:"Admin"`
 }
 
 type LoginRequest struct {
-	Email    string `json:"email" form:"email" validate:"required,email" example:"me@r4ha.com"`
+	Username string `json:"username" form:"username" validate:"required" example:"r4ha"`
 	Password string `json:"password" form:"password" validate:"required" example:"rahadinabudimansundara"`
 }
 
 type LoginResponse struct {
-	Email string `json:"email" form:"email" example:"me@r4ha.com"`
-	Token string `json:"token" form:"token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"`
+	Username string `json:"username" form:"username" validate:"required" example:"r4ha"`
+	Token    string `json:"token" form:"token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"`
 }
 
 type VerifyEmailResponse struct {
-	Email   string `json:"email" form:"email" example:"me@r4ha.com"`
-	Message string `json:"message" form:"message" example:"Email has been verified"`
+	Username string `json:"username" form:"username" validate:"required" example:"r4ha"`
+	Message  string `json:"message" form:"message" example:"Email has been verified"`
 }
 
 type VerifyEmailRequest struct {
@@ -95,6 +101,6 @@ type ChangePasswordRequest struct {
 }
 
 type ChangePasswordByOTPResponse struct {
-	Email   string `json:"email" form:"email" example:"me@r4ha.com"`
-	Message string `json:"message" form:"message" example:"Password has been reset successfully"`
+	Username string `json:"username" form:"username" validate:"required" example:"r4ha"`
+	Message  string `json:"message" form:"message" example:"Password has been reset successfully"`
 }

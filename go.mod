@@ -10,6 +10,7 @@ require (
 )
 
 require (
+	github.com/AfterShip/email-verifier v1.3.3
 	github.com/joho/godotenv v1.5.1
 	github.com/k3a/html2text v1.2.1
 	github.com/spf13/viper v1.15.0
@@ -22,6 +23,7 @@ require (
 require (
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
+	github.com/hbollon/go-edlib v1.6.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
