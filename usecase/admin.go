@@ -24,6 +24,7 @@ import (
 
 type AdminUsecase interface {
 	LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dtos.LoginResponse, err error)
+	LogoutAdmin(c echo.Context) (res dtos.LogoutAdminResponse, err error)
 	VerifyEmail(verificationCode any) (res dtos.VerifyEmailResponse, err error)
 	UpdateAdminByOTP(otp int, req dtos.ChangePasswordRequest) (res dtos.ForgotPasswordResponse, err error)
 	ForgotPassword(req dtos.ForgotPasswordRequest) (res dtos.ForgotPasswordResponse, err error)
@@ -141,6 +142,15 @@ func (u *adminUsecase) LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dt
 	}
 
 	return
+}
+
+func (u *adminUsecase) LogoutAdmin(c echo.Context) (res dtos.LogoutAdminResponse, err error) {
+	err = middlewares.DeleteCookie(c)
+	if err != nil {
+		return res, echo.NewHTTPError(400, "Failed to logout")
+	}
+
+	return res, err
 }
 
 // AdminVerif godoc
