@@ -7,6 +7,7 @@ type Administrator struct {
 	PhotoProfile     string `json:"photo_profile" form:"photo_profile" gorm:"default:'profile-default.jpg'"`
 	Nama             string `json:"nama" form:"nama"`
 	Email            string `json:"email" form:"email" validate:"required,email"`
+	Username         string `json:"username" form:"username" validate:"required"`
 	Password         string `json:"password" form:"password" validate:"required"`
 	Role             string `json:"role" form:"role" gorm:"type:enum('Admin', 'Super Admin');default:'Admin'; not-null"`
 	VerificationCode string

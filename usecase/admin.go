@@ -109,9 +109,9 @@ func (u *adminUsecase) GetAdmin() ([]dtos.AdminDetailResponse, error) {
 // @Failure      500 {object} dtos.InternalServerErrorResponse
 // @Router       /login [post]
 func (u *adminUsecase) LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dtos.LoginResponse, err error) {
-	admin, err := u.adminRepository.GetAdminByEmail(req.Email)
+	admin, err := u.adminRepository.GetAdminByUsername(req.Username)
 	if err != nil {
-		echo.NewHTTPError(400, "Email not registered")
+		echo.NewHTTPError(400, "Username not registered")
 		return
 	}
 
@@ -125,7 +125,7 @@ func (u *adminUsecase) LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dt
 		return
 	}
 
-	token, err := middlewares.CreateToken(int(admin.ID), admin.Email, admin.Role)
+	token, err := middlewares.CreateToken(int(admin.ID), admin.Username, admin.Email, admin.Role)
 	if err != nil {
 		echo.NewHTTPError(400, "Failed to generate token")
 		return
@@ -136,8 +136,8 @@ func (u *adminUsecase) LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dt
 	middlewares.CreateCookie(c, token)
 
 	res = dtos.LoginResponse{
-		Email: admin.Email,
-		Token: admin.Token,
+		Username: admin.Username,
+		Token:    admin.Token,
 	}
 
 	return
@@ -173,8 +173,8 @@ func (u *adminUsecase) VerifyEmail(verificationCode any) (res dtos.VerifyEmailRe
 	u.adminRepository.UpdateAdmin(admin)
 
 	res = dtos.VerifyEmailResponse{
-		Email:   admin.Email,
-		Message: "Email has been verified",
+		Username: admin.Username,
+		Message:  "Email has been verified",
 	}
 
 	return res, nil
@@ -285,7 +285,7 @@ func (u *adminUsecase) ForgotPassword(req dtos.ForgotPasswordRequest) (res dtos.
 // @Accept       json
 // @Produce      json
 // @Param        request body dtos.ChangePasswordAdminRequest true "Payload Body [RAW]"
-// @Success      200 {object} dtos.ChangePasswordOKResponse
+// @Success      200 {object} dtos.ChangePasswordAdminOKResponse
 // @Failure      400 {object} dtos.BadRequestResponse
 // @Failure      401 {object} dtos.UnauthorizedResponse
 // @Failure      403 {object} dtos.ForbiddenResponse
@@ -353,6 +353,16 @@ func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDe
 		res dtos.AdminDetailResponse
 	)
 
+	err := helpers.ValidateUsername(req.Username)
+	if err != nil {
+		return res, echo.NewHTTPError(400, err)
+	}
+
+	username, _ := u.adminRepository.GetAdminByUsername(req.Username)
+	if username.ID > 0 {
+		return res, echo.NewHTTPError(400, "Username already in use")
+	}
+
 	req.Email = strings.ToLower(req.Email)
 	emailDomain := utils.GetEmailDomain(req.Email)
 	usernameDomain := utils.GetEmailUsername(req.Email)
@@ -378,11 +388,11 @@ func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDe
 	// Check apakah email sudah terdaftar atau belum
 	admin, _ := u.adminRepository.GetAdminByEmail(req.Email)
 	if admin.ID > 0 {
-		return res, echo.NewHTTPError(400, "Email sudah terdaftar")
+		return res, echo.NewHTTPError(400, "Email already in use")
 	}
 
 	if req.Password != req.PasswordConfirm {
-		return res, echo.NewHTTPError(400, "Password tidak sama")
+		return res, echo.NewHTTPError(400, "Password does not match")
 	}
 
 	passwordHash, err := helpers.HashPassword(req.Password)
@@ -398,6 +408,7 @@ func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDe
 
 	CreateAdmin := models.Administrator{
 		Nama:             req.Nama,
+		Username:         req.Username,
 		Email:            req.Email,
 		Password:         passwordHash,
 		VerificationCode: verification_code,
