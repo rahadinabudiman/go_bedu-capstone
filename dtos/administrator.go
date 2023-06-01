@@ -4,6 +4,10 @@ import (
 	"time"
 )
 
+type LogoutAdminResponse struct {
+	Message string `json:"message" form:"message" example:"Logout Success"`
+}
+
 type AdminDetailResponse struct {
 	ID        uint      `json:"id" from:"id"`
 	Username  string    `json:"username" form:"username" validate:"required" example:"r4ha"`

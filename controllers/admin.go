@@ -15,6 +15,7 @@ import (
 
 type AdminController interface {
 	LoginAdminController(c echo.Context) error
+	LogoutAdminController(c echo.Context) error
 	RegisterAdminController(c echo.Context) error
 	ForgotPasswordAdminController(c echo.Context) error
 	VerifyEmailAdminController(c echo.Context) error
@@ -34,6 +35,41 @@ type adminController struct {
 
 func NewAdminController(adminUsecase usecase.AdminUsecase, adminRepository repositories.AdminRepository) *adminController {
 	return &adminController{adminUsecase, adminRepository}
+}
+
+// Controller for Logout Admin from Cookie
+func (c *adminController) LogoutAdminController(ctx echo.Context) error {
+	_, err := m.IsAdmin(ctx)
+	if err != nil {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Please login first",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+
+	_, err = c.adminUsecase.LogoutAdmin(ctx)
+	if err != nil {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Logout failed",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+
+	return ctx.JSON(
+		http.StatusOK,
+		helpers.NewResponseMessage(
+			http.StatusOK,
+			"Success Logout",
+		),
+	)
 }
 
 // Controller for Login Admin from DB
