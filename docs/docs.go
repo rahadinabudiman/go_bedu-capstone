@@ -325,7 +325,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dtos.ChangePasswordOKResponse"
+                            "$ref": "#/definitions/dtos.ChangePasswordAdminOKResponse"
                         }
                     },
                     "400": {
@@ -962,13 +962,11 @@ const docTemplate = `{
                 "summary": "Verify Email by Verification Code",
                 "parameters": [
                     {
-                        "description": "Payload Body [RAW]",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dtos.VerifyEmailRequest"
-                        }
+                        "type": "string",
+                        "description": "Verification Code",
+                        "name": "verification_code",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1031,6 +1029,9 @@ const docTemplate = `{
         },
         "dtos.AdminDetailResponse": {
             "type": "object",
+            "required": [
+                "username"
+            ],
             "properties": {
                 "created_at": {
                     "type": "string",
@@ -1051,6 +1052,10 @@ const docTemplate = `{
                 "updated_at": {
                     "type": "string",
                     "example": "2023-05-17T15:07:16.504+07:00"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "r4ha"
                 }
             }
         },
@@ -1158,6 +1163,19 @@ const docTemplate = `{
                 "status_code": {
                     "type": "integer",
                     "example": 400
+                }
+            }
+        },
+        "dtos.ChangePasswordAdminOKResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Password has been reset successfully"
+                },
+                "status_code": {
+                    "type": "integer",
+                    "example": 200
                 }
             }
         },
@@ -1351,31 +1369,27 @@ const docTemplate = `{
         "dtos.LoginRequest": {
             "type": "object",
             "required": [
-                "email",
-                "password"
+                "password",
+                "username"
             ],
             "properties": {
-                "email": {
-                    "type": "string",
-                    "example": "me@r4ha.com"
-                },
                 "password": {
                     "type": "string",
                     "example": "rahadinabudimansundara"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "r4ha"
                 }
             }
         },
         "dtos.LoginStatusOKResponse": {
             "type": "object",
             "required": [
-                "email",
-                "token"
+                "token",
+                "username"
             ],
             "properties": {
-                "email": {
-                    "type": "string",
-                    "example": "me@r4ha.com"
-                },
                 "status_code": {
                     "type": "integer",
                     "example": 200
@@ -1383,6 +1397,10 @@ const docTemplate = `{
                 "token": {
                     "type": "string",
                     "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "r4ha"
                 }
             }
         },
@@ -1404,7 +1422,8 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "email",
-                "nama"
+                "nama",
+                "username"
             ],
             "properties": {
                 "email": {
@@ -1428,6 +1447,10 @@ const docTemplate = `{
                 "role": {
                     "type": "string",
                     "example": "Admin"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "r4ha"
                 },
                 "verified": {
                     "type": "boolean",
@@ -1467,7 +1490,8 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "email",
-                "nama"
+                "nama",
+                "username"
             ],
             "properties": {
                 "email": {
@@ -1486,16 +1510,19 @@ const docTemplate = `{
                 "role": {
                     "type": "string",
                     "example": "Admin"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "r4ha"
                 }
             }
         },
         "dtos.VerifyEmailOKResponse": {
             "type": "object",
+            "required": [
+                "username"
+            ],
             "properties": {
-                "email": {
-                    "type": "string",
-                    "example": "me@r4ha.com"
-                },
                 "message": {
                     "type": "string",
                     "example": "Email has been verified"
@@ -1503,18 +1530,10 @@ const docTemplate = `{
                 "status_code": {
                     "type": "integer",
                     "example": 200
-                }
-            }
-        },
-        "dtos.VerifyEmailRequest": {
-            "type": "object",
-            "required": [
-                "verification_code"
-            ],
-            "properties": {
-                "verification_code": {
+                },
+                "username": {
                     "type": "string",
-                    "example": "1234567890"
+                    "example": "r4ha"
                 }
             }
         },

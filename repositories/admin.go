@@ -14,6 +14,7 @@ type AdminRepository interface {
 	GetAdmins() ([]models.Administrator, error)
 	GetAdminById(id uint) (models.Administrator, error)
 	GetAdminByEmail(email string) (admin models.Administrator, err error)
+	GetAdminByUsername(username string) (admin models.Administrator, err error)
 	UpdateAdmin(admin models.Administrator) (models.Administrator, error)
 	CreateAdmin(admin models.Administrator) (models.Administrator, error)
 	DeleteAdmin(admin models.Administrator) error
@@ -93,6 +94,15 @@ func (r *adminRepository) GetAdminByEmail(email string) (models.Administrator, e
 	var admin models.Administrator
 
 	err := r.db.Where("email = ? AND deleted_at IS NULL", email).First(&admin).Error
+
+	return admin, err
+}
+
+// Get Admin By Username is a function to get admin by username
+func (r *adminRepository) GetAdminByUsername(username string) (models.Administrator, error) {
+	var admin models.Administrator
+
+	err := r.db.Where("Username = ? AND deleted_at IS NULL", username).First(&admin).Error
 
 	return admin, err
 }

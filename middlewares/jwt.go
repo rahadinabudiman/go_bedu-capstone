@@ -13,10 +13,11 @@ import (
 )
 
 // Create Token JWT from env
-func CreateToken(id int, email, role string) (string, error) {
+func CreateToken(id int, username, email, role string) (string, error) {
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true
 	claims["id"] = id
+	claims["username"] = username
 	claims["email"] = email
 	claims["role"] = role
 	claims["exp"] = time.Now().Add(time.Hour * 1).Unix()
