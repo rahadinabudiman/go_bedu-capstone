@@ -83,6 +83,7 @@ func (u *adminUsecase) GetAdmin() ([]dtos.AdminDetailResponse, error) {
 	for _, admin := range admins {
 		adminResponse = append(adminResponse, dtos.AdminDetailResponse{
 			ID:        admin.ID,
+			Username:  admin.Username,
 			Nama:      admin.Nama,
 			Email:     admin.Email,
 			Role:      admin.Role,
@@ -288,7 +289,7 @@ func (u *adminUsecase) ForgotPassword(req dtos.ForgotPasswordRequest) (res dtos.
 	// 👇 Send Email
 	emailData := utils.EmailData{
 		URL:       "http://" + config.ClientOrigin + "/change-password/" + url.PathEscape(otp),
-		FirstName: admin.Nama,
+		FirstName: admin.Username,
 		Subject:   "Your OTP to reset password",
 	}
 
@@ -443,7 +444,7 @@ func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDe
 		return res, err
 	}
 
-	var firstName = CreateAdmin.Nama
+	var firstName = CreateAdmin.Username
 
 	if strings.Contains(firstName, " ") {
 		firstName = strings.Split(firstName, " ")[1]
@@ -460,6 +461,7 @@ func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDe
 
 	resp := dtos.AdminDetailResponse{
 		ID:        admins.ID,
+		Username:  admins.Username,
 		Nama:      admins.Nama,
 		Email:     admins.Email,
 		Role:      admins.Role,
@@ -494,10 +496,11 @@ func (u *adminUsecase) GetAdminById(id uint) (res dtos.AdminProfileResponse, err
 	}
 
 	res = dtos.AdminProfileResponse{
-		ID:    admin.ID,
-		Nama:  admin.Nama,
-		Email: admin.Email,
-		Role:  admin.Role,
+		ID:       admin.ID,
+		Username: admin.Username,
+		Nama:     admin.Nama,
+		Email:    admin.Email,
+		Role:     admin.Role,
 	}
 
 	return res, nil
@@ -533,6 +536,7 @@ func (u *adminUsecase) UpdateAdmin(id uint, req dtos.UpdateAdminRequest) (dtos.U
 	admins.Email = req.Email
 	admins.Password = req.Password
 	admins.Role = req.Role
+	admins.Username = req.Username
 
 	// Check Role and save role information from JWT Cookie
 	admin, err := u.adminRepository.ReadToken(id)
@@ -566,6 +570,7 @@ func (u *adminUsecase) UpdateAdmin(id uint, req dtos.UpdateAdminRequest) (dtos.U
 		return res, err
 	}
 
+	res.Username = admins.Username
 	res.Nama = admins.Nama
 	res.Email = admins.Email
 	res.Password = admins.Password

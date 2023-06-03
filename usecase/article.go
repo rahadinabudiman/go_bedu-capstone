@@ -11,6 +11,8 @@ import (
 type ArticleUsecase interface {
 	GetAllArticles(page, limit int) ([]dtos.ArticleDetailResponse, int, error)
 	GetArticleByID(id uint) (dtos.ArticleDetailResponse, error)
+	GetArticleByImage(image string) (int64, error)
+	GetArticleByThumbnail(thumbnail string) (int64, error)
 	CreateArticle(article *dtos.CreateArticlesRequest) (dtos.ArticleDetailResponse, error)
 	UpdateArticle(id uint, article dtos.UpdateArticlesRequest) (dtos.ArticleDetailResponse, error)
 	DeleteArticle(id uint) error
@@ -87,8 +89,10 @@ func (u *articleUsecase) GetArticleByID(id uint) (dtos.ArticleDetailResponse, er
 
 	articleResponse := dtos.ArticleDetailResponse{
 		ArticleID:   article.ID,
+		Thumbnail:   article.Thumbnail,
 		Title:       article.Title,
 		Image:       article.Image,
+		Abstract:    article.Abstract,
 		Description: article.Description,
 		Label:       article.Label,
 		Slug:        article.Slug,
@@ -183,6 +187,8 @@ func (u *articleUsecase) UpdateArticle(id uint, article dtos.UpdateArticlesReque
 	articles.Title = article.Title
 	articles.Description = article.Description
 	articles.Image = article.Image
+	articles.Thumbnail = article.Thumbnail
+	articles.Abstract = article.Abstract
 	articles.Label = article.Label
 	articles.Slug = slug
 
@@ -194,6 +200,8 @@ func (u *articleUsecase) UpdateArticle(id uint, article dtos.UpdateArticlesReque
 	articleResponse.ArticleID = articles.ID
 	articleResponse.Title = articles.Title
 	articleResponse.Image = articles.Image
+	articleResponse.Thumbnail = articles.Thumbnail
+	articleResponse.Abstract = articles.Abstract
 	articleResponse.Description = articles.Description
 	articleResponse.Label = articles.Label
 	articleResponse.Slug = articles.Slug
@@ -243,4 +251,22 @@ func (u *articleUsecase) DeleteArticle(id uint) error {
 
 	err = u.articleRepository.DeleteArticle(article)
 	return err
+}
+
+func (u *articleUsecase) GetArticleByImage(image string) (int64, error) {
+	total, err := u.articleRepository.GetArticleByImage(image)
+	if err != nil {
+		return 0, err
+	}
+
+	return total, nil
+}
+
+func (u *articleUsecase) GetArticleByThumbnail(thumbnail string) (int64, error) {
+	total, err := u.articleRepository.GetArticleByImage(thumbnail)
+	if err != nil {
+		return 0, err
+	}
+
+	return total, nil
 }
