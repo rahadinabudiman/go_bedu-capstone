@@ -400,7 +400,7 @@ definitions:
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
-host: ec2-54-66-56-235.ap-southeast-2.compute.amazonaws.com:8080
+host: ec2-54-251-142-187.ap-southeast-1.compute.amazonaws.com:8080
 info:
   contact:
     name: Dicoding Cycle 4 TEAM C23-M4058
