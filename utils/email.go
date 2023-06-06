@@ -2,7 +2,6 @@ package utils
 
 import (
 	"bytes"
-	"crypto/tls"
 	"html/template"
 	"log"
 	"os"
@@ -67,20 +66,32 @@ func SendEmail(user *models.Administrator, data *EmailData) {
 
 	template.ExecuteTemplate(&body, "verificationCode.html", &data)
 
-	m := gomail.NewMessage()
+	mailer := gomail.NewMessage()
+	mailer.SetAddressHeader("From", from, fromName)
+	mailer.SetHeader("To", to)
+	mailer.SetHeader("Subject", data.Subject)
+	mailer.SetBody("text/html", body.String())
+	log.Fatalln("body", body.String())
+	mailer.AddAlternative("text/plain", html2text.HTML2Text(body.String()))
 
-	m.SetAddressHeader("From", from, fromName)
-	m.SetHeader("To", to)
-	m.SetHeader("Subject", data.Subject)
-	m.SetBody("text/html", body.String())
-	m.AddAlternative("text/plain", html2text.HTML2Text(body.String()))
+	dialer := gomail.NewDialer(
+		smtpHost,
+		smtpPort,
+		smtpUser,
+		smtpPass,
+	)
 
-	d := gomail.NewDialer(smtpHost, smtpPort, smtpUser, smtpPass)
-	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+	// d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
-	// Send Email
-	if err := d.DialAndSend(m); err != nil {
-		log.Fatal("Could not send email: ", err)
+	// // Send Email
+	// if err := d.DialAndSend(m); err != nil {
+	// 	log.Fatal("Could not send email: ", err)
+	// }
+
+	err = dialer.DialAndSend(mailer)
+	if err != nil {
+		log.Fatal("Could not send email: ", err.Error())
 	}
 
+	log.Println("Mail sent!")
 }
