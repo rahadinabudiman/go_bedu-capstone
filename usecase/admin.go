@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"bufio"
-	"fmt"
 	"go_bedu/dtos"
 	"go_bedu/helpers"
 	"go_bedu/initializers"
@@ -16,7 +15,6 @@ import (
 	"strconv"
 	"strings"
 
-	emailverifier "github.com/AfterShip/email-verifier"
 	"github.com/labstack/echo/v4"
 	"github.com/thanhpk/randstr"
 	"golang.org/x/crypto/bcrypt"
@@ -368,15 +366,7 @@ func (u *adminUsecase) ChangePassword(id uint, req dtos.ChangePasswordAdminReque
 // @Failure      500 {object} dtos.InternalServerErrorResponse
 // @Router       /register [post]
 func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDetailResponse, error) {
-	var (
-		verifier = emailverifier.
-				NewVerifier().
-				EnableAutoUpdateDisposable().
-				EnableSMTPCheck().
-				DisableCatchAllCheck()
-
-		res dtos.AdminDetailResponse
-	)
+	var res dtos.AdminDetailResponse
 
 	err := helpers.ValidateUsername(req.Username)
 	if err != nil {
@@ -389,26 +379,6 @@ func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDe
 	}
 
 	req.Email = strings.ToLower(req.Email)
-	emailDomain := utils.GetEmailDomain(req.Email)
-	usernameDomain := utils.GetEmailUsername(req.Email)
-
-	// Check apakah domain email typo atau tidak
-	suggestion := verifier.SuggestDomain(emailDomain)
-	if suggestion != "" {
-		return res, echo.NewHTTPError(400, "Did you mean "+suggestion+"?")
-	}
-
-	// Check SMTP apakah domain email valid atau tidak
-	ret, err := verifier.CheckSMTP(emailDomain, usernameDomain)
-	if err != nil {
-		return res, echo.NewHTTPError(400, err)
-	}
-	fmt.Println("smtp validation result: ", ret)
-
-	// Check apakah email disposable atau tidak
-	if verifier.IsDisposable(emailDomain) {
-		return res, echo.NewHTTPError(400, "Sorry, we do not accept disposable email addresses")
-	}
 
 	// Check apakah email sudah terdaftar atau belum
 	admin, _ := u.adminRepository.GetAdminByEmail(req.Email)
