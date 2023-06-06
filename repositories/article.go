@@ -88,7 +88,7 @@ func (r *articleRepository) CreateArticle(article models.Article) (models.Articl
 
 // Update Article and save to DB
 func (r *articleRepository) UpdateArticle(article models.Article) (models.Article, error) {
-	err := r.db.Save(&article).Error
+	err := r.db.Table("articles").Save(&article).Error
 
 	return article, err
 }
