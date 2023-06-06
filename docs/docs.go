@@ -1643,7 +1643,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "ec2-54-251-142-187.ap-southeast-1.compute.amazonaws.com:8080",
+	Host:             "capstone.keyzex.com:8080",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "bEDU Documentation API",

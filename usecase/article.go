@@ -53,6 +53,7 @@ func (u *articleUsecase) GetAllArticles(page, limit int) ([]dtos.ArticleDetailRe
 			ArticleID:   article.ID,
 			Title:       article.Title,
 			Abstract:    article.Abstract,
+			Thumbnail:   article.Thumbnail,
 			Image:       article.Image,
 			Description: article.Description,
 			Label:       article.Label,
