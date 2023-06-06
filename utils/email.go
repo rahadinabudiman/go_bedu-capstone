@@ -50,12 +50,12 @@ func SendEmail(user *models.Administrator, data *EmailData) {
 
 	// Sender data.
 	from := config.EmailFrom
-	fromName := config.FromName
-	smtpPass := config.SMTPPass
-	smtpUser := config.SMTPUser
-	to := user.Email
 	smtpHost := config.SMTPHost
 	smtpPort := config.SMTPPort
+	smtpPass := config.SMTPPass
+	smtpUser := config.SMTPUser
+	fromName := config.FromName
+	to := user.Email
 
 	var body bytes.Buffer
 
@@ -71,7 +71,6 @@ func SendEmail(user *models.Administrator, data *EmailData) {
 	mailer.SetHeader("To", to)
 	mailer.SetHeader("Subject", data.Subject)
 	mailer.SetBody("text/html", body.String())
-	log.Fatalln("body", body.String())
 	mailer.AddAlternative("text/plain", html2text.HTML2Text(body.String()))
 
 	dialer := gomail.NewDialer(
