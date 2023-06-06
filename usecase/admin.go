@@ -48,7 +48,6 @@ func (u *adminUsecase) MustDispEmailDom() (dispEmailDomains []string, err error)
 	if err != nil {
 		return nil, err
 	}
-
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
