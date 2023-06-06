@@ -13,7 +13,7 @@
         },
         "version": "1.0"
     },
-    "host": "ec2-54-66-56-235.ap-southeast-2.compute.amazonaws.com:8080",
+    "host": "ec2-54-251-142-187.ap-southeast-1.compute.amazonaws.com:8080",
     "basePath": "/api/v1",
     "paths": {
         "/admin": {
