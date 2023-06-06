@@ -48,7 +48,6 @@ func (u *adminUsecase) MustDispEmailDom() (dispEmailDomains []string, err error)
 	if err != nil {
 		return nil, err
 	}
-
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -395,7 +394,10 @@ func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDe
 		return res, err
 	}
 
-	config, _ := initializers.LoadConfig(".")
+	config, err := initializers.LoadConfig(".")
+	if err != nil {
+		return res, echo.NewHTTPError(400, "Failed to load config")
+	}
 
 	// Generate Verification Code
 	code := randstr.String(20)
