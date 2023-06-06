@@ -305,6 +305,17 @@ func (c *articleController) UpdateArticle(ctx echo.Context) error {
 		)
 	}
 
+	if err := ctx.Validate(&articleInput); err != nil {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Cannot be empty fields",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		return ctx.JSON(
