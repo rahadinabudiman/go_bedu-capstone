@@ -407,16 +407,7 @@ func (c *articleController) UpdateArticle(ctx echo.Context) error {
 			)
 		}
 		// Delete old thumbnail file
-		if err = os.Remove("public/images/" + article.Thumbnail); err != nil {
-			return ctx.JSON(
-				http.StatusBadRequest,
-				helpers.NewErrorResponse(
-					http.StatusBadRequest,
-					"Failed to delete old thumbnail",
-					helpers.GetErrorData(err),
-				),
-			)
-		}
+		os.Remove("public/images/" + article.Thumbnail)
 
 		total, err := c.articleUsecase.GetArticleByImage(article.Image)
 		if err != nil {
@@ -432,16 +423,7 @@ func (c *articleController) UpdateArticle(ctx echo.Context) error {
 
 		if total < 1 {
 			// Delete old image file
-			if err = os.Remove("public/images/" + article.Image); err != nil {
-				return ctx.JSON(
-					http.StatusBadRequest,
-					helpers.NewErrorResponse(
-						http.StatusBadRequest,
-						"Failed to delete old image",
-						helpers.GetErrorData(err),
-					),
-				)
-			}
+			os.Remove("public/images/" + article.Image)
 		}
 		articleInput.Thumbnail = newThumbnailFilename
 	}
