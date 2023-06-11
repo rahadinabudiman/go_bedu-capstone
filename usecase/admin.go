@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"bufio"
 	"go_bedu/dtos"
 	"go_bedu/helpers"
 	"go_bedu/initializers"
@@ -8,7 +9,10 @@ import (
 	"go_bedu/models"
 	"go_bedu/repositories"
 	"go_bedu/utils"
+	"net/http"
 	"net/url"
+	"os"
+	"strconv"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -18,7 +22,12 @@ import (
 
 type AdminUsecase interface {
 	LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dtos.LoginResponse, err error)
+	LogoutAdmin(c echo.Context) (res dtos.LogoutAdminResponse, err error)
 	VerifyEmail(verificationCode any) (res dtos.VerifyEmailResponse, err error)
+	UpdateAdminByOTP(otp int, req dtos.ChangePasswordRequest) (res dtos.ForgotPasswordResponse, err error)
+	ForgotPassword(req dtos.ForgotPasswordRequest) (res dtos.ForgotPasswordResponse, err error)
+	ChangePassword(id uint, req dtos.ChangePasswordAdminRequest) (res helpers.ResponseMessage, err error)
+	MustDispEmailDom() (dispEmailDomains []string, err error)
 	GetAdmin() ([]dtos.AdminDetailResponse, error)
 	GetAdminById(id uint) (res dtos.AdminProfileResponse, err error)
 	UpdateAdmin(id uint, req dtos.UpdateAdminRequest) (res dtos.UpdateAdminResponse, err error)
@@ -32,6 +41,19 @@ type adminUsecase struct {
 
 func NewAdminUsecase(adminRepository repositories.AdminRepository) *adminUsecase {
 	return &adminUsecase{adminRepository}
+}
+
+func (u *adminUsecase) MustDispEmailDom() (dispEmailDomains []string, err error) {
+	file, err := os.Open("utils/disposable_email_blocklist.txt")
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		dispEmailDomains = append(dispEmailDomains, scanner.Text())
+	}
+	return dispEmailDomains, nil
 }
 
 // GetAllAdmins godoc
@@ -58,11 +80,13 @@ func (u *adminUsecase) GetAdmin() ([]dtos.AdminDetailResponse, error) {
 	for _, admin := range admins {
 		adminResponse = append(adminResponse, dtos.AdminDetailResponse{
 			ID:        admin.ID,
+			Username:  admin.Username,
 			Nama:      admin.Nama,
 			Email:     admin.Email,
 			Role:      admin.Role,
 			CreatedAt: admin.CreatedAt,
 			UpdatedAt: admin.UpdatedAt,
+			// Article:   admin.Articles,
 		})
 	}
 
@@ -70,9 +94,9 @@ func (u *adminUsecase) GetAdmin() ([]dtos.AdminDetailResponse, error) {
 }
 
 // AdminLogin godoc
-// @Summary      Login
+// @Summary      Login Admin with Email and Password
 // @Description  Login an account
-// @Tags         Admin - Account
+// @Tags         Admin - Auth
 // @Accept       json
 // @Produce      json
 // @Param        request body dtos.LoginRequest true "Payload Body [RAW]"
@@ -84,14 +108,14 @@ func (u *adminUsecase) GetAdmin() ([]dtos.AdminDetailResponse, error) {
 // @Failure      500 {object} dtos.InternalServerErrorResponse
 // @Router       /login [post]
 func (u *adminUsecase) LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dtos.LoginResponse, err error) {
-	admin, err := u.adminRepository.GetAdminByEmail(req.Email)
+	admin, err := u.adminRepository.GetAdminByUsername(req.Username)
 	if err != nil {
-		echo.NewHTTPError(400, "Email not registered")
+		echo.NewHTTPError(400, "Username not registered")
 		return
 	}
 
 	if !admin.Verified {
-		return res, echo.NewHTTPError(400, "Email not verified")
+		return res, echo.NewHTTPError(400, "Please verify your email first")
 	}
 
 	err = helpers.ComparePassword(req.Password, admin.Password)
@@ -100,7 +124,7 @@ func (u *adminUsecase) LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dt
 		return
 	}
 
-	token, err := middlewares.CreateToken(int(admin.ID), admin.Email, admin.Role)
+	token, err := middlewares.CreateToken(int(admin.ID), admin.Username, admin.Email, admin.Role)
 	if err != nil {
 		echo.NewHTTPError(400, "Failed to generate token")
 		return
@@ -111,13 +135,50 @@ func (u *adminUsecase) LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dt
 	middlewares.CreateCookie(c, token)
 
 	res = dtos.LoginResponse{
-		Email: admin.Email,
-		Token: admin.Token,
+		Username: admin.Username,
+		Token:    admin.Token,
 	}
 
 	return
 }
 
+// LogoutAdmin godoc
+// @Summary      Logout Administrator
+// @Description  Logout Administrator
+// @Tags         Admin - Account
+// @Accept       json
+// @Produce      json
+// @Success      200 {object} dtos.LogoutAdminOKResponse
+// @Failure      400 {object} dtos.BadRequestResponse
+// @Failure      401 {object} dtos.UnauthorizedResponse
+// @Failure      403 {object} dtos.ForbiddenResponse
+// @Failure      404 {object} dtos.NotFoundResponse
+// @Failure      500 {object} dtos.InternalServerErrorResponse
+// @Router       /admin/logout [get]
+// @Security BearerAuth
+func (u *adminUsecase) LogoutAdmin(c echo.Context) (res dtos.LogoutAdminResponse, err error) {
+	err = middlewares.DeleteCookie(c)
+	if err != nil {
+		return res, echo.NewHTTPError(400, "Failed to logout")
+	}
+
+	return res, err
+}
+
+// AdminVerif godoc
+// @Summary      Verify Email by Verification Code
+// @Description  Verif an account
+// @Tags         Admin - Auth
+// @Accept       json
+// @Produce      json
+// @Param verification_code path string true "Verification Code"
+// @Success      200 {object} dtos.VerifyEmailOKResponse
+// @Failure      400 {object} dtos.BadRequestResponse
+// @Failure      401 {object} dtos.UnauthorizedResponse
+// @Failure      403 {object} dtos.ForbiddenResponse
+// @Failure      404 {object} dtos.NotFoundResponse
+// @Failure      500 {object} dtos.InternalServerErrorResponse
+// @Router       /verifyemail/{verificationCode} [get]
 func (u *adminUsecase) VerifyEmail(verificationCode any) (res dtos.VerifyEmailResponse, err error) {
 	admin, err := u.adminRepository.GetAdminByVerificationCode(verificationCode)
 	if err != nil {
@@ -134,17 +195,165 @@ func (u *adminUsecase) VerifyEmail(verificationCode any) (res dtos.VerifyEmailRe
 	u.adminRepository.UpdateAdmin(admin)
 
 	res = dtos.VerifyEmailResponse{
-		Email:   admin.Email,
-		Message: "Email has been verified",
+		Username: admin.Username,
+		Message:  "Email has been verified",
 	}
 
 	return res, nil
 }
 
-// AdminRegister godoc
-// @Summary      Register
-// @Description  Register an account
+// UpdateAdminByOTP godoc
+// @Summary      Change Password by OTP
+// @Description  Change Password an Account
+// @Tags         Admin - Auth
+// @Accept       json
+// @Produce      json
+// @Param        request body dtos.ChangePasswordRequest true "Payload Body [RAW]"
+// @Success      200 {object} dtos.ChangePasswordOKResponse
+// @Failure      400 {object} dtos.BadRequestResponse
+// @Failure      401 {object} dtos.UnauthorizedResponse
+// @Failure      403 {object} dtos.ForbiddenResponse
+// @Failure      404 {object} dtos.NotFoundResponse
+// @Failure      500 {object} dtos.InternalServerErrorResponse
+// @Router       /change-password/{otp} [post]
+func (u *adminUsecase) UpdateAdminByOTP(otp int, req dtos.ChangePasswordRequest) (res dtos.ForgotPasswordResponse, err error) {
+	admin, err := u.adminRepository.GetAdminOTP(otp)
+	if err != nil {
+		return res, echo.NewHTTPError(400, "Failed to get admin")
+	}
+
+	if req.Password != req.PasswordConfirm {
+		return res, echo.NewHTTPError(400, "Password not matches")
+	}
+
+	// Reset OTP and OTPReq
+	admin.OTP = 0
+	admin.OTPReq = false
+
+	// Update Password
+	passwordHash, err := helpers.HashPassword(req.Password)
+	if err != nil {
+		return res, echo.NewHTTPError(400, "Failed to hash password")
+	}
+	admin.Password = string(passwordHash)
+
+	_, err = u.adminRepository.UpdateAdmin(admin)
+	if err != nil {
+		return res, echo.NewHTTPError(400, "Failed to update admin")
+	}
+
+	res = dtos.ForgotPasswordResponse{
+		Email:   admin.Email,
+		Message: "Password has been reset successfully",
+	}
+
+	return res, nil
+}
+
+// ForgotPassword godoc
+// @Summary      Forgot Password Request OTP
+// @Description  Forgot Password an Account
+// @Tags         Admin - Auth
+// @Accept       json
+// @Produce      json
+// @Param        request body dtos.ForgotPasswordRequest true "Payload Body [RAW]"
+// @Success      200 {object} dtos.ForgotPasswordOKResponse
+// @Failure      400 {object} dtos.BadRequestResponse
+// @Failure      401 {object} dtos.UnauthorizedResponse
+// @Failure      403 {object} dtos.ForbiddenResponse
+// @Failure      404 {object} dtos.NotFoundResponse
+// @Failure      500 {object} dtos.InternalServerErrorResponse
+// @Router       /forgot-password [post]
+func (u *adminUsecase) ForgotPassword(req dtos.ForgotPasswordRequest) (res dtos.ForgotPasswordResponse, err error) {
+	admin, err := u.adminRepository.GetAdminByEmail(req.Email)
+	if err != nil {
+		return res, echo.NewHTTPError(400, "Email not registered")
+	}
+
+	config, _ := initializers.LoadConfig(".")
+
+	// Generate OTP
+	otp := helpers.GenerateRandomOTP(6)
+	NewOTP, err := strconv.Atoi(otp)
+	if err != nil {
+		return res, echo.NewHTTPError(400, "Failed to generate OTP")
+	}
+	admin.OTP = NewOTP
+	admin.OTPReq = true
+
+	u.adminRepository.UpdateAdmin(admin)
+
+	// 👇 Send Email
+	emailData := utils.EmailData{
+		URL:       "http://" + config.ClientOrigin + "/change-password/" + url.PathEscape(otp),
+		FirstName: admin.Username,
+		Subject:   "Your OTP to reset password",
+	}
+
+	utils.SendEmail(&admin, &emailData)
+
+	res = dtos.ForgotPasswordResponse{
+		Email:   admin.Email,
+		Message: "OTP has been sent to your email",
+	}
+
+	return res, nil
+}
+
+// ChangePassword godoc
+// @Summary      Change Password Admin
+// @Description  Change Password Admin
 // @Tags         Admin - Account
+// @Accept       json
+// @Produce      json
+// @Param        request body dtos.ChangePasswordAdminRequest true "Payload Body [RAW]"
+// @Success      200 {object} dtos.ChangePasswordAdminOKResponse
+// @Failure      400 {object} dtos.BadRequestResponse
+// @Failure      401 {object} dtos.UnauthorizedResponse
+// @Failure      403 {object} dtos.ForbiddenResponse
+// @Failure      404 {object} dtos.NotFoundResponse
+// @Failure      500 {object} dtos.InternalServerErrorResponse
+// @Router       /admin/change-password [post]
+// @Security BearerAuth
+func (u *adminUsecase) ChangePassword(id uint, req dtos.ChangePasswordAdminRequest) (res helpers.ResponseMessage, err error) {
+	admin, err := u.adminRepository.GetAdminById(id)
+	if err != nil {
+		return res, echo.NewHTTPError(400, "Failed to get admin")
+	}
+
+	err = helpers.ComparePassword(req.OldPassword, admin.Password)
+	if err != nil {
+		return res, echo.NewHTTPError(400, "Wrong password")
+	}
+
+	if req.Password != req.PasswordConfirm {
+		return res, echo.NewHTTPError(400, "Password not matches")
+	}
+
+	passwordHash, err := helpers.HashPassword(req.Password)
+	if err != nil {
+		return res, echo.NewHTTPError(400, "Failed to hash password")
+	}
+
+	admin.Password = string(passwordHash)
+
+	admin, err = u.adminRepository.UpdateAdmin(admin)
+	if err != nil {
+		return res, echo.NewHTTPError(400, "Failed to update admin")
+	}
+
+	res = helpers.NewResponseMessage(
+		http.StatusOK,
+		"Password has been changed successfully",
+	)
+
+	return res, nil
+}
+
+// AdminRegister godoc
+// @Summary      Register Admin
+// @Description  Register an account
+// @Tags         Admin - Auth
 // @Accept       json
 // @Produce      json
 // @Param        request body dtos.RegisterAdminRequest true "Payload Body [RAW]"
@@ -158,16 +367,26 @@ func (u *adminUsecase) VerifyEmail(verificationCode any) (res dtos.VerifyEmailRe
 func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDetailResponse, error) {
 	var res dtos.AdminDetailResponse
 
+	err := helpers.ValidateUsername(req.Username)
+	if err != nil {
+		return res, echo.NewHTTPError(400, err)
+	}
+
+	username, _ := u.adminRepository.GetAdminByUsername(req.Username)
+	if username.ID > 0 {
+		return res, echo.NewHTTPError(400, "Username already in use")
+	}
+
 	req.Email = strings.ToLower(req.Email)
 
 	// Check apakah email sudah terdaftar atau belum
 	admin, _ := u.adminRepository.GetAdminByEmail(req.Email)
 	if admin.ID > 0 {
-		return res, echo.NewHTTPError(400, "Email sudah terdaftar")
+		return res, echo.NewHTTPError(400, "Email already in use")
 	}
 
 	if req.Password != req.PasswordConfirm {
-		return res, echo.NewHTTPError(400, "Password tidak sama")
+		return res, echo.NewHTTPError(400, "Password does not match")
 	}
 
 	passwordHash, err := helpers.HashPassword(req.Password)
@@ -175,7 +394,10 @@ func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDe
 		return res, err
 	}
 
-	config, _ := initializers.LoadConfig(".")
+	config, err := initializers.LoadConfig(".")
+	if err != nil {
+		return res, echo.NewHTTPError(400, "Failed to load config")
+	}
 
 	// Generate Verification Code
 	code := randstr.String(20)
@@ -183,6 +405,7 @@ func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDe
 
 	CreateAdmin := models.Administrator{
 		Nama:             req.Nama,
+		Username:         req.Username,
 		Email:            req.Email,
 		Password:         passwordHash,
 		VerificationCode: verification_code,
@@ -193,7 +416,7 @@ func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDe
 		return res, err
 	}
 
-	var firstName = CreateAdmin.Nama
+	var firstName = CreateAdmin.Username
 
 	if strings.Contains(firstName, " ") {
 		firstName = strings.Split(firstName, " ")[1]
@@ -210,6 +433,7 @@ func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDe
 
 	resp := dtos.AdminDetailResponse{
 		ID:        admins.ID,
+		Username:  admins.Username,
 		Nama:      admins.Nama,
 		Email:     admins.Email,
 		Role:      admins.Role,
@@ -244,10 +468,11 @@ func (u *adminUsecase) GetAdminById(id uint) (res dtos.AdminProfileResponse, err
 	}
 
 	res = dtos.AdminProfileResponse{
-		ID:    admin.ID,
-		Nama:  admin.Nama,
-		Email: admin.Email,
-		Role:  admin.Role,
+		ID:       admin.ID,
+		Username: admin.Username,
+		Nama:     admin.Nama,
+		Email:    admin.Email,
+		Role:     admin.Role,
 	}
 
 	return res, nil
@@ -283,6 +508,7 @@ func (u *adminUsecase) UpdateAdmin(id uint, req dtos.UpdateAdminRequest) (dtos.U
 	admins.Email = req.Email
 	admins.Password = req.Password
 	admins.Role = req.Role
+	admins.Username = req.Username
 
 	// Check Role and save role information from JWT Cookie
 	admin, err := u.adminRepository.ReadToken(id)
@@ -316,6 +542,7 @@ func (u *adminUsecase) UpdateAdmin(id uint, req dtos.UpdateAdminRequest) (dtos.U
 		return res, err
 	}
 
+	res.Username = admins.Username
 	res.Nama = admins.Nama
 	res.Email = admins.Email
 	res.Password = admins.Password

@@ -8,14 +8,19 @@ import (
 	"go_bedu/repositories"
 	"go_bedu/usecase"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
 
 type AdminController interface {
 	LoginAdminController(c echo.Context) error
+	LogoutAdminController(c echo.Context) error
 	RegisterAdminController(c echo.Context) error
+	ForgotPasswordAdminController(c echo.Context) error
 	VerifyEmailAdminController(c echo.Context) error
+	VerifyOTPAdminController(c echo.Context) error
+	ChangePasswordController(c echo.Context) error
 	GetAdminsController(c echo.Context) error
 	GetAdminByIdController(c echo.Context) error
 	CreateAdminController(c echo.Context) error
@@ -30,6 +35,41 @@ type adminController struct {
 
 func NewAdminController(adminUsecase usecase.AdminUsecase, adminRepository repositories.AdminRepository) *adminController {
 	return &adminController{adminUsecase, adminRepository}
+}
+
+// Controller for Logout Admin from Cookie
+func (c *adminController) LogoutAdminController(ctx echo.Context) error {
+	_, err := m.IsAdmin(ctx)
+	if err != nil {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Please login first",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+
+	_, err = c.adminUsecase.LogoutAdmin(ctx)
+	if err != nil {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Logout failed",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+
+	return ctx.JSON(
+		http.StatusOK,
+		helpers.NewResponseMessage(
+			http.StatusOK,
+			"Success Logout",
+		),
+	)
 }
 
 // Controller for Login Admin from DB
@@ -128,6 +168,144 @@ func (c *adminController) VerifyEmailAdminController(ctx echo.Context) error {
 		helpers.NewResponse(
 			http.StatusOK,
 			"Success Verify Email",
+			res,
+		),
+	)
+}
+
+// Controller for Forgot Password Account
+func (c *adminController) ForgotPasswordAdminController(ctx echo.Context) error {
+	req := dtos.ForgotPasswordRequest{}
+
+	ctx.Bind(&req)
+	if err := ctx.Validate(&req); err != nil {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Field cannot be empty or Password must be 6 characters",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+
+	res, err := c.adminUsecase.ForgotPassword(req)
+	if err != nil {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Could not forgot password",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+
+	return ctx.JSON(
+		http.StatusOK,
+		helpers.NewResponse(
+			http.StatusOK,
+			"Success Reset Password",
+			res,
+		),
+	)
+}
+
+// Controller for verify OTP account
+func (c *adminController) VerifyOTPAdminController(ctx echo.Context) error {
+	req := dtos.ChangePasswordRequest{}
+
+	ctx.Bind(&req)
+	if err := ctx.Validate(&req); err != nil {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Field cannot be empty or Password must be 6 character",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+
+	code, err := strconv.Atoi(ctx.Param("otp"))
+	if err != nil {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Could not verify OTP",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+
+	res, err := c.adminUsecase.UpdateAdminByOTP(code, req)
+	if err != nil {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"OTP is not valid",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+
+	return ctx.JSON(
+		http.StatusOK,
+		helpers.NewResponse(
+			http.StatusOK,
+			"Success Forgot Password",
+			res,
+		),
+	)
+}
+
+// Controller for Change Password Admin
+func (c *adminController) ChangePasswordController(ctx echo.Context) error {
+	req := dtos.ChangePasswordAdminRequest{}
+
+	id, err := m.IsAdmin(ctx)
+	if err != nil {
+		return ctx.JSON(
+			http.StatusUnauthorized,
+			helpers.NewErrorResponse(
+				http.StatusUnauthorized,
+				"Routes for Admin Only",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+
+	ctx.Bind(&req)
+	if err := ctx.Validate(&req); err != nil {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Field cannot be empty or Password must be 6 character",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+
+	res, err := c.adminUsecase.ChangePassword(uint(id), req)
+	if err != nil {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Could not change password",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+
+	return ctx.JSON(
+		http.StatusOK,
+		helpers.NewResponse(
+			http.StatusOK,
+			"Success Change Password",
 			res,
 		),
 	)

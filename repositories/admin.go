@@ -10,9 +10,11 @@ type AdminRepository interface {
 	LoginAdmin(admin models.Administrator) error
 	ReadToken(id uint) (admin models.Administrator, err error)
 	GetAdminByVerificationCode(verificationCode any) (admin models.Administrator, err error)
+	GetAdminOTP(otp int) (admin models.Administrator, err error)
 	GetAdmins() ([]models.Administrator, error)
 	GetAdminById(id uint) (models.Administrator, error)
 	GetAdminByEmail(email string) (admin models.Administrator, err error)
+	GetAdminByUsername(username string) (admin models.Administrator, err error)
 	UpdateAdmin(admin models.Administrator) (models.Administrator, error)
 	CreateAdmin(admin models.Administrator) (models.Administrator, error)
 	DeleteAdmin(admin models.Administrator) error
@@ -31,6 +33,14 @@ func (r *adminRepository) GetAdminByVerificationCode(verificationCode any) (mode
 	var admin models.Administrator
 
 	err := r.db.Where("verification_code = ?", verificationCode).First(&admin).Error
+
+	return admin, err
+}
+
+// Get Admin by OTP
+func (r *adminRepository) GetAdminOTP(otp int) (admin models.Administrator, err error) {
+	var verified = true
+	err = r.db.Where("otp = ? AND verified = ?", otp, verified).First(&admin).Error
 
 	return admin, err
 }
@@ -84,6 +94,15 @@ func (r *adminRepository) GetAdminByEmail(email string) (models.Administrator, e
 	var admin models.Administrator
 
 	err := r.db.Where("email = ? AND deleted_at IS NULL", email).First(&admin).Error
+
+	return admin, err
+}
+
+// Get Admin By Username is a function to get admin by username
+func (r *adminRepository) GetAdminByUsername(username string) (models.Administrator, error) {
+	var admin models.Administrator
+
+	err := r.db.Where("Username = ? AND deleted_at IS NULL", username).First(&admin).Error
 
 	return admin, err
 }

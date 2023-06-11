@@ -2,10 +2,37 @@ package dtos
 
 import "go_bedu/helpers"
 
+type LogoutAdminOKResponse struct {
+	StatusCode int    `json:"status_code" example:"200"`
+	Message    string `json:"message" form:"message" example:"Logout Success"`
+}
+
+type VerifyEmailOKResponse struct {
+	StatusCode int    `json:"status_code" example:"200"`
+	Username   string `json:"username" form:"username" validate:"required" example:"r4ha"`
+	Message    string `json:"message" form:"message" example:"Email has been verified"`
+}
+
+type ForgotPasswordOKResponse struct {
+	StatusCode int    `json:"status_code" example:"200"`
+	Email      string `json:"email" form:"email" example:"me@r4ha.com"`
+	Message    string `json:"message" form:"message" example:"OTP has been sent to your email"`
+}
+type ChangePasswordOKResponse struct {
+	StatusCode int    `json:"status_code" example:"200"`
+	Email      string `json:"email" form:"email" example:"me@r4ha.com"`
+	Message    string `json:"message" form:"message" example:"Password has been reset successfully"`
+}
+
+type ChangePasswordAdminOKResponse struct {
+	StatusCode int    `json:"status_code" example:"200"`
+	Message    string `json:"message" form:"message" example:"Password has been reset successfully"`
+}
+
 type LoginStatusOKResponse struct {
 	StatusCode int    `json:"status_code" example:"200"`
-	Email      string `json:"email" form:"email" validate:"required,email" example:"me@r4ha.com"`
-	Password   string `json:"password" form:"password" validate:"required" example:"rahadinabudimansundara"`
+	Username   string `json:"username" form:"username" validate:"required" example:"r4ha"`
+	Token      string `json:"token" form:"token" validate:"required" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"`
 }
 
 type AdminStatusOKResponse struct {

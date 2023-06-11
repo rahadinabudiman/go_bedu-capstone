@@ -21,10 +21,10 @@ import (
 // @license.name  Apache 2.0
 // @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
 
-// ec2-54-66-56-235.ap-southeast-2.compute.amazonaws.com:8080
+// capstone.keyzex.com:8080
 // localhost:8080
 
-// @host     ec2-54-66-56-235.ap-southeast-2.compute.amazonaws.com:8080
+// @host     capstone.keyzex.com:8080
 // @BasePath  /api/v1
 
 // @securityDefinitions.apikey BearerAuth

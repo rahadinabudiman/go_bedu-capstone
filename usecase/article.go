@@ -5,11 +5,14 @@ import (
 	"go_bedu/helpers"
 	"go_bedu/models"
 	"go_bedu/repositories"
+	"os"
 )
 
 type ArticleUsecase interface {
 	GetAllArticles(page, limit int) ([]dtos.ArticleDetailResponse, int, error)
 	GetArticleByID(id uint) (dtos.ArticleDetailResponse, error)
+	GetArticleByImage(image string) (int64, error)
+	GetArticleByThumbnail(thumbnail string) (int64, error)
 	CreateArticle(article *dtos.CreateArticlesRequest) (dtos.ArticleDetailResponse, error)
 	UpdateArticle(id uint, article dtos.UpdateArticlesRequest) (dtos.ArticleDetailResponse, error)
 	DeleteArticle(id uint) error
@@ -26,7 +29,7 @@ func NewArticleUsecase(ArticleRepository repositories.ArticleRepository) Article
 // GetAllArticles godoc
 // @Summary      Get all articles
 // @Description  Get all articles
-// @Tags         Admin - Article
+// @Tags         Article
 // @Accept       json
 // @Produce      json
 // @Param page query int false "Page number"
@@ -37,8 +40,7 @@ func NewArticleUsecase(ArticleRepository repositories.ArticleRepository) Article
 // @Failure      403 {object} dtos.ForbiddenResponse
 // @Failure      404 {object} dtos.NotFoundResponse
 // @Failure      500 {object} dtos.InternalServerErrorResponse
-// @Router       /admin/article [get]
-// @Security BearerAuth
+// @Router       /article [get]
 func (u *articleUsecase) GetAllArticles(page, limit int) ([]dtos.ArticleDetailResponse, int, error) {
 	articles, count, err := u.articleRepository.GetAllArticles(page, limit)
 	if err != nil {
@@ -51,6 +53,7 @@ func (u *articleUsecase) GetAllArticles(page, limit int) ([]dtos.ArticleDetailRe
 			ArticleID:   article.ID,
 			Title:       article.Title,
 			Abstract:    article.Abstract,
+			Thumbnail:   article.Thumbnail,
 			Image:       article.Image,
 			Description: article.Description,
 			Label:       article.Label,
@@ -66,7 +69,7 @@ func (u *articleUsecase) GetAllArticles(page, limit int) ([]dtos.ArticleDetailRe
 // GetArticleByID godoc
 // @Summary      Get article by ID
 // @Description  Get article by ID
-// @Tags         Admin - Article
+// @Tags         Article
 // @Accept       json
 // @Produce      json
 // @Param id path integer true "ID article"
@@ -76,8 +79,7 @@ func (u *articleUsecase) GetAllArticles(page, limit int) ([]dtos.ArticleDetailRe
 // @Failure      403 {object} dtos.ForbiddenResponse
 // @Failure      404 {object} dtos.NotFoundResponse
 // @Failure      500 {object} dtos.InternalServerErrorResponse
-// @Router       /admin/article/{id} [get]
-// @Security BearerAuth
+// @Router       /article/{id} [get]
 func (u *articleUsecase) GetArticleByID(id uint) (dtos.ArticleDetailResponse, error) {
 	var articleResponses dtos.ArticleDetailResponse
 
@@ -88,8 +90,10 @@ func (u *articleUsecase) GetArticleByID(id uint) (dtos.ArticleDetailResponse, er
 
 	articleResponse := dtos.ArticleDetailResponse{
 		ArticleID:   article.ID,
+		Thumbnail:   article.Thumbnail,
 		Title:       article.Title,
 		Image:       article.Image,
+		Abstract:    article.Abstract,
 		Description: article.Description,
 		Label:       article.Label,
 		Slug:        article.Slug,
@@ -122,6 +126,7 @@ func (u *articleUsecase) CreateArticle(article *dtos.CreateArticlesRequest) (dto
 
 	CreateArticle := models.Article{
 		AdministratorID: article.AdministratorID,
+		Thumbnail:       article.Thumbnail,
 		Title:           article.Title,
 		Description:     article.Description,
 		Image:           article.Image,
@@ -137,6 +142,7 @@ func (u *articleUsecase) CreateArticle(article *dtos.CreateArticlesRequest) (dto
 
 	articleResponse := dtos.ArticleDetailResponse{
 		ArticleID:   createdArticle.ID,
+		Thumbnail:   createdArticle.Thumbnail,
 		Title:       createdArticle.Title,
 		Abstract:    createdArticle.Abstract,
 		Image:       createdArticle.Image,
@@ -182,6 +188,8 @@ func (u *articleUsecase) UpdateArticle(id uint, article dtos.UpdateArticlesReque
 	articles.Title = article.Title
 	articles.Description = article.Description
 	articles.Image = article.Image
+	articles.Thumbnail = article.Thumbnail
+	articles.Abstract = article.Abstract
 	articles.Label = article.Label
 	articles.Slug = slug
 
@@ -193,6 +201,8 @@ func (u *articleUsecase) UpdateArticle(id uint, article dtos.UpdateArticlesReque
 	articleResponse.ArticleID = articles.ID
 	articleResponse.Title = articles.Title
 	articleResponse.Image = articles.Image
+	articleResponse.Thumbnail = articles.Thumbnail
+	articleResponse.Abstract = articles.Abstract
 	articleResponse.Description = articles.Description
 	articleResponse.Label = articles.Label
 	articleResponse.Slug = articles.Slug
@@ -224,6 +234,40 @@ func (u *articleUsecase) DeleteArticle(id uint) error {
 		return err
 	}
 
+	// Destination paths
+	imageDst := "public/images/" + article.Image
+	thumbnailDst := "public/images/" + article.Thumbnail
+
+	// Remove the Images
+	err = os.Remove(imageDst)
+	if err != nil {
+		return err
+	}
+
+	// Remove the Thumbnail
+	err = os.Remove(thumbnailDst)
+	if err != nil {
+		return err
+	}
+
 	err = u.articleRepository.DeleteArticle(article)
 	return err
+}
+
+func (u *articleUsecase) GetArticleByImage(image string) (int64, error) {
+	total, err := u.articleRepository.GetArticleByImage(image)
+	if err != nil {
+		return 0, err
+	}
+
+	return total, nil
+}
+
+func (u *articleUsecase) GetArticleByThumbnail(thumbnail string) (int64, error) {
+	total, err := u.articleRepository.GetArticleByImage(thumbnail)
+	if err != nil {
+		return 0, err
+	}
+
+	return total, nil
 }
