@@ -31,14 +31,14 @@ func (r *articleRepository) GetAllArticles(page, limit int) ([]models.Article, i
 		count    int64
 	)
 
-	err := r.db.Find(&articles).Count(&count).Error
+	err := r.db.Model(&models.Article{}).Count(&count).Error
 	if err != nil {
 		return articles, int(count), err
 	}
 
 	offset := (page - 1) * limit
 
-	err = r.db.Limit(limit).Offset(offset).Find(&articles).Error
+	err = r.db.Model(&models.Article{}).Order("created_at desc").Limit(limit).Offset(offset).Find(&articles).Error
 
 	return articles, int(count), err
 }
