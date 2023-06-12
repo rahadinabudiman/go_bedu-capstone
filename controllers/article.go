@@ -4,13 +4,11 @@ import (
 	"go_bedu/dtos"
 	"go_bedu/helpers"
 	m "go_bedu/middlewares"
+	"go_bedu/models"
 	"go_bedu/usecase"
-	"io"
 	"net/http"
-	"os"
 	"regexp"
 	"strconv"
-	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -149,6 +147,7 @@ func (c *articleController) CreateArticle(ctx echo.Context) error {
 		)
 	}
 
+	// Get File from Header
 	src, err := file.Open()
 	if err != nil {
 		return ctx.JSON(
@@ -173,55 +172,18 @@ func (c *articleController) CreateArticle(ctx echo.Context) error {
 		)
 	}
 
-	if !re.MatchString(thumbnail.Filename) {
-		return ctx.JSON(
-			http.StatusBadRequest,
-			helpers.NewResponseMessage(
-				http.StatusBadRequest,
-				"The provided file format is not allowed. Please upload a JPEG or PNG image",
-			),
-		)
-	}
-
-	defer src.Close()
-
-	imageExtension := helpers.GetFileExtension(file.Filename)
-	thumbnailExtension := helpers.GetFileExtension(thumbnail.Filename)
-
-	// Generate new filenames
-	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
-	newImageFilename := timestamp + imageExtension
-	newThumbnailFilename := timestamp + thumbnailExtension
-
-	// Destination paths
-	imageDst := "public/images/" + newImageFilename
-	thumbnailDst := "public/images/" + newThumbnailFilename
-
-	// Create and save image file
-	imageDstFile, err := os.Create(imageDst)
+	uploadUrl, err := usecase.NewMediaUpload().FileUpload(models.File{File: src})
 	if err != nil {
 		return ctx.JSON(
-			http.StatusBadRequest,
+			http.StatusInternalServerError,
 			helpers.NewErrorResponse(
-				http.StatusBadRequest,
-				"Failed to upload image",
+				http.StatusInternalServerError,
+				"Error uploading photo",
 				helpers.GetErrorData(err),
 			),
 		)
 	}
-	defer imageDstFile.Close()
-
-	// Copy image file
-	if _, err = io.Copy(imageDstFile, src); err != nil {
-		return ctx.JSON(
-			http.StatusBadRequest,
-			helpers.NewErrorResponse(
-				http.StatusBadRequest,
-				"Failed to copy image",
-				helpers.GetErrorData(err),
-			),
-		)
-	}
+	articleInput.Image = uploadUrl
 
 	// Create and save thumbnail file
 	thumbnailSrc, err := thumbnail.Open()
@@ -235,35 +197,29 @@ func (c *articleController) CreateArticle(ctx echo.Context) error {
 			),
 		)
 	}
-	defer thumbnailSrc.Close()
 
-	thumbnailDstFile, err := os.Create(thumbnailDst)
+	if !re.MatchString(thumbnail.Filename) {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewResponseMessage(
+				http.StatusBadRequest,
+				"The provided file format is not allowed. Please upload a JPEG or PNG image",
+			),
+		)
+	}
+
+	uploadUrlThumbnail, err := usecase.NewMediaUpload().FileUpload(models.File{File: thumbnailSrc})
 	if err != nil {
 		return ctx.JSON(
-			http.StatusBadRequest,
+			http.StatusInternalServerError,
 			helpers.NewErrorResponse(
-				http.StatusBadRequest,
-				"Failed to upload thumbnail",
+				http.StatusInternalServerError,
+				"Error uploading photo",
 				helpers.GetErrorData(err),
 			),
 		)
 	}
-	defer thumbnailDstFile.Close()
-
-	// Copy thumbnail file
-	if _, err = io.Copy(thumbnailDstFile, thumbnailSrc); err != nil {
-		return ctx.JSON(
-			http.StatusBadRequest,
-			helpers.NewErrorResponse(
-				http.StatusBadRequest,
-				"Failed to copy thumbnail",
-				helpers.GetErrorData(err),
-			),
-		)
-	}
-
-	articleInput.Image = newImageFilename
-	articleInput.Thumbnail = newThumbnailFilename
+	articleInput.Thumbnail = uploadUrlThumbnail
 
 	article, err := c.articleUsecase.CreateArticle(&articleInput)
 	if err != nil {
@@ -345,29 +301,6 @@ func (c *articleController) UpdateArticle(ctx echo.Context) error {
 		// Jika thumbnail tidak diubah, tetap gunakan thumbnail yang ada di database
 		articleInput.Thumbnail = article.Thumbnail
 	} else {
-		// Jika thumbnail diubah, simpan thumbnail baru
-		// Simpan thumbnail baru ke dalam variabel articleInput.Thumbnail atau tempatkan di lokasi yang diinginkan
-		re := regexp.MustCompile(`.png|.jpeg|.jpg`)
-
-		if !re.MatchString(thumbnail.Filename) {
-			return ctx.JSON(
-				http.StatusBadRequest,
-				helpers.NewResponseMessage(
-					http.StatusBadRequest,
-					"The provided file format is not allowed. Please upload a JPEG or PNG image",
-				),
-			)
-		}
-
-		thumbnailExtension := helpers.GetFileExtension(thumbnail.Filename)
-
-		// Generate new filenames
-		timestamp := strconv.FormatInt(time.Now().Unix(), 10)
-		newThumbnailFilename := timestamp + thumbnailExtension
-
-		// Destination paths
-		thumbnailDst := "public/images/" + newThumbnailFilename
-
 		// Create and save thumbnail file
 		thumbnailSrc, err := thumbnail.Open()
 		if err != nil {
@@ -380,52 +313,30 @@ func (c *articleController) UpdateArticle(ctx echo.Context) error {
 				),
 			)
 		}
-		defer thumbnailSrc.Close()
 
-		thumbnailDstFile, err := os.Create(thumbnailDst)
+		re := regexp.MustCompile(`.png|.jpeg|.jpg`)
+		if !re.MatchString(thumbnail.Filename) {
+			return ctx.JSON(
+				http.StatusBadRequest,
+				helpers.NewResponseMessage(
+					http.StatusBadRequest,
+					"The provided file format is not allowed. Please upload a JPEG or PNG image",
+				),
+			)
+		}
+
+		uploadUrlThumbnail, err := usecase.NewMediaUpload().FileUpload(models.File{File: thumbnailSrc})
 		if err != nil {
 			return ctx.JSON(
-				http.StatusBadRequest,
+				http.StatusInternalServerError,
 				helpers.NewErrorResponse(
-					http.StatusBadRequest,
-					"Failed to upload thumbnail",
+					http.StatusInternalServerError,
+					"Error uploading photo",
 					helpers.GetErrorData(err),
 				),
 			)
 		}
-		defer thumbnailDstFile.Close()
-
-		// Copy thumbnail file
-		if _, err = io.Copy(thumbnailDstFile, thumbnailSrc); err != nil {
-			return ctx.JSON(
-				http.StatusBadRequest,
-				helpers.NewErrorResponse(
-					http.StatusBadRequest,
-					"Failed to copy thumbnail",
-					helpers.GetErrorData(err),
-				),
-			)
-		}
-		// Delete old thumbnail file
-		os.Remove("public/images/" + article.Thumbnail)
-
-		total, err := c.articleUsecase.GetArticleByImage(article.Image)
-		if err != nil {
-			return ctx.JSON(
-				http.StatusBadRequest,
-				helpers.NewErrorResponse(
-					http.StatusBadRequest,
-					"Failed to get image",
-					helpers.GetErrorData(err),
-				),
-			)
-		}
-
-		if total < 1 {
-			// Delete old image file
-			os.Remove("public/images/" + article.Image)
-		}
-		articleInput.Thumbnail = newThumbnailFilename
+		articleInput.Thumbnail = uploadUrlThumbnail
 	}
 
 	file, _ := ctx.FormFile("image")
@@ -433,8 +344,7 @@ func (c *articleController) UpdateArticle(ctx echo.Context) error {
 		// Jika image tidak diubah, tetap gunakan image yang ada di database
 		articleInput.Image = article.Image
 	} else {
-		// Jika image diubah, simpan image baru
-		// Simpan image baru ke dalam variabel articleInput.Image atau tempatkan di lokasi yang diinginkan
+		// Get File from Header
 		src, err := file.Open()
 		if err != nil {
 			return ctx.JSON(
@@ -459,69 +369,18 @@ func (c *articleController) UpdateArticle(ctx echo.Context) error {
 			)
 		}
 
-		defer src.Close()
-
-		imageExtension := helpers.GetFileExtension(file.Filename)
-
-		// Generate new filenames
-		timestamp := strconv.FormatInt(time.Now().Unix(), 10)
-		newImageFilename := timestamp + imageExtension
-
-		// Destination paths
-		imageDst := "public/images/" + newImageFilename
-
-		// Create and save image file
-		imageDstFile, err := os.Create(imageDst)
+		uploadUrl, err := usecase.NewMediaUpload().FileUpload(models.File{File: src})
 		if err != nil {
 			return ctx.JSON(
-				http.StatusBadRequest,
+				http.StatusInternalServerError,
 				helpers.NewErrorResponse(
-					http.StatusBadRequest,
-					"Failed to upload image",
+					http.StatusInternalServerError,
+					"Error uploading photo",
 					helpers.GetErrorData(err),
 				),
 			)
 		}
-		defer imageDstFile.Close()
-
-		// Copy image file
-		if _, err = io.Copy(imageDstFile, src); err != nil {
-			return ctx.JSON(
-				http.StatusBadRequest,
-				helpers.NewErrorResponse(
-					http.StatusBadRequest,
-					"Failed to copy image",
-					helpers.GetErrorData(err),
-				),
-			)
-		}
-		total, err := c.articleUsecase.GetArticleByImage(article.Image)
-		if err != nil {
-			return ctx.JSON(
-				http.StatusBadRequest,
-				helpers.NewErrorResponse(
-					http.StatusBadRequest,
-					"Failed to get image",
-					helpers.GetErrorData(err),
-				),
-			)
-		}
-
-		if total < 1 {
-			// Delete old image file
-			if err = os.Remove("public/images/" + article.Image); err != nil {
-				return ctx.JSON(
-					http.StatusBadRequest,
-					helpers.NewErrorResponse(
-						http.StatusBadRequest,
-						"Failed to delete old image",
-						helpers.GetErrorData(err),
-					),
-				)
-			}
-		}
-
-		articleInput.Image = newImageFilename
+		articleInput.Image = uploadUrl
 	}
 
 	articleRespon, err := c.articleUsecase.UpdateArticle(uint(id), articleInput)
