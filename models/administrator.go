@@ -4,7 +4,7 @@ import "gorm.io/gorm"
 
 type Administrator struct {
 	gorm.Model
-	PhotoProfile     string `json:"photo_profile" form:"photo_profile" gorm:"default:'profile-default.jpg'"`
+	PhotoProfile     string `json:"photo_profile" form:"photo_profile" gorm:"default:'https://res.cloudinary.com/dvexlihfn/image/upload/v1686546113/go_bedu/mlc5oequ9xjvtm0w8kqb.jpg'"`
 	Nama             string `json:"nama" form:"nama"`
 	Email            string `json:"email" form:"email" validate:"required,email"`
 	Username         string `json:"username" form:"username" validate:"required"`
