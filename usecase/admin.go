@@ -139,7 +139,7 @@ func (u *adminUsecase) LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dt
 		Token:    admin.Token,
 	}
 
-	return
+	return res, nil
 }
 
 // LogoutAdmin godoc
@@ -463,7 +463,7 @@ func (u *adminUsecase) GetAdminById(id uint) (res dtos.AdminProfileResponse, err
 	admin, err := u.adminRepository.GetAdminById(id)
 
 	if err != nil {
-		echo.NewHTTPError(401, "This routes for admin only")
+		echo.NewHTTPError(401, "Admin didn't exist")
 		return
 	}
 
