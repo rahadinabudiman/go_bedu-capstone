@@ -73,6 +73,7 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 	article := api.Group("/article")
 	article.GET("", articleController.GetAllArticles)
 	article.GET("/:id", articleController.GetArticleById)
+	article.GET("/like/:id", articleLikedController.CreateArticleLikedController)
 
 	// User Only
 	user := api.Group("/user")
@@ -85,7 +86,6 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 	user.GET("/logout", userController.LogoutUserController)
 
 	// Like Some Article
-	user.GET("/like/:id", articleLikedController.CreateArticleLikedController)
 	user.GET("/liked/:id", articleLikedController.GetArticleLikedByUserIdController)
 
 	// Admin Only
