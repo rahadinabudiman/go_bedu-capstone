@@ -3,7 +3,6 @@ package controllers
 import (
 	"go_bedu/helpers"
 	m "go_bedu/middlewares"
-	"go_bedu/models"
 	"go_bedu/usecase"
 	"net/http"
 	"strconv"
@@ -14,7 +13,6 @@ import (
 type ArticleLikedControllers interface {
 	GetArticleLikedByUserIdController(c echo.Context) error
 	CreateArticleLikedController(c echo.Context) error
-	DeleteArticleLikedController(c echo.Context) error
 }
 
 type articleLikedControllers struct {
@@ -130,71 +128,6 @@ func (c *articleLikedControllers) CreateArticleLikedController(ctx echo.Context)
 			http.StatusOK,
 			"Article has been saved",
 			articleLiked,
-		),
-	)
-}
-
-func (c *articleLikedControllers) DeleteArticleLikedController(ctx echo.Context) error {
-	id, err := m.IsUser(ctx)
-	if err != nil {
-		return ctx.JSON(
-			http.StatusUnauthorized,
-			helpers.NewErrorResponse(
-				http.StatusUnauthorized,
-				"Please login for access",
-				helpers.GetErrorData(err),
-			),
-		)
-	}
-
-	idArticle, err := strconv.Atoi(ctx.Param("id"))
-	if err != nil {
-		return ctx.JSON(
-			http.StatusBadRequest,
-			helpers.NewErrorResponse(
-				http.StatusBadRequest,
-				"Cannot get article",
-				helpers.GetErrorData(err),
-			),
-		)
-	}
-
-	DataArticle, err := c.articleUsecase.GetArticleByID(uint(idArticle))
-	if err != nil {
-		return ctx.JSON(
-			http.StatusBadRequest,
-			helpers.NewErrorResponse(
-				http.StatusBadRequest,
-				"Cannot get article",
-				helpers.GetErrorData(err),
-			),
-		)
-	}
-
-	UserIDData := DataArticle.ArticleID
-
-	Article := models.ArticleLiked{
-		UserID:    uint(id),
-		ArticleID: uint(UserIDData),
-	}
-
-	_, err = c.articleLikedUsecase.DeleteArticleLiked(uint(id), uint(Article.ArticleID))
-	if err != nil {
-		return ctx.JSON(
-			http.StatusBadRequest,
-			helpers.NewErrorResponse(
-				http.StatusBadRequest,
-				"Cannot Delete Bookmark Article",
-				helpers.GetErrorData(err),
-			),
-		)
-	}
-
-	return ctx.JSON(
-		http.StatusOK,
-		helpers.NewResponseMessage(
-			http.StatusOK,
-			"Article has been deleted",
 		),
 	)
 }
