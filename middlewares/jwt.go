@@ -172,3 +172,38 @@ func IsAdmin(c echo.Context) (int, error) {
 
 	return int(id), nil
 }
+
+func IsUser(c echo.Context) (int, error) {
+	token := c.Request().Header.Get("Authorization")
+	if token == "" {
+		return 0, echo.NewHTTPError(400, "Missing Token")
+	}
+
+	// Extract the token from the "Bearer <token>" format
+	tokenParts := strings.Split(token, " ")
+	if len(tokenParts) != 2 || strings.ToLower(tokenParts[0]) != "bearer" {
+		return 0, echo.NewHTTPError(400, "Invalid Token Format")
+	}
+
+	// Parse and validate the JWT token
+	jwtToken, err := jwt.Parse(tokenParts[1], func(token *jwt.Token) (interface{}, error) {
+		// Replace "your-secret-key" with the actual secret key used to sign the tokens
+		// You may need to retrieve the secret key from your configuration or environment variables
+		return []byte(os.Getenv("SECRET_JWT")), nil
+	})
+	if err != nil {
+		return 0, echo.NewHTTPError(400, "Invalid Token")
+	}
+
+	claims, ok := jwtToken.Claims.(jwt.MapClaims)
+	if !ok || !jwtToken.Valid {
+		return 0, echo.NewHTTPError(401, "Unauthorized")
+	}
+	if claims["role"] != "User" {
+		return 0, echo.NewHTTPError(401, "Unauthorized")
+	}
+	// Extract the admin ID from the token's payload
+	id := claims["id"].(float64)
+
+	return int(id), nil
+}
