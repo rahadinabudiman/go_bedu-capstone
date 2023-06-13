@@ -14,9 +14,6 @@ import (
 )
 
 func NewRoute(e *echo.Echo, db *gorm.DB) {
-	m.Log(e)
-	e.Pre(mid.RemoveTrailingSlash())
-
 	adminRepository := repositories.NewAdminRepository(db)
 	adminUsecase := usecase.NewAdminUsecase(adminRepository)
 	adminController := controllers.NewAdminController(adminUsecase, adminRepository)
