@@ -112,12 +112,7 @@ func (c *articleLikedControllers) CreateArticleLikedController(ctx echo.Context)
 		)
 	}
 
-	article := models.ArticleLiked{
-		UserID:    uint(id),
-		ArticleID: dataArticle.ArticleID,
-	}
-
-	articleLiked, err := c.articleLikedUsecase.CreateArticleLiked(uint(id), article)
+	articleLiked, err := c.articleLikedUsecase.CreateArticleLiked(uint(id), dataArticle.ArticleID)
 	if err != nil {
 		return ctx.JSON(
 			http.StatusBadRequest,
@@ -137,8 +132,6 @@ func (c *articleLikedControllers) CreateArticleLikedController(ctx echo.Context)
 			articleLiked,
 		),
 	)
-
-	return nil
 }
 
 func (c *articleLikedControllers) DeleteArticleLikedController(ctx echo.Context) error {
@@ -185,7 +178,7 @@ func (c *articleLikedControllers) DeleteArticleLikedController(ctx echo.Context)
 		ArticleID: uint(UserIDData),
 	}
 
-	err = c.articleLikedUsecase.DeleteArticleLiked(uint(id), Article)
+	_, err = c.articleLikedUsecase.DeleteArticleLiked(uint(id), uint(Article.ArticleID))
 	if err != nil {
 		return ctx.JSON(
 			http.StatusBadRequest,
