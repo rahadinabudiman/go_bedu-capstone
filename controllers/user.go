@@ -17,7 +17,6 @@ type UserControllers interface {
 	LoginUserController(c echo.Context) error
 	LogoutUserController(c echo.Context) error
 	RegisterUserController(c echo.Context) error
-	ForgotPasswordUserController(c echo.Context) error
 	VerifyEmailUserController(c echo.Context) error
 	VerifyOTPUserController(c echo.Context) error
 	ChangePasswordController(c echo.Context) error
@@ -146,43 +145,6 @@ func (c *userControllers) RegisterUserController(ctx echo.Context) error {
 			"Success Create Account",
 			message,
 		))
-}
-
-func (c *userControllers) ForgotPasswordUserController(ctx echo.Context) error {
-	req := dtos.ForgotPasswordRequest{}
-
-	ctx.Bind(&req)
-	if err := ctx.Validate(&req); err != nil {
-		return ctx.JSON(
-			http.StatusBadRequest,
-			helpers.NewErrorResponse(
-				http.StatusBadRequest,
-				"Field cannot be empty or Password must be 6 characters",
-				helpers.GetErrorData(err),
-			),
-		)
-	}
-
-	res, err := c.userUsecase.ForgotPassword(req)
-	if err != nil {
-		return ctx.JSON(
-			http.StatusBadRequest,
-			helpers.NewErrorResponse(
-				http.StatusBadRequest,
-				"Could not forgot password",
-				helpers.GetErrorData(err),
-			),
-		)
-	}
-
-	return ctx.JSON(
-		http.StatusOK,
-		helpers.NewResponse(
-			http.StatusOK,
-			"Success Reset Password",
-			res,
-		),
-	)
 }
 
 func (c *userControllers) VerifyEmailUserController(ctx echo.Context) error {

@@ -28,6 +28,20 @@ func NewAuthUsecase(adminRepository repositories.AdminRepository, userRepository
 	}
 }
 
+// ForgotPassword godoc
+// @Summary      Forgot Password Request OTP
+// @Description  Forgot Password an Account
+// @Tags         Utils - Authentikasi
+// @Accept       json
+// @Produce      json
+// @Param        request body dtos.ForgotPasswordRequest true "Payload Body [RAW]"
+// @Success      200 {object} dtos.ForgotPasswordOKResponse
+// @Failure      400 {object} dtos.BadRequestResponse
+// @Failure      401 {object} dtos.UnauthorizedResponse
+// @Failure      403 {object} dtos.ForbiddenResponse
+// @Failure      404 {object} dtos.NotFoundResponse
+// @Failure      500 {object} dtos.InternalServerErrorResponse
+// @Router       /forgot-password [post]
 func (u *authUsecase) ForgotPassword(req dtos.ForgotPasswordRequest) (res dtos.ForgotPasswordResponse, err error) {
 	admin, err := u.adminRepository.GetAdminByEmail(req.Email)
 	if err != nil {

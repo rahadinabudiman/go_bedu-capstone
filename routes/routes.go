@@ -63,8 +63,9 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 	// Utils API
 	api.POST("/change-password/:otp", userController.VerifyOTPUserController)
 	api.POST("/admin/change-password/:otp", adminController.VerifyOTPAdminController)
+	api.GET("/verifyemail/:verificationCode", userController.VerifyEmailUserController)
+	api.GET("/admin/verifyemail/:verificationCode", adminController.VerifyEmailAdminController)
 
-	api.GET("/verifyemail/:verificationCode", adminController.VerifyEmailAdminController)
 	api.POST("/forgot-password", authControllers.ForgotPasswordControllers)
 
 	article := api.Group("/article")

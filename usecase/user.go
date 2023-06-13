@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -25,7 +24,6 @@ type UserUsecase interface {
 	LogoutUser(c echo.Context) (res dtos.LogoutUserResponse, err error)
 	VerifyEmail(verificationCode any) (res dtos.VerifyEmailResponse, err error)
 	UpdateUserByOTP(otp int, req dtos.ChangePasswordRequest) (res dtos.ForgotPasswordResponse, err error)
-	ForgotPassword(req dtos.ForgotPasswordRequest) (res dtos.ForgotPasswordResponse, err error)
 	ChangePassword(id uint, req dtos.ChangePasswordUserRequest) (res helpers.ResponseMessage, err error)
 	MustDispEmailDom() (dispEmailDomains []string, err error)
 	GetUsers() ([]dtos.UserDetailResponse, error)
@@ -208,56 +206,6 @@ func (u *userUsecase) UpdateUserByOTP(otp int, req dtos.ChangePasswordRequest) (
 	res = dtos.ForgotPasswordResponse{
 		Email:   user.Email,
 		Message: "Password has been reset successfully",
-	}
-
-	return res, nil
-}
-
-// ForgotPassword godoc
-// @Summary      Forgot Password Request OTP
-// @Description  Forgot Password an Account
-// @Tags         User - Auth
-// @Accept       json
-// @Produce      json
-// @Param        request body dtos.ForgotPasswordRequest true "Payload Body [RAW]"
-// @Success      200 {object} dtos.ForgotPasswordOKResponse
-// @Failure      400 {object} dtos.BadRequestResponse
-// @Failure      401 {object} dtos.UnauthorizedResponse
-// @Failure      403 {object} dtos.ForbiddenResponse
-// @Failure      404 {object} dtos.NotFoundResponse
-// @Failure      500 {object} dtos.InternalServerErrorResponse
-// @Router       /forgot-password [post]
-func (u *userUsecase) ForgotPassword(req dtos.ForgotPasswordRequest) (res dtos.ForgotPasswordResponse, err error) {
-	user, err := u.userRepository.GetUserByEmail(req.Email)
-	if err != nil {
-		return res, echo.NewHTTPError(400, "Email not registered")
-	}
-
-	config, _ := initializers.LoadConfig(".")
-
-	// Generate OTP
-	otp := helpers.GenerateRandomOTP(6)
-	NewOTP, err := strconv.Atoi(otp)
-	if err != nil {
-		return res, echo.NewHTTPError(400, "Failed to generate OTP")
-	}
-	user.OTP = NewOTP
-	user.OTPReq = true
-
-	u.userRepository.UpdateUser(user)
-
-	// 👇 Send Email
-	emailData := utils.EmailData{
-		URL:       "http://" + config.ClientOrigin + "/change-password/" + url.PathEscape(otp),
-		FirstName: user.Username,
-		Subject:   "Your OTP to reset password",
-	}
-
-	utils.SendEmailUser(&user, &emailData)
-
-	res = dtos.ForgotPasswordResponse{
-		Email:   user.Email,
-		Message: "OTP has been sent to your email",
 	}
 
 	return res, nil

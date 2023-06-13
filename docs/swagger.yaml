@@ -919,6 +919,48 @@ paths:
       summary: Change Password Admin
       tags:
       - Admin - Account
+  /admin/change-password/{otp}:
+    post:
+      consumes:
+      - application/json
+      description: Change Password an Account
+      parameters:
+      - description: Payload Body [RAW]
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.ChangePasswordOKResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      summary: Change Password by OTP
+      tags:
+      - Admin - Auth
   /admin/login:
     post:
       consumes:
@@ -1038,6 +1080,47 @@ paths:
           schema:
             $ref: '#/definitions/dtos.InternalServerErrorResponse'
       summary: Register Admin
+      tags:
+      - Admin - Auth
+  /admin/verifyemail/{verificationCode}:
+    get:
+      consumes:
+      - application/json
+      description: Verif an account
+      parameters:
+      - description: Verification Code
+        in: path
+        name: verification_code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.VerifyEmailOKResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      summary: Verify Email by Verification Code
       tags:
       - Admin - Auth
   /article:
@@ -1208,7 +1291,7 @@ paths:
             $ref: '#/definitions/dtos.InternalServerErrorResponse'
       summary: Forgot Password Request OTP
       tags:
-      - User - Auth
+      - Utils - Authentikasi
   /login:
     post:
       consumes:

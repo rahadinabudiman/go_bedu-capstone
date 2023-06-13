@@ -17,7 +17,6 @@ type AdminController interface {
 	LoginAdminController(c echo.Context) error
 	LogoutAdminController(c echo.Context) error
 	RegisterAdminController(c echo.Context) error
-	ForgotPasswordAdminController(c echo.Context) error
 	VerifyEmailAdminController(c echo.Context) error
 	VerifyOTPAdminController(c echo.Context) error
 	ChangePasswordController(c echo.Context) error
@@ -167,44 +166,6 @@ func (c *adminController) VerifyEmailAdminController(ctx echo.Context) error {
 		helpers.NewResponse(
 			http.StatusOK,
 			"Success Verify Email",
-			res,
-		),
-	)
-}
-
-// Controller for Forgot Password Account
-func (c *adminController) ForgotPasswordAdminController(ctx echo.Context) error {
-	req := dtos.ForgotPasswordRequest{}
-
-	ctx.Bind(&req)
-	if err := ctx.Validate(&req); err != nil {
-		return ctx.JSON(
-			http.StatusBadRequest,
-			helpers.NewErrorResponse(
-				http.StatusBadRequest,
-				"Field cannot be empty or Password must be 6 characters",
-				helpers.GetErrorData(err),
-			),
-		)
-	}
-
-	res, err := c.adminUsecase.ForgotPassword(req)
-	if err != nil {
-		return ctx.JSON(
-			http.StatusBadRequest,
-			helpers.NewErrorResponse(
-				http.StatusBadRequest,
-				"Could not forgot password",
-				helpers.GetErrorData(err),
-			),
-		)
-	}
-
-	return ctx.JSON(
-		http.StatusOK,
-		helpers.NewResponse(
-			http.StatusOK,
-			"Success Reset Password",
 			res,
 		),
 	)
