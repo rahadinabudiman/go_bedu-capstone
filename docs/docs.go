@@ -677,7 +677,7 @@ const docTemplate = `{
             "get": {
                 "security": [
                     {
-                        "BearerAut": []
+                        "BearerAuth": []
                     }
                 ],
                 "description": "Get admin by ID",
@@ -941,6 +941,73 @@ const docTemplate = `{
                 }
             }
         },
+        "/article/like/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create Bookmark by Article ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Article"
+                ],
+                "summary": "Create Bookmark by Article ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID article",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.LikedStatusOKResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.BadRequestResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.UnauthorizedResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ForbiddenResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.NotFoundResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/article/{id}": {
             "get": {
                 "description": "Get article by ID",
@@ -1131,78 +1198,11 @@ const docTemplate = `{
                 }
             }
         },
-        "/like/{id}": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAut": []
-                    }
-                ],
-                "description": "Create Bookmark by Article ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Article"
-                ],
-                "summary": "Create Bookmark by Article ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "ID Article",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dtos.StatusOKResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/dtos.BadRequestResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/dtos.UnauthorizedResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/dtos.ForbiddenResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/dtos.NotFoundResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/dtos.InternalServerErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/liked/{id}": {
             "get": {
                 "security": [
                     {
-                        "BearerAut": []
+                        "BearerAuth": []
                     }
                 ],
                 "description": "Get Bookmark by User ID",
@@ -1219,7 +1219,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "ID User",
+                        "description": "ID user",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1229,7 +1229,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dtos.StatusOKResponse"
+                            "$ref": "#/definitions/dtos.LikedStatusOKResponse"
                         }
                     },
                     "400": {
@@ -1707,7 +1707,7 @@ const docTemplate = `{
             "get": {
                 "security": [
                     {
-                        "BearerAut": []
+                        "BearerAuth": []
                     }
                 ],
                 "description": "Get user by ID",
@@ -2093,6 +2093,17 @@ const docTemplate = `{
                 }
             }
         },
+        "dtos.ArticleLiked": {
+            "type": "object",
+            "properties": {
+                "article_id": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "dtos.ArticleStatusOKResponse": {
             "type": "object",
             "properties": {
@@ -2379,6 +2390,22 @@ const docTemplate = `{
                 "status_code": {
                     "type": "integer",
                     "example": 500
+                }
+            }
+        },
+        "dtos.LikedStatusOKResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/dtos.ArticleLiked"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Successfully liked"
+                },
+                "status_code": {
+                    "type": "integer",
+                    "example": 200
                 }
             }
         },
