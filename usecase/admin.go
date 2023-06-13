@@ -178,7 +178,7 @@ func (u *adminUsecase) LogoutAdmin(c echo.Context) (res dtos.LogoutAdminResponse
 // @Failure      403 {object} dtos.ForbiddenResponse
 // @Failure      404 {object} dtos.NotFoundResponse
 // @Failure      500 {object} dtos.InternalServerErrorResponse
-// @Router       /verifyemail/{verificationCode} [get]
+// @Router       /admin/verifyemail/{verificationCode} [get]
 func (u *adminUsecase) VerifyEmail(verificationCode any) (res dtos.VerifyEmailResponse, err error) {
 	admin, err := u.adminRepository.GetAdminByVerificationCode(verificationCode)
 	if err != nil {
@@ -215,7 +215,7 @@ func (u *adminUsecase) VerifyEmail(verificationCode any) (res dtos.VerifyEmailRe
 // @Failure      403 {object} dtos.ForbiddenResponse
 // @Failure      404 {object} dtos.NotFoundResponse
 // @Failure      500 {object} dtos.InternalServerErrorResponse
-// @Router       /change-password/{otp} [post]
+// @Router       /admin/change-password/{otp} [post]
 func (u *adminUsecase) UpdateAdminByOTP(otp int, req dtos.ChangePasswordRequest) (res dtos.ForgotPasswordResponse, err error) {
 	admin, err := u.adminRepository.GetAdminOTP(otp)
 	if err != nil {
