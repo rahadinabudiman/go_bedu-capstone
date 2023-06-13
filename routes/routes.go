@@ -22,6 +22,17 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 	articleUsecase := usecase.NewArticleUsecase(articleRepository)
 	articleController := controllers.NewArticleController(articleUsecase)
 
+	userRepository := repositories.NewUserRepository(db)
+	userUsecase := usecase.NewUserUsecase(userRepository)
+	userController := controllers.NewUserControllers(userUsecase, userRepository)
+
+	articleLiked := repositories.NewArticleLikedRepository(db)
+	articleLikedUsecase := usecase.NewArticleLikedUsecase(articleLiked, userRepository)
+	articleLikedController := controllers.NewArticleLikedControllers(articleLikedUsecase, articleUsecase)
+
+	authUsecase := usecase.NewAuthUsecase(adminRepository, userRepository)
+	authControllers := controllers.NewAuthControllers(authUsecase)
+
 	// Middleware untuk mengatur CORS
 	e.Use(mid.CORSWithConfig(mid.CORSConfig{
 		AllowOrigins: []string{"*"},
@@ -41,17 +52,41 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 	// Mengatur folder untuk file gambar
 	e.Static("/public", "public")
 
+	// Main API
 	api := e.Group("/api/v1")
 
-	api.POST("/register", adminController.RegisterAdminController)
-	api.POST("/login", adminController.LoginAdminController)
-	api.GET("/verifyemail/:verificationCode", adminController.VerifyEmailAdminController)
-	api.POST("/change-password/:otp", adminController.VerifyOTPAdminController)
-	api.POST("/forgot-password", adminController.ForgotPasswordAdminController)
+	// AUTH API
+	api.POST("/admin/register", adminController.RegisterAdminController)
+	api.POST("/admin/login", adminController.LoginAdminController)
+	api.POST("/login", userController.LoginUserController)
+	api.POST("/register", userController.RegisterUserController)
+
+	// Utils API
+	api.POST("/change-password/:otp", userController.VerifyOTPUserController)
+	api.POST("/admin/change-password/:otp", adminController.VerifyOTPAdminController)
+	api.GET("/verifyemail/:verificationCode", userController.VerifyEmailUserController)
+	api.GET("/admin/verifyemail/:verificationCode", adminController.VerifyEmailAdminController)
+
+	// Forgot Password for All Actor
+	api.POST("/forgot-password", authControllers.ForgotPasswordControllers)
 
 	article := api.Group("/article")
 	article.GET("", articleController.GetAllArticles)
 	article.GET("/:id", articleController.GetArticleById)
+
+	// User Only
+	user := api.Group("/user")
+	user.Use(m.VerifyToken)
+	user.GET("", userController.GetAllUserController)
+	user.GET("/profile", userController.GetUserController)
+	user.PUT("", userController.UpdateUserController)
+	user.DELETE("", userController.DeleteUserController)
+	user.POST("/change-password", userController.ChangePasswordController)
+	user.GET("/logout", userController.LogoutUserController)
+
+	// Like Some Article
+	user.GET("/like/:id", articleLikedController.CreateArticleLikedController)
+	user.GET("/liked/:id", articleLikedController.GetArticleLikedByUserIdController)
 
 	// Admin Only
 	admin := api.Group("/admin")

@@ -239,16 +239,10 @@ func (u *articleUsecase) DeleteArticle(id uint) error {
 	thumbnailDst := "public/images/" + article.Thumbnail
 
 	// Remove the Images
-	err = os.Remove(imageDst)
-	if err != nil {
-		return err
-	}
+	os.Remove(imageDst)
 
 	// Remove the Thumbnail
-	err = os.Remove(thumbnailDst)
-	if err != nil {
-		return err
-	}
+	os.Remove(thumbnailDst)
 
 	err = u.articleRepository.DeleteArticle(article)
 	return err
