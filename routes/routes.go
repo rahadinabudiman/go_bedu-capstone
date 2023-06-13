@@ -14,9 +14,6 @@ import (
 )
 
 func NewRoute(e *echo.Echo, db *gorm.DB) {
-	m.Log(e)
-	e.Pre(mid.RemoveTrailingSlash())
-
 	adminRepository := repositories.NewAdminRepository(db)
 	adminUsecase := usecase.NewAdminUsecase(adminRepository)
 	adminController := controllers.NewAdminController(adminUsecase, adminRepository)
@@ -28,6 +25,10 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 	userRepository := repositories.NewUserRepository(db)
 	userUsecase := usecase.NewUserUsecase(userRepository)
 	userController := controllers.NewUserControllers(userUsecase, userRepository)
+
+	articleLiked := repositories.NewArticleLikedRepository(db)
+	articleLikedUsecase := usecase.NewArticleLikedUsecase(articleLiked, userRepository)
+	articleLikedController := controllers.NewArticleLikedControllers(articleLikedUsecase, articleUsecase)
 
 	authUsecase := usecase.NewAuthUsecase(adminRepository, userRepository)
 	authControllers := controllers.NewAuthControllers(authUsecase)
@@ -66,6 +67,7 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 	api.GET("/verifyemail/:verificationCode", userController.VerifyEmailUserController)
 	api.GET("/admin/verifyemail/:verificationCode", adminController.VerifyEmailAdminController)
 
+	// Forgot Password for All Actor
 	api.POST("/forgot-password", authControllers.ForgotPasswordControllers)
 
 	article := api.Group("/article")
@@ -81,6 +83,10 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 	user.DELETE("", userController.DeleteUserController)
 	user.POST("/change-password", userController.ChangePasswordController)
 	user.GET("/logout", userController.LogoutUserController)
+
+	// Like Some Article
+	user.GET("/like/:id", articleLikedController.CreateArticleLikedController)
+	user.GET("/liked/:id", articleLikedController.GetArticleLikedByUserIdController)
 
 	// Admin Only
 	admin := api.Group("/admin")
