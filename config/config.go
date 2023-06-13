@@ -67,5 +67,6 @@ func MigrateDB(db *gorm.DB) error {
 	return db.AutoMigrate(
 		&models.Administrator{},
 		&models.Article{},
+		&models.User{},
 	)
 }

@@ -1,14 +1,12 @@
 package dtos
 
-import (
-	"time"
-)
+import "time"
 
-type LogoutAdminResponse struct {
+type LogoutUserResponse struct {
 	Message string `json:"message" form:"message" example:"Logout Success"`
 }
 
-type AdminDetailResponse struct {
+type UserDetailResponse struct {
 	ID        uint      `json:"id" from:"id"`
 	Username  string    `json:"username" form:"username" validate:"required" example:"r4ha"`
 	Nama      string    `json:"nama" from:"nama"`
@@ -19,7 +17,7 @@ type AdminDetailResponse struct {
 	// Article   []models.Article `json:"article" from:"article"`
 }
 
-type RegisterAdminRequest struct {
+type RegisterUserRequest struct {
 	Nama            string `json:"nama" form:"nama" validate:"required" example:"Rahadina Budiman Sundara"`
 	Username        string `json:"username" form:"username" validate:"required" example:"r4ha"`
 	Email           string `json:"email" form:"email" validate:"required,email" example:"me@r4ha.com"`
@@ -29,7 +27,7 @@ type RegisterAdminRequest struct {
 	Role            string `json:"role" form:"role" gorm:"type:enum('Admin', 'Super Admin');default:'Admin'; not-null" example:"Admin"`
 }
 
-type UpdateAdminRequest struct {
+type UpdateUserRequest struct {
 	Nama     string `json:"nama" form:"nama" validate:"required" example:"Rahadina Budiman Sundara"`
 	Username string `json:"username" form:"username" validate:"required" example:"r4ha"`
 	Email    string `json:"email" form:"email" validate:"required,email" example:"me@r4ha.com"`
@@ -37,11 +35,11 @@ type UpdateAdminRequest struct {
 	Role     string `json:"role" form:"role" gorm:"type:enum('Admin', 'Super Admin');default:'Admin'; not-null" example:"Admin"`
 }
 
-type DeleteAdminRequest struct {
+type DeleteUserRequest struct {
 	Password string `json:"password" form:"password" validate:"gte=6" example:"rahadinabudimansundara"`
 }
 
-type RegisterAdminResponse struct {
+type RegisterUserResponse struct {
 	Nama     string `json:"nama" form:"nama" example:"Rahadina Budiman Sundara"`
 	Username string `json:"username" form:"username" validate:"required" example:"r4ha"`
 	Email    string `json:"email" form:"email" example:"me@r4ha.com"`
@@ -49,7 +47,7 @@ type RegisterAdminResponse struct {
 	Role     string `json:"role" form:"role" example:"Admin"`
 }
 
-type UpdateAdminResponse struct {
+type UpdateUserResponse struct {
 	Nama     string `json:"nama" form:"nama" example:"Rahadina Budiman Sundara"`
 	Username string `json:"username" form:"username" validate:"required" example:"r4ha"`
 	Email    string `json:"email" form:"email" example:"me@r4ha.com"`
@@ -57,7 +55,7 @@ type UpdateAdminResponse struct {
 	Role     string `json:"role" form:"role" example:"Admin"`
 }
 
-type AdminProfileResponse struct {
+type UserProfileResponse struct {
 	ID       uint   `json:"id" form:"id" example:"1"`
 	Username string `json:"username" form:"username" validate:"required" example:"r4ha"`
 	Nama     string `json:"nama" form:"nama" example:"Rahadina Budiman Sundara"`
@@ -65,7 +63,7 @@ type AdminProfileResponse struct {
 	Role     string `json:"role" form:"role" example:"Admin"`
 }
 
-type ChangePasswordAdminRequest struct {
+type ChangePasswordUserRequest struct {
 	OldPassword     string `json:"old_password" form:"old_password" validate:"gte=6" example:"rahadinabudimansundara"`
 	Password        string `json:"password" form:"password" validate:"gte=6" example:"rahadinabudimansundara"`
 	PasswordConfirm string `json:"passwordconfirm" form:"password" validate:"gte=6" example:"rahadinabudimansundara"`
