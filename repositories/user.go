@@ -72,7 +72,7 @@ func (r *userRepository) GetUserByEmail(email string) (user models.User, err err
 }
 
 func (r *userRepository) GetUserByUsername(username string) (user models.User, err error) {
-	err = r.db.Model(&user).Where("username = ? AND delete_at IS NULL", username).First(&user).Error
+	err = r.db.Model(&user).Where("username = ? AND deleted_at IS NULL", username).First(&user).Error
 
 	return user, err
 }
