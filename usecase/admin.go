@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -25,7 +24,6 @@ type AdminUsecase interface {
 	LogoutAdmin(c echo.Context) (res dtos.LogoutAdminResponse, err error)
 	VerifyEmail(verificationCode any) (res dtos.VerifyEmailResponse, err error)
 	UpdateAdminByOTP(otp int, req dtos.ChangePasswordRequest) (res dtos.ForgotPasswordResponse, err error)
-	ForgotPassword(req dtos.ForgotPasswordRequest) (res dtos.ForgotPasswordResponse, err error)
 	ChangePassword(id uint, req dtos.ChangePasswordAdminRequest) (res helpers.ResponseMessage, err error)
 	MustDispEmailDom() (dispEmailDomains []string, err error)
 	GetAdmin() ([]dtos.AdminDetailResponse, error)
@@ -94,7 +92,7 @@ func (u *adminUsecase) GetAdmin() ([]dtos.AdminDetailResponse, error) {
 }
 
 // AdminLogin godoc
-// @Summary      Login Admin with Email and Password
+// @Summary      Login Admin with Username and Password
 // @Description  Login an account
 // @Tags         Admin - Auth
 // @Accept       json
@@ -106,7 +104,7 @@ func (u *adminUsecase) GetAdmin() ([]dtos.AdminDetailResponse, error) {
 // @Failure      403 {object} dtos.ForbiddenResponse
 // @Failure      404 {object} dtos.NotFoundResponse
 // @Failure      500 {object} dtos.InternalServerErrorResponse
-// @Router       /login [post]
+// @Router       /admin/login [post]
 func (u *adminUsecase) LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dtos.LoginResponse, err error) {
 	admin, err := u.adminRepository.GetAdminByUsername(req.Username)
 	if err != nil {
@@ -178,7 +176,7 @@ func (u *adminUsecase) LogoutAdmin(c echo.Context) (res dtos.LogoutAdminResponse
 // @Failure      403 {object} dtos.ForbiddenResponse
 // @Failure      404 {object} dtos.NotFoundResponse
 // @Failure      500 {object} dtos.InternalServerErrorResponse
-// @Router       /verifyemail/{verificationCode} [get]
+// @Router       /admin/verifyemail/{verificationCode} [get]
 func (u *adminUsecase) VerifyEmail(verificationCode any) (res dtos.VerifyEmailResponse, err error) {
 	admin, err := u.adminRepository.GetAdminByVerificationCode(verificationCode)
 	if err != nil {
@@ -215,7 +213,7 @@ func (u *adminUsecase) VerifyEmail(verificationCode any) (res dtos.VerifyEmailRe
 // @Failure      403 {object} dtos.ForbiddenResponse
 // @Failure      404 {object} dtos.NotFoundResponse
 // @Failure      500 {object} dtos.InternalServerErrorResponse
-// @Router       /change-password/{otp} [post]
+// @Router       /admin/change-password/{otp} [post]
 func (u *adminUsecase) UpdateAdminByOTP(otp int, req dtos.ChangePasswordRequest) (res dtos.ForgotPasswordResponse, err error) {
 	admin, err := u.adminRepository.GetAdminOTP(otp)
 	if err != nil {
@@ -245,56 +243,6 @@ func (u *adminUsecase) UpdateAdminByOTP(otp int, req dtos.ChangePasswordRequest)
 	res = dtos.ForgotPasswordResponse{
 		Email:   admin.Email,
 		Message: "Password has been reset successfully",
-	}
-
-	return res, nil
-}
-
-// ForgotPassword godoc
-// @Summary      Forgot Password Request OTP
-// @Description  Forgot Password an Account
-// @Tags         Admin - Auth
-// @Accept       json
-// @Produce      json
-// @Param        request body dtos.ForgotPasswordRequest true "Payload Body [RAW]"
-// @Success      200 {object} dtos.ForgotPasswordOKResponse
-// @Failure      400 {object} dtos.BadRequestResponse
-// @Failure      401 {object} dtos.UnauthorizedResponse
-// @Failure      403 {object} dtos.ForbiddenResponse
-// @Failure      404 {object} dtos.NotFoundResponse
-// @Failure      500 {object} dtos.InternalServerErrorResponse
-// @Router       /forgot-password [post]
-func (u *adminUsecase) ForgotPassword(req dtos.ForgotPasswordRequest) (res dtos.ForgotPasswordResponse, err error) {
-	admin, err := u.adminRepository.GetAdminByEmail(req.Email)
-	if err != nil {
-		return res, echo.NewHTTPError(400, "Email not registered")
-	}
-
-	config, _ := initializers.LoadConfig(".")
-
-	// Generate OTP
-	otp := helpers.GenerateRandomOTP(6)
-	NewOTP, err := strconv.Atoi(otp)
-	if err != nil {
-		return res, echo.NewHTTPError(400, "Failed to generate OTP")
-	}
-	admin.OTP = NewOTP
-	admin.OTPReq = true
-
-	u.adminRepository.UpdateAdmin(admin)
-
-	// 👇 Send Email
-	emailData := utils.EmailData{
-		URL:       "http://" + config.ClientOrigin + "/change-password/" + url.PathEscape(otp),
-		FirstName: admin.Username,
-		Subject:   "Your OTP to reset password",
-	}
-
-	utils.SendEmail(&admin, &emailData)
-
-	res = dtos.ForgotPasswordResponse{
-		Email:   admin.Email,
-		Message: "OTP has been sent to your email",
 	}
 
 	return res, nil
@@ -363,7 +311,7 @@ func (u *adminUsecase) ChangePassword(id uint, req dtos.ChangePasswordAdminReque
 // @Failure      403 {object} dtos.ForbiddenResponse
 // @Failure      404 {object} dtos.NotFoundResponse
 // @Failure      500 {object} dtos.InternalServerErrorResponse
-// @Router       /register [post]
+// @Router       /admin/register [post]
 func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDetailResponse, error) {
 	var res dtos.AdminDetailResponse
 
@@ -424,7 +372,7 @@ func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDe
 
 	// 👇 Send Email
 	emailData := utils.EmailData{
-		URL:       "http://" + config.ClientOrigin + "/verifyemail/" + url.PathEscape(verification_code),
+		URL:       "http://" + config.ClientOrigin + "/admin/verifyemail/" + url.PathEscape(verification_code),
 		FirstName: firstName,
 		Subject:   "Your account verification code",
 	}
