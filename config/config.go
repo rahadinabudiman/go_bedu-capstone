@@ -68,5 +68,6 @@ func MigrateDB(db *gorm.DB) error {
 		&models.Administrator{},
 		&models.Article{},
 		&models.User{},
+		&models.ArticleLiked{},
 	)
 }
