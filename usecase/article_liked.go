@@ -20,6 +20,21 @@ func NewArticleLikedUsecase(articleLikedRepo repositories.ArticleLikedRepository
 	return &articleLikedUsecase{articleLikedRepo, userRepository}
 }
 
+// GetBookmarkArticle godoc
+// @Summary      Get Bookmark by User ID
+// @Description  Get Bookmark by User ID
+// @Tags         User - Account
+// @Accept       json
+// @Produce      json
+// @Param id path integer true "ID User"
+// @Success      200 {object} dtos.StatusOKResponse
+// @Failure      400 {object} dtos.BadRequestResponse
+// @Failure      401 {object} dtos.UnauthorizedResponse
+// @Failure      403 {object} dtos.ForbiddenResponse
+// @Failure      404 {object} dtos.NotFoundResponse
+// @Failure      500 {object} dtos.InternalServerErrorResponse
+// @Router       /liked/{id} [get]
+// @Security BearerAut
 func (u *articleLikedUsecase) GetArticleLikedByUserId(userId uint) ([]models.ArticleLiked, error) {
 	user, err := u.userRepository.GetUserById(userId)
 	if err != nil {
@@ -45,6 +60,21 @@ func (u *articleLikedUsecase) GetArticleLikeByUserIdAndArticleId(userId uint, ar
 	return articleLiked, nil
 }
 
+// CreateBookmarkArticle godoc
+// @Summary      Create Bookmark by Article ID
+// @Description  Create Bookmark by Article ID
+// @Tags         Article
+// @Accept       json
+// @Produce      json
+// @Param id path integer true "ID Article"
+// @Success      200 {object} dtos.StatusOKResponse
+// @Failure      400 {object} dtos.BadRequestResponse
+// @Failure      401 {object} dtos.UnauthorizedResponse
+// @Failure      403 {object} dtos.ForbiddenResponse
+// @Failure      404 {object} dtos.NotFoundResponse
+// @Failure      500 {object} dtos.InternalServerErrorResponse
+// @Router       /like/{id} [get]
+// @Security BearerAut
 func (u *articleLikedUsecase) CreateArticleLiked(id uint, articleId uint) (models.ArticleLiked, error) {
 	articleLiked := models.ArticleLiked{
 		ArticleID: articleId,
