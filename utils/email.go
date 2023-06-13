@@ -94,3 +94,57 @@ func SendEmail(user *models.Administrator, data *EmailData) {
 
 	log.Println("Mail sent!")
 }
+
+func SendEmailUser(user *models.User, data *EmailData) {
+	config, err := initializers.LoadConfig(".")
+
+	if err != nil {
+		log.Fatal("could not load config", err)
+	}
+
+	// Sender data.
+	from := config.EmailFrom
+	smtpHost := config.SMTPHost
+	smtpPort := config.SMTPPort
+	smtpPass := config.SMTPPass
+	smtpUser := config.SMTPUser
+	fromName := config.FromName
+	to := user.Email
+
+	var body bytes.Buffer
+
+	template, err := ParseTemplateDir("templates")
+	if err != nil {
+		log.Fatal("Could not parse template", err)
+	}
+
+	template.ExecuteTemplate(&body, "verificationCode.html", &data)
+
+	mailer := gomail.NewMessage()
+	mailer.SetAddressHeader("From", from, fromName)
+	mailer.SetHeader("To", to)
+	mailer.SetHeader("Subject", data.Subject)
+	mailer.SetBody("text/html", body.String())
+	mailer.AddAlternative("text/plain", html2text.HTML2Text(body.String()))
+
+	dialer := gomail.NewDialer(
+		smtpHost,
+		smtpPort,
+		smtpUser,
+		smtpPass,
+	)
+
+	// d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+	// // Send Email
+	// if err := d.DialAndSend(m); err != nil {
+	// 	log.Fatal("Could not send email: ", err)
+	// }
+
+	err = dialer.DialAndSend(mailer)
+	if err != nil {
+		log.Fatal("Could not send email: ", err.Error())
+	}
+
+	log.Println("Mail sent!")
+}

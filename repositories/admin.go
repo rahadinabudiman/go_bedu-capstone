@@ -47,7 +47,7 @@ func (r *adminRepository) GetAdminOTP(otp int) (admin models.Administrator, err 
 
 // Login Administrator from Database
 func (r *adminRepository) LoginAdmin(admin models.Administrator) error {
-	err := r.db.Where("email = ? AND password = ?", admin.Email, admin.Password).First(&admin).Error
+	err := r.db.Where("username = ? AND password = ?", admin.Email, admin.Password).First(&admin).Error
 
 	return err
 }
