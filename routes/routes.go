@@ -25,6 +25,10 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 	articleUsecase := usecase.NewArticleUsecase(articleRepository)
 	articleController := controllers.NewArticleController(articleUsecase)
 
+	userRepository := repositories.NewUserRepository(db)
+	userUsecase := usecase.NewUserUsecase(userRepository)
+	userController := controllers.NewUserControllers(userUsecase, userRepository)
+
 	// Middleware untuk mengatur CORS
 	e.Use(mid.CORSWithConfig(mid.CORSConfig{
 		AllowOrigins: []string{"*"},
@@ -44,10 +48,16 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 	// Mengatur folder untuk file gambar
 	e.Static("/public", "public")
 
+	// Main API
 	api := e.Group("/api/v1")
 
-	api.POST("/register", adminController.RegisterAdminController)
-	api.POST("/login", adminController.LoginAdminController)
+	// AUTH API
+	api.POST("/admin/register", adminController.RegisterAdminController)
+	api.POST("/admin/login", adminController.LoginAdminController)
+	api.POST("/login", userController.LoginUserController)
+	api.POST("/register", userController.RegisterUserController)
+
+	// Utils API
 	api.GET("/verifyemail/:verificationCode", adminController.VerifyEmailAdminController)
 	api.POST("/change-password/:otp", adminController.VerifyOTPAdminController)
 	api.POST("/forgot-password", adminController.ForgotPasswordAdminController)
@@ -55,6 +65,16 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 	article := api.Group("/article")
 	article.GET("", articleController.GetAllArticles)
 	article.GET("/:id", articleController.GetArticleById)
+
+	// User Only
+	user := api.Group("/user")
+	user.Use(m.VerifyToken)
+	user.GET("", userController.GetAllUserController)
+	user.GET("/profile", userController.GetUserController)
+	user.PUT("", userController.UpdateUserController)
+	user.DELETE("", userController.DeleteUserController)
+	user.POST("/change-password", userController.ChangePasswordController)
+	user.GET("/logout", userController.LogoutUserController)
 
 	// Admin Only
 	admin := api.Group("/admin")

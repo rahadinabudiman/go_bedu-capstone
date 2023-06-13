@@ -156,6 +156,30 @@ definitions:
         minLength: 6
         type: string
     type: object
+  dtos.ChangePasswordUserOKResponse:
+    properties:
+      message:
+        example: Password has been reset successfully
+        type: string
+      status_code:
+        example: 200
+        type: integer
+    type: object
+  dtos.ChangePasswordUserRequest:
+    properties:
+      old_password:
+        example: rahadinabudimansundara
+        minLength: 6
+        type: string
+      password:
+        example: rahadinabudimansundara
+        minLength: 6
+        type: string
+      passwordconfirm:
+        example: rahadinabudimansundara
+        minLength: 6
+        type: string
+    type: object
   dtos.CreateArticlesRequest:
     properties:
       abstract:
@@ -181,6 +205,13 @@ definitions:
         type: string
     type: object
   dtos.DeleteAdminRequest:
+    properties:
+      password:
+        example: rahadinabudimansundara
+        minLength: 6
+        type: string
+    type: object
+  dtos.DeleteUserRequest:
     properties:
       password:
         example: rahadinabudimansundara
@@ -241,6 +272,17 @@ definitions:
         example: 200
         type: integer
     type: object
+  dtos.GetAllUserResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dtos.UserDetailResponse'
+      message:
+        example: Successfully registered
+        type: string
+      status_code:
+        example: 201
+        type: integer
+    type: object
   dtos.InternalServerErrorResponse:
     properties:
       errors: {}
@@ -287,6 +329,12 @@ definitions:
         example: 200
         type: integer
     type: object
+  dtos.LogoutUserResponse:
+    properties:
+      message:
+        example: Logout Success
+        type: string
+    type: object
   dtos.NotFoundResponse:
     properties:
       errors: {}
@@ -327,11 +375,51 @@ definitions:
     - nama
     - username
     type: object
+  dtos.RegisterUserRequest:
+    properties:
+      email:
+        example: me@r4ha.com
+        type: string
+      nama:
+        example: Rahadina Budiman Sundara
+        type: string
+      password:
+        example: rahadinabudimansundara
+        minLength: 6
+        type: string
+      passwordconfirm:
+        example: rahadinabudimansundara
+        minLength: 6
+        type: string
+      role:
+        example: Admin
+        type: string
+      username:
+        example: r4ha
+        type: string
+      verified:
+        example: false
+        type: boolean
+    required:
+    - email
+    - nama
+    - username
+    type: object
   dtos.StatusOKDeletedResponse:
     properties:
       errors: {}
       message:
         example: Successfully deleted
+        type: string
+      status_code:
+        example: 200
+        type: integer
+    type: object
+  dtos.StatusOKResponse:
+    properties:
+      data: {}
+      message:
+        example: Successfully
         type: string
       status_code:
         example: 200
@@ -370,6 +458,73 @@ definitions:
     - nama
     - username
     type: object
+  dtos.UpdateUserRequest:
+    properties:
+      email:
+        example: me@r4ha.com
+        type: string
+      nama:
+        example: Rahadina Budiman Sundara
+        type: string
+      password:
+        example: rahadinabudimansundara
+        minLength: 6
+        type: string
+      role:
+        example: Admin
+        type: string
+      username:
+        example: r4ha
+        type: string
+    required:
+    - email
+    - nama
+    - username
+    type: object
+  dtos.UserCreeatedResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dtos.UserDetailResponse'
+      message:
+        example: Successfully registered
+        type: string
+      status_code:
+        example: 201
+        type: integer
+    type: object
+  dtos.UserDetailResponse:
+    properties:
+      created_at:
+        example: "2023-05-17T15:07:16.504+07:00"
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      nama:
+        type: string
+      role:
+        type: string
+      updated_at:
+        example: "2023-05-17T15:07:16.504+07:00"
+        type: string
+      username:
+        example: r4ha
+        type: string
+    required:
+    - username
+    type: object
+  dtos.UserStatusOKResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dtos.UserDetailResponse'
+      message:
+        example: Successfully get user credentials
+        type: string
+      status_code:
+        example: 200
+        type: integer
+    type: object
   dtos.VerifyEmailOKResponse:
     properties:
       message:
@@ -396,6 +551,13 @@ definitions:
       total:
         example: 1
         type: integer
+    type: object
+  models.Url:
+    properties:
+      url:
+        type: string
+    required:
+    - url
     type: object
 externalDocs:
   description: OpenAPI
@@ -757,6 +919,48 @@ paths:
       summary: Change Password Admin
       tags:
       - Admin - Account
+  /admin/login:
+    post:
+      consumes:
+      - application/json
+      description: Login an account
+      parameters:
+      - description: Payload Body [RAW]
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.LoginStatusOKResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      summary: Login Admin with Username and Password
+      tags:
+      - Admin - Auth
   /admin/logout:
     get:
       consumes:
@@ -794,6 +998,48 @@ paths:
       summary: Logout Administrator
       tags:
       - Admin - Account
+  /admin/register:
+    post:
+      consumes:
+      - application/json
+      description: Register an account
+      parameters:
+      - description: Payload Body [RAW]
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.RegisterAdminRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dtos.AdminCreeatedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      summary: Register Admin
+      tags:
+      - Admin - Auth
   /article:
     get:
       consumes:
@@ -920,7 +1166,7 @@ paths:
             $ref: '#/definitions/dtos.InternalServerErrorResponse'
       summary: Change Password by OTP
       tags:
-      - Admin - Auth
+      - User - Auth
   /forgot-password:
     post:
       consumes:
@@ -962,7 +1208,7 @@ paths:
             $ref: '#/definitions/dtos.InternalServerErrorResponse'
       summary: Forgot Password Request OTP
       tags:
-      - Admin - Auth
+      - User - Auth
   /login:
     post:
       consumes:
@@ -1002,28 +1248,21 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/dtos.InternalServerErrorResponse'
-      summary: Login Admin with Email and Password
+      summary: Login User with Username and Password
       tags:
-      - Admin - Auth
-  /register:
-    post:
+      - User - Auth
+  /logout:
+    get:
       consumes:
       - application/json
-      description: Register an account
-      parameters:
-      - description: Payload Body [RAW]
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/dtos.RegisterAdminRequest'
+      description: Logout User
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
+        "200":
+          description: OK
           schema:
-            $ref: '#/definitions/dtos.AdminCreeatedResponse'
+            $ref: '#/definitions/dtos.LogoutUserResponse'
         "400":
           description: Bad Request
           schema:
@@ -1044,9 +1283,345 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/dtos.InternalServerErrorResponse'
-      summary: Register Admin
+      security:
+      - BearerAuth: []
+      summary: Logout User
       tags:
-      - Admin - Auth
+      - User - Account
+  /public/cloudinary/file-upload:
+    post:
+      consumes:
+      - application/json
+      description: Upload file to cloudinary
+      parameters:
+      - description: Photo file
+        in: formData
+        name: file
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.StatusOKResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      summary: Upload file
+      tags:
+      - Cloudinary
+  /public/cloudinary/url-upload:
+    post:
+      consumes:
+      - application/json
+      description: Upload file to cloudinary
+      parameters:
+      - description: Payload Body [RAW]
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.Url'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.StatusOKResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      summary: Upload file
+      tags:
+      - Cloudinary
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Register an account
+      parameters:
+      - description: Payload Body [RAW]
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.RegisterUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dtos.UserCreeatedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      summary: Register User
+      tags:
+      - User - Auth
+  /user:
+    get:
+      consumes:
+      - application/json
+      description: Get all users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.GetAllUserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all users
+      tags:
+      - User - Account
+  /user/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an User
+      parameters:
+      - description: Payload Body [RAW]
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.DeleteUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.StatusOKDeletedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete an User
+      tags:
+      - User - Account
+    get:
+      consumes:
+      - application/json
+      description: Get user by ID
+      parameters:
+      - description: ID user
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.UserStatusOKResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      security:
+      - BearerAut: []
+      summary: Get user by ID
+      tags:
+      - User - Account
+    put:
+      consumes:
+      - application/json
+      description: User update an information
+      parameters:
+      - description: Payload Body [RAW]
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.UserStatusOKResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update Information
+      tags:
+      - User - Account
+  /user/change-password:
+    post:
+      consumes:
+      - application/json
+      description: Change Password User
+      parameters:
+      - description: Payload Body [RAW]
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.ChangePasswordUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.ChangePasswordUserOKResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Change Password User
+      tags:
+      - User - Account
   /verifyemail/{verificationCode}:
     get:
       consumes:
@@ -1087,7 +1662,7 @@ paths:
             $ref: '#/definitions/dtos.InternalServerErrorResponse'
       summary: Verify Email by Verification Code
       tags:
-      - Admin - Auth
+      - User - Auth
 securityDefinitions:
   BearerAuth:
     in: header

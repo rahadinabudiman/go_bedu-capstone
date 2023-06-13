@@ -94,7 +94,7 @@ func (u *adminUsecase) GetAdmin() ([]dtos.AdminDetailResponse, error) {
 }
 
 // AdminLogin godoc
-// @Summary      Login Admin with Email and Password
+// @Summary      Login Admin with Username and Password
 // @Description  Login an account
 // @Tags         Admin - Auth
 // @Accept       json
@@ -106,7 +106,7 @@ func (u *adminUsecase) GetAdmin() ([]dtos.AdminDetailResponse, error) {
 // @Failure      403 {object} dtos.ForbiddenResponse
 // @Failure      404 {object} dtos.NotFoundResponse
 // @Failure      500 {object} dtos.InternalServerErrorResponse
-// @Router       /login [post]
+// @Router       /admin/login [post]
 func (u *adminUsecase) LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dtos.LoginResponse, err error) {
 	admin, err := u.adminRepository.GetAdminByUsername(req.Username)
 	if err != nil {
@@ -363,7 +363,7 @@ func (u *adminUsecase) ChangePassword(id uint, req dtos.ChangePasswordAdminReque
 // @Failure      403 {object} dtos.ForbiddenResponse
 // @Failure      404 {object} dtos.NotFoundResponse
 // @Failure      500 {object} dtos.InternalServerErrorResponse
-// @Router       /register [post]
+// @Router       /admin/register [post]
 func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDetailResponse, error) {
 	var res dtos.AdminDetailResponse
 

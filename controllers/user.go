@@ -13,66 +13,34 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type AdminController interface {
-	LoginAdminController(c echo.Context) error
-	LogoutAdminController(c echo.Context) error
-	RegisterAdminController(c echo.Context) error
-	ForgotPasswordAdminController(c echo.Context) error
-	VerifyEmailAdminController(c echo.Context) error
-	VerifyOTPAdminController(c echo.Context) error
+type UserControllers interface {
+	LoginUserController(c echo.Context) error
+	LogoutUserController(c echo.Context) error
+	RegisterUserController(c echo.Context) error
+	ForgotPasswordUserController(c echo.Context) error
+	VerifyEmailUserController(c echo.Context) error
+	VerifyOTPUserController(c echo.Context) error
 	ChangePasswordController(c echo.Context) error
-	GetAdminsController(c echo.Context) error
-	GetAdminByIdController(c echo.Context) error
-	UpdateAdminController(c echo.Context) error
-	DeleteAdminController(c echo.Context) error
+	GetAllUserController(c echo.Context) error
+	GetUserController(c echo.Context) error
+	UpdateUserController(c echo.Context) error
+	DeleteUserController(c echo.Context) error
 }
 
-type adminController struct {
-	adminUsecase    usecase.AdminUsecase
-	adminRepository repositories.AdminRepository
+type userControllers struct {
+	userUsecase    usecase.UserUsecase
+	userRepository repositories.UserRepository
 }
 
-func NewAdminController(adminUsecase usecase.AdminUsecase, adminRepository repositories.AdminRepository) *adminController {
-	return &adminController{adminUsecase, adminRepository}
-}
-
-// Controller for Logout Admin from Cookie
-func (c *adminController) LogoutAdminController(ctx echo.Context) error {
-	_, err := m.IsAdmin(ctx)
-	if err != nil {
-		return ctx.JSON(
-			http.StatusBadRequest,
-			helpers.NewErrorResponse(
-				http.StatusBadRequest,
-				"Please login first",
-				helpers.GetErrorData(err),
-			),
-		)
+func NewUserControllers(userUsecase usecase.UserUsecase, userRepository repositories.UserRepository) UserControllers {
+	return &userControllers{
+		userUsecase:    userUsecase,
+		userRepository: userRepository,
 	}
-
-	_, err = c.adminUsecase.LogoutAdmin(ctx)
-	if err != nil {
-		return ctx.JSON(
-			http.StatusBadRequest,
-			helpers.NewErrorResponse(
-				http.StatusBadRequest,
-				"Logout failed",
-				helpers.GetErrorData(err),
-			),
-		)
-	}
-
-	return ctx.JSON(
-		http.StatusOK,
-		helpers.NewResponseMessage(
-			http.StatusOK,
-			"Success Logout",
-		),
-	)
 }
 
-// Controller for Login Admin from DB
-func (c *adminController) LoginAdminController(ctx echo.Context) error {
+// Controller for Login User
+func (c *userControllers) LoginUserController(ctx echo.Context) error {
 	req := dtos.LoginRequest{}
 
 	ctx.Bind(&req)
@@ -87,7 +55,7 @@ func (c *adminController) LoginAdminController(ctx echo.Context) error {
 		)
 	}
 
-	res, err := c.adminUsecase.LoginAdmin(ctx, req)
+	res, err := c.userUsecase.LoginUser(ctx, req)
 	if err != nil {
 		return ctx.JSON(
 			http.StatusBadRequest,
@@ -109,9 +77,43 @@ func (c *adminController) LoginAdminController(ctx echo.Context) error {
 	)
 }
 
-// Controller For Register Admin From DB
-func (c *adminController) RegisterAdminController(ctx echo.Context) error {
-	req := dtos.RegisterAdminRequest{}
+// Controller for Logout User from Cookie
+func (c *userControllers) LogoutUserController(ctx echo.Context) error {
+	_, err := m.IsUser(ctx)
+	if err != nil {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Please login first",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+
+	_, err = c.userUsecase.LogoutUser(ctx)
+	if err != nil {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Logout failed",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+
+	return ctx.JSON(
+		http.StatusOK,
+		helpers.NewResponseMessage(
+			http.StatusOK,
+			"Success Logout",
+		),
+	)
+}
+
+func (c *userControllers) RegisterUserController(ctx echo.Context) error {
+	req := dtos.RegisterUserRequest{}
 
 	ctx.Bind(&req)
 	if err := ctx.Validate(&req); err != nil {
@@ -125,19 +127,19 @@ func (c *adminController) RegisterAdminController(ctx echo.Context) error {
 		)
 	}
 
-	admin, err := c.adminUsecase.CreateAdmin(&req)
+	user, err := c.userUsecase.CreateUser(&req)
 	if err != nil {
 		return ctx.JSON(
 			http.StatusBadRequest,
 			helpers.NewErrorResponse(
 				http.StatusBadRequest,
-				"Could not create admin",
+				"Could not create user",
 				helpers.GetErrorData(err),
 			),
 		)
 	}
 
-	message := "We sent an email with a verification code to " + admin.Email
+	message := "We sent an email with a verification code to " + user.Email
 	return ctx.JSON(http.StatusOK,
 		helpers.NewResponse(
 			http.StatusOK,
@@ -146,34 +148,7 @@ func (c *adminController) RegisterAdminController(ctx echo.Context) error {
 		))
 }
 
-func (c *adminController) VerifyEmailAdminController(ctx echo.Context) error {
-	code := ctx.Param("verificationCode")
-	// verification_code := utils.Encode(code)
-
-	res, err := c.adminUsecase.VerifyEmail(code)
-	if err != nil {
-		return ctx.JSON(
-			http.StatusBadRequest,
-			helpers.NewErrorResponse(
-				http.StatusBadRequest,
-				"Could not verify email",
-				helpers.GetErrorData(err),
-			),
-		)
-	}
-
-	return ctx.JSON(
-		http.StatusOK,
-		helpers.NewResponse(
-			http.StatusOK,
-			"Success Verify Email",
-			res,
-		),
-	)
-}
-
-// Controller for Forgot Password Account
-func (c *adminController) ForgotPasswordAdminController(ctx echo.Context) error {
+func (c *userControllers) ForgotPasswordUserController(ctx echo.Context) error {
 	req := dtos.ForgotPasswordRequest{}
 
 	ctx.Bind(&req)
@@ -188,7 +163,7 @@ func (c *adminController) ForgotPasswordAdminController(ctx echo.Context) error 
 		)
 	}
 
-	res, err := c.adminUsecase.ForgotPassword(req)
+	res, err := c.userUsecase.ForgotPassword(req)
 	if err != nil {
 		return ctx.JSON(
 			http.StatusBadRequest,
@@ -210,8 +185,33 @@ func (c *adminController) ForgotPasswordAdminController(ctx echo.Context) error 
 	)
 }
 
-// Controller for verify OTP account
-func (c *adminController) VerifyOTPAdminController(ctx echo.Context) error {
+func (c *userControllers) VerifyEmailUserController(ctx echo.Context) error {
+	code := ctx.Param("verificationCode")
+	// verification_code := utils.Encode(code)
+
+	res, err := c.userUsecase.VerifyEmail(code)
+	if err != nil {
+		return ctx.JSON(
+			http.StatusBadRequest,
+			helpers.NewErrorResponse(
+				http.StatusBadRequest,
+				"Could not verify email",
+				helpers.GetErrorData(err),
+			),
+		)
+	}
+
+	return ctx.JSON(
+		http.StatusOK,
+		helpers.NewResponse(
+			http.StatusOK,
+			"Success Verify Email",
+			res,
+		),
+	)
+}
+
+func (c *userControllers) VerifyOTPUserController(ctx echo.Context) error {
 	req := dtos.ChangePasswordRequest{}
 
 	ctx.Bind(&req)
@@ -238,7 +238,7 @@ func (c *adminController) VerifyOTPAdminController(ctx echo.Context) error {
 		)
 	}
 
-	res, err := c.adminUsecase.UpdateAdminByOTP(code, req)
+	res, err := c.userUsecase.UpdateUserByOTP(code, req)
 	if err != nil {
 		return ctx.JSON(
 			http.StatusBadRequest,
@@ -260,17 +260,16 @@ func (c *adminController) VerifyOTPAdminController(ctx echo.Context) error {
 	)
 }
 
-// Controller for Change Password Admin
-func (c *adminController) ChangePasswordController(ctx echo.Context) error {
-	req := dtos.ChangePasswordAdminRequest{}
+func (c *userControllers) ChangePasswordController(ctx echo.Context) error {
+	req := dtos.ChangePasswordUserRequest{}
 
-	id, err := m.IsAdmin(ctx)
+	id, err := m.IsUser(ctx)
 	if err != nil {
 		return ctx.JSON(
 			http.StatusUnauthorized,
 			helpers.NewErrorResponse(
 				http.StatusUnauthorized,
-				"Routes for Admin Only",
+				"Routes for User Only",
 				helpers.GetErrorData(err),
 			),
 		)
@@ -288,7 +287,7 @@ func (c *adminController) ChangePasswordController(ctx echo.Context) error {
 		)
 	}
 
-	res, err := c.adminUsecase.ChangePassword(uint(id), req)
+	res, err := c.userUsecase.ChangePassword(uint(id), req)
 	if err != nil {
 		return ctx.JSON(
 			http.StatusBadRequest,
@@ -310,15 +309,14 @@ func (c *adminController) ChangePasswordController(ctx echo.Context) error {
 	)
 }
 
-// Controller for Get All Admins from DB
-func (c *adminController) GetAdminsController(ctx echo.Context) error {
-	admins, err := c.adminUsecase.GetAdmin()
+func (c *userControllers) GetAllUserController(ctx echo.Context) error {
+	users, err := c.userUsecase.GetUsers()
 	if err != nil {
 		return ctx.JSON(
 			http.StatusBadRequest,
 			helpers.NewErrorResponse(
 				http.StatusBadRequest,
-				"Could not get admin",
+				"Could not get users",
 				helpers.GetErrorData(err),
 			),
 		)
@@ -328,33 +326,32 @@ func (c *adminController) GetAdminsController(ctx echo.Context) error {
 		http.StatusOK,
 		helpers.NewResponse(
 			http.StatusOK,
-			"Success Get Admin",
-			admins,
+			"Success Get Users",
+			users,
 		),
 	)
 }
 
-// Controller for Get Admin by ID from DB
-func (c *adminController) GetAdminByIdController(ctx echo.Context) error {
-	id, err := m.IsAdmin(ctx)
+func (c *userControllers) GetUserController(ctx echo.Context) error {
+	id, err := m.IsUser(ctx)
 	if err != nil {
 		return ctx.JSON(
 			http.StatusUnauthorized,
 			helpers.NewErrorResponse(
 				http.StatusUnauthorized,
-				"Routes for Admin Only",
+				"Routes for User Only",
 				helpers.GetErrorData(err),
 			),
 		)
 	}
 
-	res, err := c.adminUsecase.GetAdminById(uint(id))
+	res, err := c.userUsecase.GetUserById(uint(id))
 	if err != nil {
 		return ctx.JSON(
 			http.StatusBadRequest,
 			helpers.NewErrorResponse(
 				http.StatusBadRequest,
-				"Could not get admin",
+				"Could not get user",
 				helpers.GetErrorData(err),
 			),
 		)
@@ -366,17 +363,16 @@ func (c *adminController) GetAdminByIdController(ctx echo.Context) error {
 	})
 }
 
-// Controller for Update Admin by ID from DB
-func (c *adminController) UpdateAdminController(ctx echo.Context) error {
-	req := dtos.UpdateAdminRequest{}
+func (c *userControllers) UpdateUserController(ctx echo.Context) error {
+	req := dtos.UpdateUserRequest{}
 
-	id, err := m.IsAdmin(ctx)
+	id, err := m.IsUser(ctx)
 	if err != nil {
 		return ctx.JSON(
 			http.StatusUnauthorized,
 			helpers.NewErrorResponse(
 				http.StatusUnauthorized,
-				"Routes for Admin Only",
+				"Routes for User Only",
 				helpers.GetErrorData(err),
 			),
 		)
@@ -394,13 +390,13 @@ func (c *adminController) UpdateAdminController(ctx echo.Context) error {
 		)
 	}
 
-	res, err := c.adminUsecase.UpdateAdmin(uint(id), req)
+	res, err := c.userUsecase.UpdateUser(uint(id), req)
 	if err != nil {
 		return ctx.JSON(
 			http.StatusBadRequest,
 			helpers.NewErrorResponse(
 				http.StatusBadRequest,
-				"Could not update admin",
+				"Could not update user",
 				helpers.GetErrorData(err),
 			),
 		)
@@ -410,27 +406,26 @@ func (c *adminController) UpdateAdminController(ctx echo.Context) error {
 		http.StatusOK,
 		helpers.NewResponse(
 			http.StatusOK,
-			"Success Update Admin",
+			"Success Update User",
 			res,
 		),
 	)
 }
 
-// Controller for Delete Admin by ID from DB
-func (c *adminController) DeleteAdminController(ctx echo.Context) error {
-	id, err := m.IsAdmin(ctx)
+func (c *userControllers) DeleteUserController(ctx echo.Context) error {
+	id, err := m.IsUser(ctx)
 	if err != nil {
 		return ctx.JSON(
 			http.StatusUnauthorized,
 			helpers.NewErrorResponse(
 				http.StatusUnauthorized,
-				"Routes for Admin Only",
+				"Routes for User Only",
 				helpers.GetErrorData(err),
 			),
 		)
 	}
 
-	req := dtos.DeleteAdminRequest{}
+	req := dtos.DeleteUserRequest{}
 
 	ctx.Bind(&req)
 	if err := ctx.Validate(&req); err != nil {
@@ -444,13 +439,13 @@ func (c *adminController) DeleteAdminController(ctx echo.Context) error {
 		)
 	}
 
-	_, err = c.adminUsecase.DeleteAdmin(uint(id), req)
+	_, err = c.userUsecase.DeleteUser(uint(id), req)
 	if err != nil {
 		return ctx.JSON(
 			http.StatusBadRequest,
 			helpers.NewErrorResponse(
 				http.StatusBadRequest,
-				"Could not Delete admin",
+				"Could not Delete user",
 				helpers.GetErrorData(err),
 			),
 		)
@@ -460,7 +455,7 @@ func (c *adminController) DeleteAdminController(ctx echo.Context) error {
 		http.StatusOK,
 		helpers.NewResponseMessage(
 			http.StatusOK,
-			"Success Delete Admin",
+			"Success Delete User",
 		),
 	)
 }
