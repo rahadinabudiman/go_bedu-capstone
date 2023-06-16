@@ -33,7 +33,7 @@ func NewArticleLikedUsecase(articleLikedRepo repositories.ArticleLikedRepository
 // @Failure      403 {object} dtos.ForbiddenResponse
 // @Failure      404 {object} dtos.NotFoundResponse
 // @Failure      500 {object} dtos.InternalServerErrorResponse
-// @Router       /liked/{id} [get]
+// @Router       /user/liked/{id} [get]
 // @Security     BearerAuth
 func (u *articleLikedUsecase) GetArticleLikedByUserId(userId uint) ([]models.ArticleLiked, error) {
 	user, err := u.userRepository.GetUserById(userId)
