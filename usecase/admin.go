@@ -406,7 +406,7 @@ func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDe
 // @Failure      404 {object} dtos.NotFoundResponse
 // @Failure      500 {object} dtos.InternalServerErrorResponse
 // @Router       /admin/{id} [get]
-// @Security BearerAut
+// @Security BearerAuth
 func (u *adminUsecase) GetAdminById(id uint) (res dtos.AdminProfileResponse, err error) {
 	admin, err := u.adminRepository.GetAdminById(id)
 

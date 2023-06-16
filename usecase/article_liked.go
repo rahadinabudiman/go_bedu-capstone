@@ -26,15 +26,15 @@ func NewArticleLikedUsecase(articleLikedRepo repositories.ArticleLikedRepository
 // @Tags         User - Account
 // @Accept       json
 // @Produce      json
-// @Param id path integer true "ID User"
-// @Success      200 {object} dtos.StatusOKResponse
+// @Param id path integer true "ID user"
+// @Success      200 {object} dtos.LikedStatusOKResponse
 // @Failure      400 {object} dtos.BadRequestResponse
 // @Failure      401 {object} dtos.UnauthorizedResponse
 // @Failure      403 {object} dtos.ForbiddenResponse
 // @Failure      404 {object} dtos.NotFoundResponse
 // @Failure      500 {object} dtos.InternalServerErrorResponse
-// @Router       /liked/{id} [get]
-// @Security BearerAut
+// @Router       /user/liked/{id} [get]
+// @Security     BearerAuth
 func (u *articleLikedUsecase) GetArticleLikedByUserId(userId uint) ([]models.ArticleLiked, error) {
 	user, err := u.userRepository.GetUserById(userId)
 	if err != nil {
@@ -66,15 +66,15 @@ func (u *articleLikedUsecase) GetArticleLikeByUserIdAndArticleId(userId uint, ar
 // @Tags         Article
 // @Accept       json
 // @Produce      json
-// @Param id path integer true "ID Article"
-// @Success      200 {object} dtos.StatusOKResponse
+// @Param id path integer true "ID article"
+// @Success      200 {object} dtos.LikedStatusOKResponse
 // @Failure      400 {object} dtos.BadRequestResponse
 // @Failure      401 {object} dtos.UnauthorizedResponse
 // @Failure      403 {object} dtos.ForbiddenResponse
 // @Failure      404 {object} dtos.NotFoundResponse
 // @Failure      500 {object} dtos.InternalServerErrorResponse
-// @Router       /like/{id} [get]
-// @Security BearerAut
+// @Router       /article/like/{id} [get]
+// @Security     BearerAuth
 func (u *articleLikedUsecase) CreateArticleLiked(id uint, articleId uint) (models.ArticleLiked, error) {
 	articleLiked := models.ArticleLiked{
 		ArticleID: articleId,

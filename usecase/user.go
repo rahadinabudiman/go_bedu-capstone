@@ -311,7 +311,7 @@ func (u *userUsecase) GetUsers() ([]dtos.UserDetailResponse, error) {
 // @Failure      404 {object} dtos.NotFoundResponse
 // @Failure      500 {object} dtos.InternalServerErrorResponse
 // @Router       /user/{id} [get]
-// @Security BearerAut
+// @Security BearerAuth
 func (u *userUsecase) GetUserById(id uint) (res dtos.UserProfileResponse, err error) {
 	user, err := u.userRepository.GetUserById(id)
 	if err != nil {

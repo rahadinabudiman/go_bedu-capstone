@@ -1,6 +1,8 @@
 package dtos
 
-import "go_bedu/helpers"
+import (
+	"go_bedu/helpers"
+)
 
 type StatusOKResponse struct {
 	StatusCode int         `json:"status_code" example:"200"`
@@ -43,6 +45,12 @@ type LoginStatusOKResponse struct {
 	StatusCode int    `json:"status_code" example:"200"`
 	Username   string `json:"username" form:"username" validate:"required" example:"r4ha"`
 	Token      string `json:"token" form:"token" validate:"required" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"`
+}
+
+type LikedStatusOKResponse struct {
+	StatusCode int          `json:"status_code" example:"200"`
+	Message    string       `json:"message" form:"message" example:"Successfully liked"`
+	Data       ArticleLiked `json:"data" form:"data"`
 }
 
 type AdminStatusOKResponse struct {
