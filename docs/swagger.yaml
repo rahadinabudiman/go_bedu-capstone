@@ -88,6 +88,13 @@ definitions:
         example: "2023-05-17T15:07:16.504+07:00"
         type: string
     type: object
+  dtos.ArticleLiked:
+    properties:
+      article_id:
+        type: integer
+      user_id:
+        type: integer
+    type: object
   dtos.ArticleStatusOKResponse:
     properties:
       data:
@@ -291,6 +298,17 @@ definitions:
         type: string
       status_code:
         example: 500
+        type: integer
+    type: object
+  dtos.LikedStatusOKResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dtos.ArticleLiked'
+      message:
+        example: Successfully liked
+        type: string
+      status_code:
+        example: 200
         type: integer
     type: object
   dtos.LoginRequest:
@@ -693,7 +711,7 @@ paths:
           schema:
             $ref: '#/definitions/dtos.InternalServerErrorResponse'
       security:
-      - BearerAut: []
+      - BearerAuth: []
       summary: Get admin by ID
       tags:
       - Admin - Account
@@ -1208,6 +1226,49 @@ paths:
       summary: Get article by ID
       tags:
       - Article
+  /article/like/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Create Bookmark by Article ID
+      parameters:
+      - description: ID article
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.LikedStatusOKResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create Bookmark by Article ID
+      tags:
+      - Article
   /change-password/{otp}:
     post:
       consumes:
@@ -1292,92 +1353,6 @@ paths:
       summary: Forgot Password Request OTP
       tags:
       - Utils - Authentikasi
-  /like/{id}:
-    get:
-      consumes:
-      - application/json
-      description: Create Bookmark by Article ID
-      parameters:
-      - description: ID Article
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dtos.StatusOKResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dtos.BadRequestResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/dtos.UnauthorizedResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/dtos.ForbiddenResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dtos.NotFoundResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dtos.InternalServerErrorResponse'
-      security:
-      - BearerAut: []
-      summary: Create Bookmark by Article ID
-      tags:
-      - Article
-  /liked/{id}:
-    get:
-      consumes:
-      - application/json
-      description: Get Bookmark by User ID
-      parameters:
-      - description: ID User
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dtos.StatusOKResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dtos.BadRequestResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/dtos.UnauthorizedResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/dtos.ForbiddenResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dtos.NotFoundResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dtos.InternalServerErrorResponse'
-      security:
-      - BearerAut: []
-      summary: Get Bookmark by User ID
-      tags:
-      - User - Account
   /login:
     post:
       consumes:
@@ -1700,7 +1675,7 @@ paths:
           schema:
             $ref: '#/definitions/dtos.InternalServerErrorResponse'
       security:
-      - BearerAut: []
+      - BearerAuth: []
       summary: Get user by ID
       tags:
       - User - Account
@@ -1789,6 +1764,49 @@ paths:
       security:
       - BearerAuth: []
       summary: Change Password User
+      tags:
+      - User - Account
+  /user/liked/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get Bookmark by User ID
+      parameters:
+      - description: ID user
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.LikedStatusOKResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Bookmark by User ID
       tags:
       - User - Account
   /verifyemail/{verificationCode}:
