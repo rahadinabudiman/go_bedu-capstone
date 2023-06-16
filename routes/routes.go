@@ -39,11 +39,12 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 	// Middleware untuk mengatur CORS
 	e.Use(mid.CORSWithConfig(mid.CORSConfig{
 		AllowOrigins: []string{"*"},
+		AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE}, // Tambahkan echo.DELETE ke daftar metode yang diizinkan
 		AllowHeaders: []string{
 			echo.HeaderOrigin,
 			echo.HeaderContentType,
 			echo.HeaderAccept,
-			echo.HeaderAuthorization, // Menambahkan header Authorization
+			echo.HeaderAuthorization,
 		},
 	}))
 
