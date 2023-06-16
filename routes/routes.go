@@ -30,6 +30,9 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 	articleLikedUsecase := usecase.NewArticleLikedUsecase(articleLiked, userRepository)
 	articleLikedController := controllers.NewArticleLikedControllers(articleLikedUsecase, articleUsecase)
 
+	cloudinaryUsecase := usecase.NewMediaUpload()
+	cloudinaryController := controllers.NewCloudinaryController(cloudinaryUsecase)
+
 	authUsecase := usecase.NewAuthUsecase(adminRepository, userRepository)
 	authControllers := controllers.NewAuthControllers(authUsecase)
 
@@ -54,6 +57,11 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 
 	// Main API
 	api := e.Group("/api/v1")
+	public := api.Group("/public")
+
+	// cloudinary
+	public.POST("/cloudinary/file-upload", cloudinaryController.FileUpload)
+	public.POST("/cloudinary/url-upload", cloudinaryController.UrlUpload)
 
 	// AUTH API
 	api.POST("/admin/register", adminController.RegisterAdminController)
