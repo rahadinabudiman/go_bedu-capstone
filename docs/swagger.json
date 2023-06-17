@@ -13,7 +13,7 @@
         },
         "version": "1.0"
     },
-    "host": "https://capstone.keyzex.com",
+    "host": "capstone.keyzex.com",
     "basePath": "/api/v1",
     "paths": {
         "/admin": {
