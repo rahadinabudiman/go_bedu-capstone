@@ -170,7 +170,7 @@ func (u *articleUsecase) CreateArticle(article *dtos.CreateArticlesRequest) (dto
 // @Failure      403 {object} dtos.ForbiddenResponse
 // @Failure      404 {object} dtos.NotFoundResponse
 // @Failure      500 {object} dtos.InternalServerErrorResponse
-// @Router       /admin/article [put]
+// @Router       /admin/article/{id} [put]
 // @Security BearerAuth
 func (u *articleUsecase) UpdateArticle(id uint, article dtos.UpdateArticlesRequest) (dtos.ArticleDetailResponse, error) {
 	var (
