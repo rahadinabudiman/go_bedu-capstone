@@ -2,6 +2,8 @@ FROM golang:1.20-alpine
 
 RUN apk update && apk add git
 
+RUN apk add --no-cache nginx
+
 WORKDIR /app
 
 COPY go.mod ./
@@ -16,6 +18,6 @@ COPY . .
 # Build aplikasi
 RUN go build -o main .
 
-EXPOSE 8080
+EXPOSE 443
 
 CMD ["./main"]
