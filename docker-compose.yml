@@ -1,9 +1,10 @@
 version: "3"
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
+    restart: on-failure
     ports:
-      - "8080:8080"
-    restart: always
+      - "443:443"
+    volumes:
+      - /etc/letsencrypt/live/capstone.keyzex.com/fullchain.pem:/etc/nginx/ssl/fullchain.pem
+      - /etc/letsencrypt/live/capstone.keyzex.com/privkey.pem:/etc/nginx/ssl/privkey.pem
