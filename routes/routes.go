@@ -6,6 +6,7 @@ import (
 	"go_bedu/repositories"
 	"go_bedu/usecase"
 	"go_bedu/utils"
+	"net/http"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -39,12 +40,14 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 	// Middleware untuk mengatur CORS
 	e.Use(mid.CORSWithConfig(mid.CORSConfig{
 		AllowOrigins: []string{"*"},
+		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete}, // Menggunakan konstanta http.Method* untuk daftar metode yang diizinkan
 		AllowHeaders: []string{
 			echo.HeaderOrigin,
 			echo.HeaderContentType,
 			echo.HeaderAccept,
-			echo.HeaderAuthorization, // Menambahkan header Authorization
+			echo.HeaderAuthorization,
 		},
+		AllowCredentials: true, // Menambahkan AllowCredentials untuk mengizinkan pengiriman kredensial (contoh: cookie)
 	}))
 
 	e.Use(m.AllowCORS)
