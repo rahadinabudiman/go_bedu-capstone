@@ -129,7 +129,7 @@ func (c *articleController) CreateArticle(ctx echo.Context) error {
 			http.StatusBadRequest,
 			helpers.NewErrorResponse(
 				http.StatusBadRequest,
-				"Failed to upload thumbnail",
+				"Thumbnail cannot be empty",
 				helpers.GetErrorData(err),
 			),
 		)
@@ -141,7 +141,7 @@ func (c *articleController) CreateArticle(ctx echo.Context) error {
 			http.StatusBadRequest,
 			helpers.NewErrorResponse(
 				http.StatusBadRequest,
-				"Failed to upload image",
+				"Image cannot be empty",
 				helpers.GetErrorData(err),
 			),
 		)
