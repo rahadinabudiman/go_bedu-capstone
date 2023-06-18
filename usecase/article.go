@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"errors"
 	"go_bedu/dtos"
 	"go_bedu/helpers"
 	"go_bedu/models"
@@ -85,7 +86,7 @@ func (u *articleUsecase) GetArticleByID(id uint) (dtos.ArticleDetailResponse, er
 
 	article, err := u.articleRepository.GetArticleByID(id)
 	if err != nil {
-		return articleResponses, err
+		return articleResponses, errors.New("Failed to get article")
 	}
 
 	articleResponse := dtos.ArticleDetailResponse{
@@ -137,7 +138,7 @@ func (u *articleUsecase) CreateArticle(article *dtos.CreateArticlesRequest) (dto
 
 	createdArticle, err := u.articleRepository.CreateArticle(CreateArticle)
 	if err != nil {
-		return articleResponses, err
+		return articleResponses, errors.New("Failed to create article")
 	}
 
 	articleResponse := dtos.ArticleDetailResponse{
@@ -180,7 +181,7 @@ func (u *articleUsecase) UpdateArticle(id uint, article dtos.UpdateArticlesReque
 
 	articles, err := u.articleRepository.GetArticleByID(id)
 	if err != nil {
-		return articleResponse, err
+		return articleResponse, errors.New("Failed to get article")
 	}
 
 	slug := helpers.CreateSlug(articles.Title)
@@ -195,7 +196,7 @@ func (u *articleUsecase) UpdateArticle(id uint, article dtos.UpdateArticlesReque
 
 	articles, err = u.articleRepository.UpdateArticle(articles)
 	if err != nil {
-		return articleResponse, err
+		return articleResponse, errors.New("Failed to update article")
 	}
 
 	articleResponse.ArticleID = articles.ID
@@ -231,7 +232,7 @@ func (u *articleUsecase) UpdateArticle(id uint, article dtos.UpdateArticlesReque
 func (u *articleUsecase) DeleteArticle(id uint) error {
 	article, err := u.articleRepository.GetArticleByID(id)
 	if err != nil {
-		return err
+		return errors.New("Failed to get article")
 	}
 
 	// Destination paths

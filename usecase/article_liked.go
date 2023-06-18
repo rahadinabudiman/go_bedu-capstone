@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"errors"
 	"go_bedu/models"
 	"go_bedu/repositories"
 )
@@ -38,12 +39,12 @@ func NewArticleLikedUsecase(articleLikedRepo repositories.ArticleLikedRepository
 func (u *articleLikedUsecase) GetArticleLikedByUserId(userId uint) ([]models.ArticleLiked, error) {
 	user, err := u.userRepository.GetUserById(userId)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Failed to get user")
 	}
 
 	articleLiked, err := u.articleLikedRepo.GetArticleLikedByUserId(user.ID)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Failed to get article liked")
 	}
 
 	return articleLiked, nil
@@ -54,7 +55,7 @@ func (u *articleLikedUsecase) GetArticleLikeByUserIdAndArticleId(userId uint, ar
 
 	articleLiked, err := u.articleLikedRepo.GetLikeByUserIdAndArticleId(userId, articleId)
 	if err != nil {
-		return articlelike, err
+		return articlelike, errors.New("Failed to get article liked")
 	}
 
 	return articleLiked, nil
