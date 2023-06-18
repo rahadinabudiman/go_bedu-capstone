@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"errors"
 	"go_bedu/dtos"
 	"go_bedu/helpers"
 	"go_bedu/initializers"
@@ -8,8 +9,6 @@ import (
 	"go_bedu/utils"
 	"net/url"
 	"strconv"
-
-	"github.com/labstack/echo/v4"
 )
 
 type AuthUsecase interface {
@@ -47,14 +46,14 @@ func (u *authUsecase) ForgotPassword(req dtos.ForgotPasswordRequest) (res dtos.F
 	if err != nil {
 		user, err := u.userRepository.GetUserByEmail(req.Email)
 		if err != nil {
-			return res, echo.NewHTTPError(400, "Email not registered")
+			return res, errors.New("Email not registered")
 		}
 
 		// Mengenerate OTP
 		otp := helpers.GenerateRandomOTP(6)
 		NewOTP, err := strconv.Atoi(otp)
 		if err != nil {
-			return res, echo.NewHTTPError(400, "Failed to generate OTP")
+			return res, errors.New("Failed to Generate OTP")
 		}
 		user.OTP = NewOTP
 		user.OTPReq = true
@@ -83,7 +82,7 @@ func (u *authUsecase) ForgotPassword(req dtos.ForgotPasswordRequest) (res dtos.F
 	otp := helpers.GenerateRandomOTP(6)
 	NewOTP, err := strconv.Atoi(otp)
 	if err != nil {
-		return res, echo.NewHTTPError(400, "Failed to generate OTP")
+		return res, errors.New("Failed to generate OTP")
 	}
 	admin.OTP = NewOTP
 	admin.OTPReq = true

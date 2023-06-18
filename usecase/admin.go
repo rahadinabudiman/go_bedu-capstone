@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"bufio"
+	"errors"
 	"go_bedu/dtos"
 	"go_bedu/helpers"
 	"go_bedu/initializers"
@@ -108,24 +109,22 @@ func (u *adminUsecase) GetAdmin() ([]dtos.AdminDetailResponse, error) {
 func (u *adminUsecase) LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dtos.LoginResponse, err error) {
 	admin, err := u.adminRepository.GetAdminByUsername(req.Username)
 	if err != nil {
-		echo.NewHTTPError(400, "Username not registered")
-		return
+		return res, errors.New("Username not registered")
 	}
 
 	if !admin.Verified {
-		return res, echo.NewHTTPError(400, "Please verify your email first")
+		return res, errors.New("Please verify your email first")
 	}
 
 	err = helpers.ComparePassword(req.Password, admin.Password)
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
-		echo.NewHTTPError(400, err.Error())
-		return
+		return res, errors.New("Email or Password is wrong")
 	}
 
 	token, err := middlewares.CreateToken(int(admin.ID), admin.Username, admin.Email, admin.Role)
 	if err != nil {
-		echo.NewHTTPError(400, "Failed to generate token")
-		return
+		return res, errors.New("Failed to generate token")
+
 	}
 
 	admin.Token = token
@@ -157,7 +156,7 @@ func (u *adminUsecase) LoginAdmin(c echo.Context, req dtos.LoginRequest) (res dt
 func (u *adminUsecase) LogoutAdmin(c echo.Context) (res dtos.LogoutAdminResponse, err error) {
 	err = middlewares.DeleteCookie(c)
 	if err != nil {
-		return res, echo.NewHTTPError(400, "Failed to logout")
+		return res, errors.New("Failed to logout")
 	}
 
 	return res, err
@@ -180,11 +179,11 @@ func (u *adminUsecase) LogoutAdmin(c echo.Context) (res dtos.LogoutAdminResponse
 func (u *adminUsecase) VerifyEmail(verificationCode any) (res dtos.VerifyEmailResponse, err error) {
 	admin, err := u.adminRepository.GetAdminByVerificationCode(verificationCode)
 	if err != nil {
-		return res, echo.NewHTTPError(400, "Failed to get admin")
+		return res, errors.New("Cannot get admin")
 	}
 
 	if admin.Verified {
-		return res, echo.NewHTTPError(400, "Email already verified")
+		return res, errors.New("Email already verified")
 	}
 
 	admin.VerificationCode = ""
@@ -217,11 +216,11 @@ func (u *adminUsecase) VerifyEmail(verificationCode any) (res dtos.VerifyEmailRe
 func (u *adminUsecase) UpdateAdminByOTP(otp int, req dtos.ChangePasswordRequest) (res dtos.ForgotPasswordResponse, err error) {
 	admin, err := u.adminRepository.GetAdminOTP(otp)
 	if err != nil {
-		return res, echo.NewHTTPError(400, "Failed to get admin")
+		return res, errors.New("Failed to get admin")
 	}
 
 	if req.Password != req.PasswordConfirm {
-		return res, echo.NewHTTPError(400, "Password not matches")
+		return res, errors.New("Password not matches")
 	}
 
 	// Reset OTP and OTPReq
@@ -231,13 +230,13 @@ func (u *adminUsecase) UpdateAdminByOTP(otp int, req dtos.ChangePasswordRequest)
 	// Update Password
 	passwordHash, err := helpers.HashPassword(req.Password)
 	if err != nil {
-		return res, echo.NewHTTPError(400, "Failed to hash password")
+		return res, errors.New("Failed to hash password")
 	}
 	admin.Password = string(passwordHash)
 
 	_, err = u.adminRepository.UpdateAdmin(admin)
 	if err != nil {
-		return res, echo.NewHTTPError(400, "Failed to update admin")
+		return res, errors.New("Failed to update admin")
 	}
 
 	res = dtos.ForgotPasswordResponse{
@@ -266,28 +265,28 @@ func (u *adminUsecase) UpdateAdminByOTP(otp int, req dtos.ChangePasswordRequest)
 func (u *adminUsecase) ChangePassword(id uint, req dtos.ChangePasswordAdminRequest) (res helpers.ResponseMessage, err error) {
 	admin, err := u.adminRepository.GetAdminById(id)
 	if err != nil {
-		return res, echo.NewHTTPError(400, "Failed to get admin")
+		return res, errors.New("Failed to get admin")
 	}
 
 	err = helpers.ComparePassword(req.OldPassword, admin.Password)
 	if err != nil {
-		return res, echo.NewHTTPError(400, "Wrong password")
+		return res, errors.New("Wrong Password")
 	}
 
 	if req.Password != req.PasswordConfirm {
-		return res, echo.NewHTTPError(400, "Password not matches")
+		return res, errors.New("Password not matches")
 	}
 
 	passwordHash, err := helpers.HashPassword(req.Password)
 	if err != nil {
-		return res, echo.NewHTTPError(400, "Failed to hash password")
+		return res, errors.New("Failed to hash password")
 	}
 
 	admin.Password = string(passwordHash)
 
 	admin, err = u.adminRepository.UpdateAdmin(admin)
 	if err != nil {
-		return res, echo.NewHTTPError(400, "Failed to update admin")
+		return res, errors.New("Failed to update Admin")
 	}
 
 	res = helpers.NewResponseMessage(
@@ -322,7 +321,7 @@ func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDe
 
 	username, _ := u.adminRepository.GetAdminByUsername(req.Username)
 	if username.ID > 0 {
-		return res, echo.NewHTTPError(400, "Username already in use")
+		return res, errors.New("Username already in use")
 	}
 
 	req.Email = strings.ToLower(req.Email)
@@ -330,11 +329,11 @@ func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDe
 	// Check apakah email sudah terdaftar atau belum
 	admin, _ := u.adminRepository.GetAdminByEmail(req.Email)
 	if admin.ID > 0 {
-		return res, echo.NewHTTPError(400, "Email already in use")
+		return res, errors.New("Email already in use")
 	}
 
 	if req.Password != req.PasswordConfirm {
-		return res, echo.NewHTTPError(400, "Password does not match")
+		return res, errors.New("Password does not matches")
 	}
 
 	passwordHash, err := helpers.HashPassword(req.Password)
@@ -344,7 +343,7 @@ func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDe
 
 	config, err := initializers.LoadConfig(".")
 	if err != nil {
-		return res, echo.NewHTTPError(400, "Failed to load config")
+		return res, errors.New("Failed to load config")
 	}
 
 	// Generate Verification Code
@@ -409,10 +408,8 @@ func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDe
 // @Security BearerAuth
 func (u *adminUsecase) GetAdminById(id uint) (res dtos.AdminProfileResponse, err error) {
 	admin, err := u.adminRepository.GetAdminById(id)
-
 	if err != nil {
-		echo.NewHTTPError(401, "Admin didn't exist")
-		return
+		return res, errors.New("Admin didn't exist")
 	}
 
 	res = dtos.AdminProfileResponse{
@@ -461,18 +458,18 @@ func (u *adminUsecase) UpdateAdmin(id uint, req dtos.UpdateAdminRequest) (dtos.U
 	// Check Role and save role information from JWT Cookie
 	admin, err := u.adminRepository.ReadToken(id)
 	if err != nil {
-		return res, echo.NewHTTPError(400, "Failed to get Admin")
+		return res, errors.New("Failed to get admin")
 	}
 
 	// Check if admin is not Super Admin and trying to change role
 	if admin.Role != req.Role && admin.Role != "Super Admin" {
-		return res, echo.NewHTTPError(401, "You are not allowed to change role")
+		return res, errors.New("You are not allowed to change role")
 	}
 
 	// Check if Super Admin changes other Role
 	if admin.Role == "Super Admin" {
 		if req.Role != "Super Admin" && req.Role != "Admin" {
-			return res, echo.NewHTTPError(401, "Tidak bisa mengubah role menjadi selain Super Admin atau Admin")
+			return res, errors.New("Cannot change role between Super Admin and Admin")
 		}
 	}
 
@@ -480,7 +477,7 @@ func (u *adminUsecase) UpdateAdmin(id uint, req dtos.UpdateAdminRequest) (dtos.U
 
 	passwordHash, err := helpers.HashPassword(admins.Password)
 	if err != nil {
-		return res, echo.NewHTTPError(400, "Failed to hash password")
+		return res, errors.New("Failed to hash password")
 	}
 
 	admins.Password = string(passwordHash)
@@ -518,8 +515,7 @@ func (u *adminUsecase) DeleteAdmin(id uint, req dtos.DeleteAdminRequest) (res he
 	admin, err := u.adminRepository.ReadToken(id)
 
 	if err != nil {
-		echo.NewHTTPError(400, "Failed to get Admin")
-		return
+		return res, errors.New("Failed to get admin")
 	}
 
 	err = helpers.ComparePassword(req.Password, admin.Password)
@@ -531,7 +527,7 @@ func (u *adminUsecase) DeleteAdmin(id uint, req dtos.DeleteAdminRequest) (res he
 	err = u.adminRepository.DeleteAdmin(admin)
 
 	if err != nil {
-		return res, echo.NewHTTPError(500, "Failed to delete admin")
+		return res, errors.New("Failed to delete admin")
 	}
 
 	return res, nil

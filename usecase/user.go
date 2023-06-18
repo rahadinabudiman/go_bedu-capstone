@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"bufio"
+	"errors"
 	"go_bedu/dtos"
 	"go_bedu/helpers"
 	"go_bedu/initializers"
@@ -71,24 +72,23 @@ func (u *userUsecase) MustDispEmailDom() (dispEmailDomains []string, err error) 
 func (u *userUsecase) LoginUser(c echo.Context, req dtos.LoginRequest) (res dtos.LoginResponse, err error) {
 	user, err := u.userRepository.GetUserByUsername(req.Username)
 	if err != nil {
-		echo.NewHTTPError(400, "Username not registered")
-		return
+		return res, errors.New("Username not found")
 	}
 
 	if !user.Verified {
-		return res, echo.NewHTTPError(400, "Please verify your email first")
+		return res, errors.New("Please verify your email first")
 	}
 
 	err = helpers.ComparePassword(req.Password, user.Password)
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
-		echo.NewHTTPError(400, err.Error())
-		return
+		return res, errors.New("Email or password is incorrect")
+
 	}
 
 	token, err := middlewares.CreateToken(int(user.ID), user.Username, user.Email, user.Role)
 	if err != nil {
-		echo.NewHTTPError(400, "Failed to generate token")
-		return
+		return res, errors.New("Failed to generate token")
+
 	}
 
 	user.Token = token
@@ -120,7 +120,7 @@ func (u *userUsecase) LoginUser(c echo.Context, req dtos.LoginRequest) (res dtos
 func (u *userUsecase) LogoutUser(c echo.Context) (res dtos.LogoutUserResponse, err error) {
 	err = middlewares.DeleteCookie(c)
 	if err != nil {
-		return res, echo.NewHTTPError(400, "Failed to logout")
+		return res, errors.New("Failed to logout")
 	}
 
 	return res, err
@@ -143,11 +143,11 @@ func (u *userUsecase) LogoutUser(c echo.Context) (res dtos.LogoutUserResponse, e
 func (u *userUsecase) VerifyEmail(verificationCode any) (res dtos.VerifyEmailResponse, err error) {
 	user, err := u.userRepository.GetUserByVerificationCode(verificationCode)
 	if err != nil {
-		return res, echo.NewHTTPError(400, "Failed to get user")
+		return res, errors.New("Failed to get user")
 	}
 
 	if user.Verified {
-		return res, echo.NewHTTPError(400, "Email already verified")
+		return res, errors.New("Email already verified")
 	}
 
 	user.VerificationCode = ""
@@ -180,11 +180,11 @@ func (u *userUsecase) VerifyEmail(verificationCode any) (res dtos.VerifyEmailRes
 func (u *userUsecase) UpdateUserByOTP(otp int, req dtos.ChangePasswordRequest) (res dtos.ForgotPasswordResponse, err error) {
 	user, err := u.userRepository.GetUserOTP(otp)
 	if err != nil {
-		return res, echo.NewHTTPError(400, "Failed to get user")
+		return res, errors.New("Failed to get user")
 	}
 
 	if req.Password != req.PasswordConfirm {
-		return res, echo.NewHTTPError(400, "Password does not match")
+		return res, errors.New("Password does not matches")
 	}
 
 	// Reset OTP and OTP Request
@@ -194,13 +194,13 @@ func (u *userUsecase) UpdateUserByOTP(otp int, req dtos.ChangePasswordRequest) (
 	// Update Password
 	passwordHash, err := helpers.HashPassword(req.Password)
 	if err != nil {
-		return res, echo.NewHTTPError(400, "Failed to hash password")
+		return res, errors.New("Failed to hash password")
 	}
 	user.Password = string(passwordHash)
 
 	_, err = u.userRepository.UpdateUser(user)
 	if err != nil {
-		return res, echo.NewHTTPError(400, "Failed to update user")
+		return res, errors.New("Failed to update user")
 	}
 
 	res = dtos.ForgotPasswordResponse{
@@ -229,28 +229,28 @@ func (u *userUsecase) UpdateUserByOTP(otp int, req dtos.ChangePasswordRequest) (
 func (u *userUsecase) ChangePassword(id uint, req dtos.ChangePasswordUserRequest) (res helpers.ResponseMessage, err error) {
 	user, err := u.userRepository.GetUserById(id)
 	if err != nil {
-		return res, echo.NewHTTPError(400, "Failed to get user")
+		return res, errors.New("Failed to get user")
 	}
 
 	err = helpers.ComparePassword(req.OldPassword, user.Password)
 	if err != nil {
-		return res, echo.NewHTTPError(400, "Wrong password")
+		return res, errors.New("Wrong Password")
 	}
 
 	if req.Password != req.PasswordConfirm {
-		return res, echo.NewHTTPError(400, "Password not matches")
+		return res, errors.New("Password does not match")
 	}
 
 	passwordHash, err := helpers.HashPassword(req.Password)
 	if err != nil {
-		return res, echo.NewHTTPError(400, "Failed to hash password")
+		return res, errors.New("Failed to hash password")
 	}
 
 	user.Password = string(passwordHash)
 
 	user, err = u.userRepository.UpdateUser(user)
 	if err != nil {
-		return res, echo.NewHTTPError(400, "Failed to update user")
+		return res, errors.New("Failed to update user")
 	}
 
 	res = helpers.NewResponseMessage(
@@ -315,8 +315,7 @@ func (u *userUsecase) GetUsers() ([]dtos.UserDetailResponse, error) {
 func (u *userUsecase) GetUserById(id uint) (res dtos.UserProfileResponse, err error) {
 	user, err := u.userRepository.GetUserById(id)
 	if err != nil {
-		echo.NewHTTPError(401, "User didn't exist")
-		return
+		return res, errors.New("User not found")
 	}
 
 	res = dtos.UserProfileResponse{
@@ -354,7 +353,7 @@ func (u *userUsecase) CreateUser(req *dtos.RegisterUserRequest) (dtos.UserDetail
 
 	username, _ := u.userRepository.GetUserByUsername(req.Username)
 	if username.ID > 0 {
-		return res, echo.NewHTTPError(400, "Username already in use")
+		return res, errors.New("Username already in use")
 	}
 
 	req.Email = strings.ToLower(req.Email)
@@ -362,11 +361,11 @@ func (u *userUsecase) CreateUser(req *dtos.RegisterUserRequest) (dtos.UserDetail
 	// Check apakah email sudah terdaftar atau belum
 	user, _ := u.userRepository.GetUserByEmail(req.Email)
 	if user.ID > 0 {
-		return res, echo.NewHTTPError(400, "Email already in use")
+		return res, errors.New("Email already in use")
 	}
 
 	if req.Password != req.PasswordConfirm {
-		return res, echo.NewHTTPError(400, "Password does not match")
+		return res, errors.New("Password does not matches")
 	}
 
 	passwordHash, err := helpers.HashPassword(req.Password)
@@ -376,7 +375,7 @@ func (u *userUsecase) CreateUser(req *dtos.RegisterUserRequest) (dtos.UserDetail
 
 	config, err := initializers.LoadConfig(".")
 	if err != nil {
-		return res, echo.NewHTTPError(400, "Failed to load config")
+		return res, errors.New("Failed to load config")
 	}
 
 	// Generate Verification Code
@@ -459,7 +458,7 @@ func (u *userUsecase) UpdateUser(id uint, req dtos.UpdateUserRequest) (res dtos.
 	// Check Role and save role information from JWT Cookie
 	user, err := u.userRepository.ReadToken(id)
 	if err != nil {
-		return res, echo.NewHTTPError(400, "Failed to get User")
+		return res, errors.New("Failed to get user")
 	}
 
 	users.Role = user.Role
@@ -467,7 +466,7 @@ func (u *userUsecase) UpdateUser(id uint, req dtos.UpdateUserRequest) (res dtos.
 
 	passwordHash, err := helpers.HashPassword(users.Password)
 	if err != nil {
-		return res, echo.NewHTTPError(400, "Failed to hash password")
+		return res, errors.New("Failed to hash password")
 	}
 
 	users.Password = string(passwordHash)
@@ -506,20 +505,19 @@ func (u *userUsecase) DeleteUser(id uint, req dtos.DeleteUserRequest) (res helpe
 	user, err := u.userRepository.ReadToken(id)
 
 	if err != nil {
-		echo.NewHTTPError(400, "Failed to get User")
-		return
+		return res, errors.New("Failed to get user")
+
 	}
 
 	err = helpers.ComparePassword(req.Password, user.Password)
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
-		echo.NewHTTPError(400, err.Error())
-		return
+		return res, errors.New("Password is incorrect")
 	}
 
 	err = u.userRepository.DeleteUser(user)
 
 	if err != nil {
-		return res, echo.NewHTTPError(500, "Failed to delete user")
+		return res, errors.New("Failed to delete user")
 	}
 
 	return res, nil
