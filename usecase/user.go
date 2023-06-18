@@ -115,7 +115,7 @@ func (u *userUsecase) LoginUser(c echo.Context, req dtos.LoginRequest) (res dtos
 // @Failure      403 {object} dtos.ForbiddenResponse
 // @Failure      404 {object} dtos.NotFoundResponse
 // @Failure      500 {object} dtos.InternalServerErrorResponse
-// @Router       /logout [get]
+// @Router       /user/logout [get]
 // @Security BearerAuth
 func (u *userUsecase) LogoutUser(c echo.Context) (res dtos.LogoutUserResponse, err error) {
 	err = middlewares.DeleteCookie(c)
@@ -404,7 +404,7 @@ func (u *userUsecase) CreateUser(req *dtos.RegisterUserRequest) (dtos.UserDetail
 
 	// 👇 Send Email
 	emailData := utils.EmailData{
-		URL:       "http://" + config.ClientOrigin + "/verifyemail/" + url.PathEscape(verification_code),
+		URL:       config.ClientOrigin + "/verifyemail/" + url.PathEscape(verification_code),
 		FirstName: firstName,
 		Subject:   "Your account verification code",
 	}
