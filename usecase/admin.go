@@ -372,7 +372,7 @@ func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDe
 
 	// 👇 Send Email
 	emailData := utils.EmailData{
-		URL:       "http://" + config.ClientOrigin + "/admin/verifyemail/" + url.PathEscape(verification_code),
+		URL:       config.ClientOrigin + "/admin/verifyemail/" + url.PathEscape(verification_code),
 		FirstName: firstName,
 		Subject:   "Your account verification code",
 	}
