@@ -64,7 +64,7 @@ func (u *authUsecase) ForgotPassword(req dtos.ForgotPasswordRequest) (res dtos.F
 		// 👇 Kirim Email
 		config, _ := initializers.LoadConfig(".")
 		emailData := utils.EmailData{
-			URL:       "http://" + config.ClientOrigin + "/change-password/" + url.PathEscape(otp),
+			URL:       config.ClientOrigin + "/change-password/" + url.PathEscape(otp),
 			FirstName: user.Username,
 			Subject:   "Your OTP to reset password",
 		}
@@ -93,7 +93,7 @@ func (u *authUsecase) ForgotPassword(req dtos.ForgotPasswordRequest) (res dtos.F
 	// 👇 Kirim Email
 	config, _ := initializers.LoadConfig(".")
 	emailData := utils.EmailData{
-		URL:       "http://" + config.ClientOrigin + "/admin/change-password/" + url.PathEscape(otp),
+		URL:       config.ClientOrigin + "/admin/change-password/" + url.PathEscape(otp),
 		FirstName: admin.Username,
 		Subject:   "Your OTP to reset password",
 	}
