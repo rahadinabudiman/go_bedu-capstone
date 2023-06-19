@@ -461,10 +461,6 @@ definitions:
       nama:
         example: Rahadina Budiman Sundara
         type: string
-      password:
-        example: rahadinabudimansundara
-        minLength: 6
-        type: string
       role:
         example: Admin
         type: string
@@ -671,48 +667,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Delete an Admin
-      tags:
-      - Admin - Account
-    get:
-      consumes:
-      - application/json
-      description: Get admin by ID
-      parameters:
-      - description: ID admin
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dtos.AdminStatusOKResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dtos.BadRequestResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/dtos.UnauthorizedResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/dtos.ForbiddenResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dtos.NotFoundResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dtos.InternalServerErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Get admin by ID
       tags:
       - Admin - Account
     put:
@@ -1058,6 +1012,43 @@ paths:
       summary: Logout Administrator
       tags:
       - Admin - Account
+  /admin/profile:
+    get:
+      consumes:
+      - application/json
+      description: Get admin by ID
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.AdminStatusOKResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get admin by ID
+      tags:
+      - Admin - Account
   /admin/register:
     post:
       consumes:
@@ -1395,43 +1386,6 @@ paths:
       summary: Login User with Username and Password
       tags:
       - User - Auth
-  /logout:
-    get:
-      consumes:
-      - application/json
-      description: Logout User
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dtos.LogoutUserResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dtos.BadRequestResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/dtos.UnauthorizedResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/dtos.ForbiddenResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dtos.NotFoundResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dtos.InternalServerErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Logout User
-      tags:
-      - User - Account
   /public/cloudinary/file-upload:
     post:
       consumes:
@@ -1807,6 +1761,43 @@ paths:
       security:
       - BearerAuth: []
       summary: Get Bookmark by User ID
+      tags:
+      - User - Account
+  /user/logout:
+    get:
+      consumes:
+      - application/json
+      description: Logout User
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.LogoutUserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.UnauthorizedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ForbiddenResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.InternalServerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Logout User
       tags:
       - User - Account
   /verifyemail/{verificationCode}:
