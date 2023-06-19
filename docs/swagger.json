@@ -1688,7 +1688,7 @@
                 }
             }
         },
-        "/user/{id}": {
+        "/user/profile": {
             "get": {
                 "security": [
                     {
@@ -1706,15 +1706,6 @@
                     "User - Account"
                 ],
                 "summary": "Get user by ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "ID user",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1753,7 +1744,9 @@
                         }
                     }
                 }
-            },
+            }
+        },
+        "/user/{id}": {
             "put": {
                 "security": [
                     {
