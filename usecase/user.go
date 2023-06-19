@@ -402,7 +402,7 @@ func (u *userUsecase) CreateUser(req *dtos.RegisterUserRequest) (dtos.UserDetail
 
 	// 👇 Send Email
 	emailData := utils.EmailData{
-		URL:       config.ClientOrigin + "/verify_user/" + url.PathEscape(verification_code),
+		URL:       config.ClientOrigin + "/#/verify_user/" + url.PathEscape(verification_code),
 		FirstName: firstName,
 		Subject:   "Your account verification code",
 	}
