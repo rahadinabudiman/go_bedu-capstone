@@ -397,14 +397,13 @@ func (u *adminUsecase) CreateAdmin(req *dtos.RegisterAdminRequest) (dtos.AdminDe
 // @Tags         Admin - Account
 // @Accept       json
 // @Produce      json
-// @Param id path integer true "ID admin"
 // @Success      200 {object} dtos.AdminStatusOKResponse
 // @Failure      400 {object} dtos.BadRequestResponse
 // @Failure      401 {object} dtos.UnauthorizedResponse
 // @Failure      403 {object} dtos.ForbiddenResponse
 // @Failure      404 {object} dtos.NotFoundResponse
 // @Failure      500 {object} dtos.InternalServerErrorResponse
-// @Router       /admin/{id} [get]
+// @Router       /admin/profile [get]
 // @Security BearerAuth
 func (u *adminUsecase) GetAdminById(id uint) (res dtos.AdminProfileResponse, err error) {
 	admin, err := u.adminRepository.GetAdminById(id)
@@ -451,7 +450,6 @@ func (u *adminUsecase) UpdateAdmin(id uint, req dtos.UpdateAdminRequest) (dtos.U
 
 	admins.Nama = req.Nama
 	admins.Email = req.Email
-	admins.Password = req.Password
 	admins.Role = req.Role
 	admins.Username = req.Username
 
@@ -475,12 +473,9 @@ func (u *adminUsecase) UpdateAdmin(id uint, req dtos.UpdateAdminRequest) (dtos.U
 
 	admins.ID = uint(id)
 
-	passwordHash, err := helpers.HashPassword(admins.Password)
-	if err != nil {
-		return res, errors.New("Failed to hash password")
-	}
+	OldPassword := admins.Password
 
-	admins.Password = string(passwordHash)
+	admins.Password = OldPassword
 
 	admins, err = u.adminRepository.UpdateAdmin(admins)
 	if err != nil {
@@ -490,7 +485,6 @@ func (u *adminUsecase) UpdateAdmin(id uint, req dtos.UpdateAdminRequest) (dtos.U
 	res.Username = admins.Username
 	res.Nama = admins.Nama
 	res.Email = admins.Email
-	res.Password = admins.Password
 	res.Role = admins.Role
 
 	return res, nil

@@ -349,7 +349,7 @@ func (c *adminController) UpdateAdminController(ctx echo.Context) error {
 			http.StatusBadRequest,
 			helpers.NewErrorResponse(
 				http.StatusBadRequest,
-				"Field cannot be empty or Password must be 6 character",
+				"Field cannot be empty",
 				helpers.GetErrorData(err),
 			),
 		)
