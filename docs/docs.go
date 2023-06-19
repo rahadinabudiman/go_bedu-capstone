@@ -1696,7 +1696,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/{id}": {
+        "/user/profile": {
             "get": {
                 "security": [
                     {
@@ -1714,15 +1714,6 @@ const docTemplate = `{
                     "User - Account"
                 ],
                 "summary": "Get user by ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "ID user",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1761,7 +1752,9 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
+            }
+        },
+        "/user/{id}": {
             "put": {
                 "security": [
                     {

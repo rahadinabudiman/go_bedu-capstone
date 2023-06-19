@@ -303,14 +303,13 @@ func (u *userUsecase) GetUsers() ([]dtos.UserDetailResponse, error) {
 // @Tags         User - Account
 // @Accept       json
 // @Produce      json
-// @Param id path integer true "ID user"
 // @Success      200 {object} dtos.UserStatusOKResponse
 // @Failure      400 {object} dtos.BadRequestResponse
 // @Failure      401 {object} dtos.UnauthorizedResponse
 // @Failure      403 {object} dtos.ForbiddenResponse
 // @Failure      404 {object} dtos.NotFoundResponse
 // @Failure      500 {object} dtos.InternalServerErrorResponse
-// @Router       /user/{id} [get]
+// @Router       /user/profile [get]
 // @Security BearerAuth
 func (u *userUsecase) GetUserById(id uint) (res dtos.UserProfileResponse, err error) {
 	user, err := u.userRepository.GetUserById(id)
@@ -403,7 +402,7 @@ func (u *userUsecase) CreateUser(req *dtos.RegisterUserRequest) (dtos.UserDetail
 
 	// 👇 Send Email
 	emailData := utils.EmailData{
-		URL:       config.ClientOrigin + "/verifyemail/" + url.PathEscape(verification_code),
+		URL:       config.ClientOrigin + "/verify_user/" + url.PathEscape(verification_code),
 		FirstName: firstName,
 		Subject:   "Your account verification code",
 	}
