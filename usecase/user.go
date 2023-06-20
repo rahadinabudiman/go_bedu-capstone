@@ -453,12 +453,13 @@ func (u *userUsecase) UpdateUser(id uint, req dtos.UpdateUserRequest) (res dtos.
 	users.Username = req.Username
 
 	// Check Role and save role information from JWT Cookie
-	user, err := u.userRepository.ReadToken(id)
+	_, err = u.userRepository.ReadToken(id)
 	if err != nil {
 		return res, errors.New("Failed to get user")
 	}
 
-	users.Role = user.Role
+	OldRole := users.Role
+	users.Role = OldRole
 	users.ID = uint(id)
 
 	OldPassword := users.Password
