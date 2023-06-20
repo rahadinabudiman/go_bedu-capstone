@@ -31,7 +31,6 @@ type UpdateUserRequest struct {
 	Nama     string `json:"nama" form:"nama" validate:"required" example:"Rahadina Budiman Sundara"`
 	Username string `json:"username" form:"username" validate:"required" example:"r4ha"`
 	Email    string `json:"email" form:"email" validate:"required,email" example:"me@r4ha.com"`
-	Password string `json:"password" form:"password" validate:"gte=6" example:"rahadinabudimansundara"`
 	Role     string `json:"role" form:"role" gorm:"type:enum('Admin', 'Super Admin');default:'Admin'; not-null" example:"Admin"`
 }
 
@@ -51,7 +50,6 @@ type UpdateUserResponse struct {
 	Nama     string `json:"nama" form:"nama" example:"Rahadina Budiman Sundara"`
 	Username string `json:"username" form:"username" validate:"required" example:"r4ha"`
 	Email    string `json:"email" form:"email" example:"me@r4ha.com"`
-	Password string `json:"password" form:"password" example:"rahadinabudimansundara"`
 	Role     string `json:"role" form:"role" example:"Admin"`
 }
 
