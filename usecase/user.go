@@ -450,8 +450,6 @@ func (u *userUsecase) UpdateUser(id uint, req dtos.UpdateUserRequest) (res dtos.
 
 	users.FullName = req.Nama
 	users.Email = req.Email
-	OldRole := users.Role
-	users.Role = OldRole
 	users.Username = req.Username
 
 	// Check Role and save role information from JWT Cookie
