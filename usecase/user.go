@@ -450,7 +450,6 @@ func (u *userUsecase) UpdateUser(id uint, req dtos.UpdateUserRequest) (res dtos.
 
 	users.FullName = req.Nama
 	users.Email = req.Email
-	users.Password = req.Password
 	users.Role = req.Role
 	users.Username = req.Username
 
@@ -463,12 +462,8 @@ func (u *userUsecase) UpdateUser(id uint, req dtos.UpdateUserRequest) (res dtos.
 	users.Role = user.Role
 	users.ID = uint(id)
 
-	passwordHash, err := helpers.HashPassword(users.Password)
-	if err != nil {
-		return res, errors.New("Failed to hash password")
-	}
-
-	users.Password = string(passwordHash)
+	OldPassword := users.Password
+	users.Password = OldPassword
 
 	users, err = u.userRepository.UpdateUser(users)
 	if err != nil {
@@ -478,7 +473,6 @@ func (u *userUsecase) UpdateUser(id uint, req dtos.UpdateUserRequest) (res dtos.
 	res.Username = users.Username
 	res.Nama = users.FullName
 	res.Email = users.Email
-	res.Password = users.Password
 	res.Role = users.Role
 
 	return res, nil
