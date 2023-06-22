@@ -125,6 +125,7 @@ func (c *adminController) RegisterAdminController(ctx echo.Context) error {
 	}
 
 	admin, err := c.adminUsecase.CreateAdmin(&req)
+	ctx.Response().Header().Set("Content-Type", "application/json")
 	if err != nil {
 		return ctx.JSON(
 			http.StatusBadRequest,
