@@ -55,8 +55,5 @@ func main() {
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	// Start server with TLS
-	err = e.StartTLS(":443", "/etc/nginx/ssl/fullchain.pem", "/etc/nginx/ssl/privkey.pem")
-	if err != nil {
-		log.Fatal("StartTLS: ", err)
-	}
+	e.Logger.Fatal(e.Start("0.0.0.0:8080"))
 }
