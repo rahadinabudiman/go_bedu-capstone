@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"go_bedu/initializers"
 	"go_bedu/models"
@@ -97,19 +98,26 @@ func SendEmail(user *models.Administrator, data *EmailData) {
 }
 
 func SendEmailUser(user *models.User, data *EmailData) {
-	config, err := initializers.LoadConfig(".")
+	_, err := initializers.LoadConfig(".")
 
 	if err != nil {
 		log.Fatal("could not load config", err)
 	}
 
+	smtpPortStr := os.Getenv("SMTP_PORT")
+	SMTPPortINT, err := strconv.Atoi(smtpPortStr)
+	if err != nil {
+		fmt.Printf("Failed to convert SMTP_PORT to integer: %s\n", err.Error())
+		return
+	}
+
 	// Sender data.
-	from := config.EmailFrom
-	smtpHost := config.SMTPHost
-	smtpPort := config.SMTPPort
-	smtpPass := config.SMTPPass
-	smtpUser := config.SMTPUser
-	fromName := config.FromName
+	from := os.Getenv("EMAIL_FROM")
+	smtpHost := os.Getenv("SMTP_HOST")
+	smtpPort := SMTPPortINT
+	smtpPass := os.Getenv("SMTP_PASS")
+	smtpUser := os.Getenv("SMTP_USER")
+	fromName := os.Getenv("FROM_NAME")
 	to := user.Email
 
 	var body bytes.Buffer
