@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 	"log"
 	"os"
@@ -140,6 +141,7 @@ func SendEmailUser(user *models.User, data *EmailData) {
 	// if err := d.DialAndSend(m); err != nil {
 	// 	log.Fatal("Could not send email: ", err)
 	// }
+	fmt.Println("Ini dialer: ", dialer)
 
 	err = dialer.DialAndSend(mailer)
 	if err != nil {
