@@ -21,11 +21,6 @@ type Config struct {
 }
 
 func ConnectDB() (*gorm.DB, error) {
-	location, err := time.LoadLocation("Asia/Jakarta")
-	if err != nil {
-		panic(err.Error())
-	}
-
 	config := Config{
 		DB_Username: os.Getenv("DB_USERNAME"),
 		DB_Password: os.Getenv("DB_PASSWORD"),
@@ -50,7 +45,7 @@ func ConnectDB() (*gorm.DB, error) {
 
 	dbConn = dbConn.Session(&gorm.Session{
 		NowFunc: func() time.Time {
-			return time.Now().In(location)
+			return time.Now()
 		},
 	})
 
