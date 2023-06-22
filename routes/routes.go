@@ -39,18 +39,13 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 
 	// Middleware untuk mengatur CORS
 	e.Use(mid.CORSWithConfig(mid.CORSConfig{
-		AllowOrigins: []string{"*"},
-		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete}, // Menggunakan konstanta http.Method* untuk daftar metode yang diizinkan
-		AllowHeaders: []string{
-			echo.HeaderOrigin,
-			echo.HeaderContentType,
-			echo.HeaderAccept,
-			echo.HeaderAuthorization,
-		},
-		AllowCredentials: true, // Menambahkan AllowCredentials untuk mengizinkan pengiriman kredensial (contoh: cookie)
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
+		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+		AllowCredentials: true,
 	}))
 
-	// e.Use(m.AllowCORS)
+	e.Use(m.AllowCORS)
 
 	cv := &utils.CustomValidator{Validators: validator.New()}
 	e.Validator = cv
