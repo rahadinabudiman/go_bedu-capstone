@@ -55,5 +55,5 @@ func main() {
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	// Start server with TLS
-	e.Logger.Fatal(e.Start("0.0.0.0:8080"))
+	e.Logger.Fatal(e.Start(":8080"))
 }
