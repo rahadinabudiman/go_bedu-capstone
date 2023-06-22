@@ -22,11 +22,6 @@ type Config struct {
 }
 
 func ConnectDB() (*gorm.DB, error) {
-	err := godotenv.Load()
-	if err != nil {
-		panic("Error loading .env file")
-	}
-
 	location, err := time.LoadLocation("Asia/Jakarta")
 	if err != nil {
 		panic(err.Error())
