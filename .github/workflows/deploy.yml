@@ -1,23 +1,36 @@
-name: Deploy
+name: Build and Deploy Go app to Azure
+
 on:
   push:
     branches:
-      - prod
+      - master
+  pull_request:
+    branches:
+      - master
+
 jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-latest
+  build-and-deploy:
+    runs-on: windows-latest
+
     steps:
-      - name: pull-production-deploy
-        uses: appleboy/ssh-action@master
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          port: ${{ secrets.PORT }}
-          script: |
-            cd go_bedu
-            git pull origin prod
-            docker image prune --force
-            docker system prune --all --volumes --force > /dev/null
-            docker-compose down && docker-compose up --build --force-recreate --no-deps -d
+          go-version: 1.18
+
+      - name: Copy static template files
+        run: xcopy /i templates build\templates
+
+      - name: Build
+        run: go build -o build/go-app.exe -v
+
+      - name: Deploy to Azure
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: go-bedu
+          publish-profile: ${{ secrets.azureWebAppPublishProfile }}
+          package: build/
+          images: ""
