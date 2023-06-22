@@ -50,7 +50,7 @@ func NewRoute(e *echo.Echo, db *gorm.DB) {
 		AllowCredentials: true, // Menambahkan AllowCredentials untuk mengizinkan pengiriman kredensial (contoh: cookie)
 	}))
 
-	e.Use(m.AllowCORS)
+	// e.Use(m.AllowCORS)
 
 	cv := &utils.CustomValidator{Validators: validator.New()}
 	e.Validator = cv
