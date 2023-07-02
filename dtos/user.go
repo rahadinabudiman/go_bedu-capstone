@@ -24,14 +24,14 @@ type RegisterUserRequest struct {
 	Password        string `json:"password" form:"password" validate:"gte=6" example:"rahadinabudimansundara"`
 	PasswordConfirm string `json:"passwordconfirm" form:"password" validate:"gte=6" example:"rahadinabudimansundara"`
 	Verified        bool   `gorm:"type:enum('False', 'True');default:'False'; not-null" example:"False"`
-	Role            string `json:"role" form:"role" gorm:"type:enum('Admin', 'Super Admin');default:'Admin'; not-null" example:"Admin"`
+	Role            string `json:"role" form:"role" gorm:"type:enum('User');default:'User'; not-null" example:"Admin"`
 }
 
 type UpdateUserRequest struct {
 	Nama     string `json:"nama" form:"nama" validate:"required" example:"Rahadina Budiman Sundara"`
 	Username string `json:"username" form:"username" validate:"required" example:"r4ha"`
 	Email    string `json:"email" form:"email" validate:"required,email" example:"me@r4ha.com"`
-	Role     string `json:"role" form:"role" gorm:"type:enum('Admin', 'Super Admin');default:'Admin'; not-null" example:"Admin"`
+	Role     string `json:"role" form:"role" gorm:"type:enum('User');default:'User'; not-null" example:"Admin"`
 }
 
 type DeleteUserRequest struct {
